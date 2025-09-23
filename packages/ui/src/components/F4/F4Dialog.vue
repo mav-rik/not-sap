@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import type { EntitySetField } from '@/_odata/metadata/entity-set'
+import type { EntitySetField } from '@notsap/odata'
 import F4ValueHelp from './F4ValueHelp.vue'
 import F4Conditions from './F4Conditions.vue'
 import {
   convertF4Condition,
   isConditionFilled,
   type TODataTypedFilterValueDisplay,
-} from '../SmartTable/filter-conditions'
+} from '../SmartTable/filter-conditions.utils'
 import DragScroll from '../DragScroll.vue'
-import { type TODataTypedFilterValue } from '@/_odata'
+import { type TODataTypedFilterValue } from '@notsap/odata'
 import FilterToken from '../FilterToken.vue'
 import type { ComponentInstance } from 'vue'
 import VuCard from 'vunor/Card.vue'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuTabs from 'vunor/Tabs.vue'
+import VuCardInner from 'vunor/CardInner.vue'
+import VuButton from 'vunor/Button.vue'
 
-import type { Ref } from 'vue'
-import { computed } from 'vue'
-import { useODataEntitySetPI } from '@/_not-sap-ui/renderless/ODataEntitySet.pi'
+import { type Ref, computed, ref, onMounted, nextTick } from 'vue'
+import { DialogClose } from 'radix-vue'
 import SmartTableFavFiltersMenu from '../SmartTable/filters/SmartTableFavFiltersMenu.vue'
 import { useSmartTablePI } from '../SmartTable/SmartTable.pi'
 import { useSmartFilterPI } from '../SmartTable/filters/SmartFilter.pi'
+import { useODataEntitySetPI } from '../../pi'
 
 const props = withDefaults(
   defineProps<{

@@ -11,7 +11,62 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./package.json": "./package.json"
+    "./pi": {
+      "types": "./dist/pi.d.ts",
+      "import": "./dist/pi.mjs",
+      "require": "./dist/pi.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    },
+    "./vunor": {
+      "types": "./dist/vunor.d.ts",
+      "import": "./dist/vunor.mjs",
+      "require": "./dist/vunor.cjs"
+    },
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "import": "./dist/presets.mjs",
+      "require": "./dist/presets.cjs"
+    },
+    "./composables": {
+      "types": "./dist/composables.d.ts",
+      "import": "./dist/composables.mjs",
+      "require": "./dist/composables.cjs"
+    },
+    "./package.json": "./package.json",
+    "./UseEntitySetContext.vue": "./dist/UseEntitySetContext.vue",
+    "./ODataEntitySet.vue": "./dist/ODataEntitySet.vue",
+    "./NotSapApp.vue": "./dist/NotSapApp.vue",
+    "./OrderableListBox.vue": "./dist/OrderableListBox.vue",
+    "./FilterToken.vue": "./dist/FilterToken.vue",
+    "./DragScroll.vue": "./dist/DragScroll.vue",
+    "./SmartTableVirtualizer.vue": "./dist/SmartTableVirtualizer.vue",
+    "./SmartTableRoot.vue": "./dist/SmartTableRoot.vue",
+    "./SmartTableHeaderCell.vue": "./dist/SmartTableHeaderCell.vue",
+    "./SmartTableConfigSorters.vue": "./dist/SmartTableConfigSorters.vue",
+    "./SmartTableConfigFieldsSelector.vue": "./dist/SmartTableConfigFieldsSelector.vue",
+    "./SmartTableConfigDialog.vue": "./dist/SmartTableConfigDialog.vue",
+    "./SmartTableBase.vue": "./dist/SmartTableBase.vue",
+    "./SmartTable.vue": "./dist/SmartTable.vue",
+    "./SmartRecordFields.vue": "./dist/SmartRecordFields.vue",
+    "./SmartRecordDialog.vue": "./dist/SmartRecordDialog.vue",
+    "./SmartFieldValue.vue": "./dist/SmartFieldValue.vue",
+    "./SmartFieldLabel.vue": "./dist/SmartFieldLabel.vue",
+    "./SmartField.vue": "./dist/SmartField.vue",
+    "./F4ValueHelp.vue": "./dist/F4ValueHelp.vue",
+    "./F4Dialog.vue": "./dist/F4Dialog.vue",
+    "./F4Conditions.vue": "./dist/F4Conditions.vue",
+    "./SmartTableManagePresets.vue": "./dist/SmartTableManagePresets.vue",
+    "./SmartTableCreatePreset.vue": "./dist/SmartTableCreatePreset.vue",
+    "./SmartTableSaveFavFiltersDialog.vue": "./dist/SmartTableSaveFavFiltersDialog.vue",
+    "./SmartTableLoadFavFiltersDialog.vue": "./dist/SmartTableLoadFavFiltersDialog.vue",
+    "./SmartTableFilters.vue": "./dist/SmartTableFilters.vue",
+    "./SmartTableFilter.vue": "./dist/SmartTableFilter.vue",
+    "./SmartTableFavFiltersMenu.vue": "./dist/SmartTableFavFiltersMenu.vue",
+    "./SmartTableFavFiltersList.vue": "./dist/SmartTableFavFiltersList.vue"
   },
   "files": [
     "dist"
@@ -28,7 +83,7 @@
     "@internationalized/date": "^3.5.5",
     "@tanstack/vue-virtual": "^3.0.0",
     "@vueuse/core": "^11.0.3",
-    "@notsap/odata": "workspace:^",
+    "@notsap/odata": "file:../odata",
     "radix-vue": "^1.9.5",
     "vunor": "^0.0.27"
   },
@@ -36,7 +91,9 @@
     "@types/node": "^22.5.0",
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "vue": "^3.5.6",
+    "vue-router": "^4.4.5"
   },
   "peerDependencies": {
     "vue": "^3.5.6",
@@ -54,5 +111,149 @@
     "url": "https://github.com/yourusername/not-sap/issues"
   },
   "homepage": "https://github.com/yourusername/not-sap/tree/main/packages/ui#readme",
-  "build": {}
+  "build": [
+    {
+      "entries": [
+        "src/index.ts"
+      ],
+      "bundler": "vite",
+      "vue": true,
+      "output": "index",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": false,
+      "transformRules": [
+        {
+          "pattern": "from\\s+['\"](\\.\\.\\/)*renderless\\/ODataEntitySet\\.pi['\"]",
+          "replacement": "from 'notsapui/pi'"
+        },
+        {
+          "pattern": "from\\s+['\"](\\.\\.\\/)*SmartTable\\/SmartTable\\.pi['\"]",
+          "replacement": "from 'notsapui/pi'"
+        },
+        {
+          "pattern": "from\\s+['\"](\\.\\.\\/)*filters\\/SmartFilter\\.pi['\"]",
+          "replacement": "from 'notsapui/pi'"
+        }
+      ]
+    },
+    {
+      "entries": [
+        "src/pi/index.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "pi",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": true
+    },
+    {
+      "entries": [
+        "src/utils/index.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "utils",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": true
+    },
+    {
+      "entries": [
+        "src/vunor.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "vunor",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "external": [
+        "vunor",
+        "vunor/theme"
+      ],
+      "dts": true
+    },
+    {
+      "entries": [
+        "src/presets/index.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "presets",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": true
+    },
+    {
+      "entries": [
+        "src/composables/index.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "composables",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": true
+    },
+    {
+      "type": "raw-vue",
+      "filePattern": "**/*.vue",
+      "flattenStructure": true,
+      "transformMode": "mappings",
+      "transformMappings": [
+        {
+          "test": "^\\./.*\\.(pi|pi\\.ts)$",
+          "replacement": "notsapui/pi"
+        },
+        {
+          "test": "^\\.\\./.*\\.(pi|pi\\.ts)$",
+          "replacement": "notsapui/pi"
+        },
+        {
+          "test": "^\\./.*\\.vue$",
+          "replacement": "notsapui/{basename}.vue"
+        },
+        {
+          "test": "^\\.\\./.*\\.vue$",
+          "replacement": "notsapui/{basename}.vue"
+        },
+        {
+          "test": "^\\./.*\\.utils(\\.ts)?$",
+          "replacement": "notsapui/utils"
+        },
+        {
+          "test": "^\\.\\./.*\\.utils(\\.ts)?$",
+          "replacement": "notsapui/utils"
+        },
+        {
+          "test": "^\\./.*\\.composable(\\.ts)?$",
+          "replacement": "notsapui/composables"
+        },
+        {
+          "test": "^\\.\\./.*\\.composable(\\.ts)?$",
+          "replacement": "notsapui/composables"
+        },
+        {
+          "test": "^\\.\\./.*(shortcuts|table\\.shortcuts|record\\.shortcuts)",
+          "replacement": "notsapui/vunor"
+        },
+        {
+          "test": "^\\.\\./.*\\/presets(\\/|$)",
+          "replacement": "notsapui/presets"
+        },
+        {
+          "test": "^\\.\\.\\/\\.\\.\\/pi$",
+          "replacement": "notsapui/pi"
+        }
+      ]
+    }
+  ]
 }

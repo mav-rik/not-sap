@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useODataEntitySetPI } from '@/_not-sap-ui/renderless/ODataEntitySet.pi'
-import type { TEntityCurrencyEntry } from '@/_odata'
+import { computed, ref, watch, onMounted } from 'vue'
+import type { TEntityCurrencyEntry } from '@notsap/odata'
+import { useODataEntitySetPI } from '../../pi';
 
 const props = defineProps<{
   name: string

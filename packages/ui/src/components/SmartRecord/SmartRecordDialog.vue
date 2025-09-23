@@ -1,9 +1,20 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { useODataEntitySetPI } from '@/_not-sap-ui/renderless/ODataEntitySet.pi'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import SmartFieldValue from './SmartFieldValue.vue'
 import { isSmartTableInDevMode } from '../SmartTable/dev-mode.composable'
-import { debounce } from '../debounce'
+import { debounce } from '../debounce.utils'
 import SmartRecordFields from './SmartRecordFields.vue'
+import { useODataEntitySetPI } from '../../pi';
+import { DialogClose } from 'radix-vue'
+import VuDelayedSwitch from 'vunor/DelayedSwitch.vue'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuCardInner from 'vunor/CardInner.vue'
+import VuInput from 'vunor/Input.vue'
+import VuTabs from 'vunor/Tabs.vue'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
+import VuButton from 'vunor/Button.vue'
 
 type TFullField = { name: keyof T; label?: string }
 type TField = keyof T | TFullField
@@ -92,7 +103,7 @@ async function update() {
   loading.value = false
   await nextTick()
   if (_groups.value) {
-    tab.value = toId(Object.keys(_groups.value)[0])
+    tab.value = toId(Object.keys(_groups.value)[0] || '')
     onTab(tab.value)
   }
 }
@@ -225,7 +236,7 @@ const onSearch = debounce(() => {
               <VuIcon v-if="icon" :name="icon" :style="`--icon-size: ${iconSize || '2.34em'};`" />
             </slot>
             <div class="flex flex-col">
-              <slot name="title" v-if="titleField || $slots.title">
+              <slot name="title" v-if="titleField || $slots['title']">
                 <!-- prettier-ignore-attribute :name -->
                 <SmartFieldValue
                   :name="(titleField as string)"
@@ -236,7 +247,7 @@ const onSearch = debounce(() => {
                   {{ value }}
                 </SmartFieldValue>
               </slot>
-              <div class="text-body-s pb-$s" v-if="subTitleField || $slots.subTitle">
+              <div class="text-body-s pb-$s" v-if="subTitleField || $slots['subTitle']">
                 <slot name="subTitle">
                   <!-- prettier-ignore-attribute :name -->
                   <SmartFieldValue

@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends string">
-import type { TODataTypedFilterValue } from '@/_odata'
+import type { TODataTypedFilterValue } from '@notsap/odata'
 import { useSmartTablePI } from '../SmartTable.pi'
 import SmartTableFilter from './SmartTableFilter.vue'
 

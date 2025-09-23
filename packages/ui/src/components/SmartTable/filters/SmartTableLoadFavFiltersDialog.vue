@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { onMounted, watch } from 'vue'
 import SmartFieldLabel from '../../SmartRecord/SmartFieldLabel.vue'
 import { useSmartFilterPI } from './SmartFilter.pi'
 import SmartTableFavFiltersList from './SmartTableFavFiltersList.vue'
-import type { TODataTypedFilterValue } from '@/_odata'
+import type { TODataTypedFilterValue } from '@notsap/odata'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuButton from 'vunor/Button.vue'
 
 // const props = defineProps<{}>()
 const open = defineModel<boolean>('open')

@@ -25,10 +25,26 @@ export function getBuildOptions(ws) {
   const pkg = JSON.parse(readFileSync(pkgPath))
   const buildArray = Array.isArray(pkg?.build) ? pkg.build : pkg?.build ? [pkg.build] : [{}]
   return buildArray.map(build => ({
+    // Common options
     entries: build.entries || ['src/index.ts'],
-    formats: build.format ? [build.format] : ['esm', 'cjs'],
+    formats: build.formats || (build.format ? [build.format] : ['esm', 'cjs']),
     dts: build.dts ?? true,
     external: build.external,
+    bundler: build.bundler || 'rolldown',
+    output: build.output,
+    type: build.type,
+
+    // Vite-specific options
+    vue: build.vue || false,
+    alias: build.alias || {},
+
+    // Raw copy options
+    filePattern: build.filePattern,
+    flattenStructure: build.flattenStructure,
+    outputDir: build.outputDir,
+    transformRules: build.transformRules,
+    transformMode: build.transformMode,
+    transformMappings: build.transformMappings
   }))
 }
 

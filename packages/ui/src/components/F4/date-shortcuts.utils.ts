@@ -1,26 +1,26 @@
-import { CalendarDate } from '@internationalized/date'
+import { CalendarDate } from '@internationalized/date';
 
 export interface DateRangeShortcut {
-  label: string
-  dates: [string, string]
+  label: string;
+  dates: [string, string];
 }
 
 const formatDate = (date: Date) => {
-  const yyyy = date.getFullYear()
-  const mm = ('0' + (date.getMonth() + 1)).slice(-2)
-  const dd = ('0' + date.getDate()).slice(-2)
-  return `${yyyy}-${mm}-${dd}`
-}
+  const yyyy = date.getFullYear();
+  const mm = ('0' + (date.getMonth() + 1)).slice(-2);
+  const dd = ('0' + date.getDate()).slice(-2);
+  return `${yyyy}-${mm}-${dd}`;
+};
 
-const today = new Date()
-const todayStr = formatDate(today)
+const today = new Date();
+const todayStr = formatDate(today);
 
 export function createCaledarDate(dateStr: string): CalendarDate {
-  const [yearStr, monthStr, dayStr] = dateStr.split('-')
-  const year = parseInt(yearStr, 10)
-  const month = parseInt(monthStr, 10)
-  const day = parseInt(dayStr, 10)
-  return new CalendarDate(year, month, day)
+  const [yearStr, monthStr, dayStr] = dateStr.split('-');
+  const year = parseInt(yearStr || '', 10);
+  const month = parseInt(monthStr || '', 10);
+  const day = parseInt(dayStr || '', 10);
+  return new CalendarDate(year, month, day);
 }
 
 export const dateRangeShortcuts: DateRangeShortcut[] = [
@@ -61,4 +61,4 @@ export const dateRangeShortcuts: DateRangeShortcut[] = [
     label: `Year to Date (${formatDate(new Date(today.getFullYear(), 0, 1)).slice(0, 4)})`,
     dates: [formatDate(new Date(today.getFullYear(), 0, 1)), todayStr],
   },
-]
+];

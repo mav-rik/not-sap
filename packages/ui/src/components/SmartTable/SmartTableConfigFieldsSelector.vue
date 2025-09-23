@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { EntitySetField } from '@/_odata'
+import { computed } from 'vue'
+import type { EntitySetField } from '@notsap/odata'
 import OrderableListBox from '../OrderableListBox.vue'
 import { isSmartTableInDevMode } from './dev-mode.composable'
 

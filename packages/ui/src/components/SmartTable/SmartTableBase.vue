@@ -1,10 +1,11 @@
 <script setup lang="ts" generic="T extends Record<K, unknown>, K extends string">
+import { computed, reactive, ref } from 'vue'
 import {
   odataFilterFormat,
   type EntitySetField,
   type EntitySetFields,
   type TODataTypedFilterValue,
-} from '@/_odata'
+} from '@notsap/odata'
 import {
   ListboxContent,
   ListboxItem,
@@ -18,6 +19,12 @@ import SmartTableHeaderCell from './SmartTableHeaderCell.vue'
 import F4Dialog from '../F4/F4Dialog.vue'
 import SmartFieldValue from '../SmartRecord/SmartFieldValue.vue'
 import SmartTableVirtualizer from './SmartTableVirtualizer.vue'
+import VuDelayedSwitch from 'vunor/DelayedSwitch.vue'
+import VuCheckbox from 'vunor/Checkbox.vue'
+import VuButton from 'vunor/Button.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
+
 const props = withDefaults(
   defineProps<{
     rows?: T[]
@@ -209,7 +216,7 @@ function drop() {
   const itemToMove = _columns.value.splice(dragIndex.value, 1)[0]
   const targetIndex =
     dragOverIndex.value > dragIndex.value ? dragOverIndex.value - 1 : dragOverIndex.value
-  _columns.value.splice(targetIndex, 0, itemToMove)
+  _columns.value.splice(targetIndex, 0, itemToMove!)
   _columns.value = [..._columns.value]
   dragIndex.value = -1
   dragOverIndex.value = -1

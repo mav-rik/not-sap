@@ -1,5 +1,14 @@
 <script setup lang="ts">
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useSmartTablePI } from '../SmartTable.pi'
+import VuDelayedSwitch from 'vunor/DelayedSwitch.vue'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuInput from 'vunor/Input.vue'
+import VuCheckbox from 'vunor/Checkbox.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
+import VuButton from 'vunor/Button.vue'
 
 const open = defineModel<boolean>('open')
 const presetName = ref('MyPreset')

@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { ListboxRoot, ListboxContent, ListboxItem } from 'radix-vue'
-import type { TODataTypedFilterValue } from '@/_odata'
+import type { TODataTypedFilterValue } from '@notsap/odata'
 import { useSmartFilterPI } from './SmartFilter.pi'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
+import VuIcon from 'vunor/Icon.vue'
 
 const { favFilters, refreshFavFilters, delFavFilter } = useSmartFilterPI().inject()
 
@@ -27,7 +30,7 @@ const emit = defineEmits<{
 <template>
   <ListboxRoot
     v-if="favFilters.length"
-    @update:modelValue="f => emit('select', f as TODataTypedFilterValue[])"
+    @update:modelValue="(f: any) => emit('select', f as TODataTypedFilterValue[])"
   >
     <ListboxContent>
       <ListboxItem

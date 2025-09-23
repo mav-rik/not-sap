@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import SmartFieldLabel from '../../SmartRecord/SmartFieldLabel.vue'
-import type { TODataTypedFilterValue } from '@/_odata'
+import type { TODataTypedFilterValue } from '@notsap/odata'
 import { useSmartFilterPI } from './SmartFilter.pi'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuInput from 'vunor/Input.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
+import VuButton from 'vunor/Button.vue'
 
 const props = defineProps<{
   label: string

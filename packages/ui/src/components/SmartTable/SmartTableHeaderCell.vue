@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import type { EntitySetField } from '@/_odata'
+import { computed, ref } from 'vue'
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from 'radix-vue'
+import type { EntitySetField } from '@notsap/odata'
 import { isSmartTableInDevMode } from './dev-mode.composable'
 import { mergeCssClasses, type TVueCssClass } from 'vunor/utils'
+import VuButton from 'vunor/Button.vue'
+import VuIcon from 'vunor/Icon.vue'
 
 const props = defineProps<{
   field: EntitySetField

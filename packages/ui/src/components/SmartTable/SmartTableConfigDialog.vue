@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import type { EntitySetField, TEntitySetSorter } from '@/_odata'
+import { ref, watch } from 'vue'
+import type { EntitySetField, TEntitySetSorter } from '@notsap/odata'
 import SmartTableConfigFieldsSelector from './SmartTableConfigFieldsSelector.vue'
 import SmartTableConfigSorters from './SmartTableConfigSorters.vue'
 import { useSmartTablePI } from './SmartTable.pi'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuTabs from 'vunor/Tabs.vue'
+import VuIcon from 'vunor/Icon.vue'
 
 const open = defineModel<boolean>('open')
 

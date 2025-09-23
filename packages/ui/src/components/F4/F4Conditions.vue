@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import type { EntitySetField, TODataFilterConditionType, TODataTypedFilterValue } from '@/_odata'
-import { doesConditionHave2ndValue, isConditionFilled } from '../SmartTable/filter-conditions'
-import { ref, type Ref, nextTick } from 'vue'
+import type { EntitySetField, TODataFilterConditionType, TODataTypedFilterValue } from '@notsap/odata'
+import { doesConditionHave2ndValue, isConditionFilled } from '../SmartTable/filter-conditions.utils'
+import { ref, type Ref, nextTick, computed } from 'vue'
 import { CalendarDate } from '@internationalized/date'
-import { createCaledarDate, dateRangeShortcuts } from './date-shortcuts'
+import { createCaledarDate, dateRangeShortcuts } from './date-shortcuts.utils'
+import VuInput from 'vunor/Input.vue'
+import VuSelect from 'vunor/Select.vue'
+import VuDatePickerBase from 'vunor/DatePickerBase.vue'
+import VuInputBase from 'vunor/InputBase.vue'
+import VuButton from 'vunor/Button.vue'
 
 type TConditionItem = { label: string; value: TODataFilterConditionType }
 

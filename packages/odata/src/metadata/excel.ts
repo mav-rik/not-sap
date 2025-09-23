@@ -47,7 +47,9 @@ export class ExcelGenerator<
       subtotals?: TExcelSubtotalConfig<M, T>[]
     }
   ) {
-    const { Workbook } = await import('exceljs')
+    // Handle dynamic import for both Vite dev and production environments
+    const ExcelJS = await import('exceljs').then(m => m.default || m)
+    const Workbook = ExcelJS.Workbook || ExcelJS
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('Sheet1')
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useODataEntitySetPI } from '@/_not-sap-ui/renderless/ODataEntitySet.pi'
+import { computed } from 'vue'
+import { useODataEntitySetPI } from '../../pi';
 import { isSmartTableInDevMode } from '../SmartTable/dev-mode.composable'
 
 const props = defineProps<{

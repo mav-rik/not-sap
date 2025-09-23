@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import SmartTableRoot from '../SmartTable/SmartTableRoot.vue'
 import SmartTable from '../SmartTable/SmartTable.vue'
-import { useValueHelp } from './use-value-help'
+import { useValueHelp } from './use-value-help.composable'
 import SmartTableFilters from '../SmartTable/filters/SmartTableFilters.vue'
-import type { TODataTypedFilterValue } from '@/_odata'
-import ODataEntitySet from '@/_not-sap-ui/renderless/ODataEntitySet.vue'
+import type { TODataTypedFilterValue } from '@notsap/odata'
+import ODataEntitySet from '../../renderless/ODataEntitySet.vue'
+import VuCardInner from 'vunor/CardInner.vue'
+import VuInput from 'vunor/Input.vue'
+import VuButton from 'vunor/Button.vue'
 
 const props = defineProps<{
   field: string
@@ -73,7 +77,7 @@ function onSearch(query: () => void) {
           >
             <div class="flex gap-$m flex-wrap">
               <SmartTableFilters
-                :filters-names="valueList.Parameters.map(p => p.ValueListProperty)"
+                :filters-names="valueList.Parameters.map((p: any) => p.ValueListProperty)"
                 stack-label
                 class="w-15em"
                 @change="query()"

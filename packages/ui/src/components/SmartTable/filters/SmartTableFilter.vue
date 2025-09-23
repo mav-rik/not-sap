@@ -1,32 +1,44 @@
 <script setup lang="ts">
+import { computed, ref, watch, onMounted, nextTick, type ComponentInstance } from 'vue'
 import { useODataEntitySetPI } from '../../../renderless/ODataEntitySet.pi'
 import F4Dialog from '../../F4/F4Dialog.vue'
 import {
   convertF4Condition,
   isConditionFilled,
   type TODataTypedFilterValueDisplay,
-} from '../filter-conditions'
+} from '../filter-conditions.utils'
 import DragScroll from '../../DragScroll.vue'
-import { useValueHelp } from '../../F4/use-value-help'
+import { useValueHelp } from '../../F4/use-value-help.composable'
 import SmartTableBase from '../../SmartTable/SmartTableBase.vue'
-import { debounce } from '../../debounce'
+import { debounce } from '../../debounce.utils'
 import {
   odataFilterFormat,
   type TODataFilterConditionType,
   type TODataValueType,
   type TODataTypedFilterValue,
-} from '@/_odata'
+} from '@notsap/odata'
 import SmartTableRoot from '../SmartTableRoot.vue'
 import FilterToken from '../../FilterToken.vue'
-import type { ComponentInstance } from 'vue'
 import { isSmartTableInDevMode } from '../dev-mode.composable'
 
-import ODataEntitySet from '@/_not-sap-ui/renderless/ODataEntitySet.vue'
-import { Primitive } from 'radix-vue'
+import {
+  Primitive,
+  ComboboxRoot,
+  ComboboxTrigger,
+  ComboboxAnchor,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxViewport
+} from 'radix-vue'
 import { useSmartFilterPI } from './SmartFilter.pi'
 import SmartTableSaveFavFiltersDialog from './SmartTableSaveFavFiltersDialog.vue'
 import SmartTableLoadFavFiltersDialog from './SmartTableLoadFavFiltersDialog.vue'
 import SmartTableFavFiltersMenu from './SmartTableFavFiltersMenu.vue'
+import ODataEntitySet from '../../../renderless/ODataEntitySet.vue'
+import VuDelayedSwitch from 'vunor/DelayedSwitch.vue'
+import VuInput from 'vunor/Input.vue'
+import VuCard from 'vunor/Card.vue'
+import VuButton from 'vunor/Button.vue'
 
 const { fieldsMap, metadataLoading } = useODataEntitySetPI().inject()
 

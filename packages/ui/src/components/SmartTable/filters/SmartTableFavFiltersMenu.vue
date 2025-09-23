@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import type { TODataTypedFilterValue } from '@/_odata'
+import { onMounted } from 'vue'
+import type { TODataTypedFilterValue } from '@notsap/odata'
 import { useSmartFilterPI } from './SmartFilter.pi'
 import SmartTableFavFiltersList from './SmartTableFavFiltersList.vue'
+import VuPopover from 'vunor/Popover.vue'
+import VuButton from 'vunor/Button.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuCard from 'vunor/Card.vue'
 
 const props = defineProps<{
   fieldName: string

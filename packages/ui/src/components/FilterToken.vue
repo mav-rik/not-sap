@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import VuIcon from 'vunor/Icon.vue'
+
 const emit = defineEmits<{
   remove: []
 }>()

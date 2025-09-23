@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import type { TNotSapPreset } from '@/_not-sap-ui/presets/presets'
+import { computed, ref, watch } from 'vue'
+import type { TNotSapPreset } from '../../../presets/presets'
 import { useSmartTablePI } from '../SmartTable.pi'
+import VuDelayedSwitch from 'vunor/DelayedSwitch.vue'
+import VuDialog from 'vunor/Dialog.vue'
+import VuCardHeader from 'vunor/CardHeader.vue'
+import VuCheckbox from 'vunor/Checkbox.vue'
+import VuIcon from 'vunor/Icon.vue'
+import VuButton from 'vunor/Button.vue'
+import VuInnerLoading from 'vunor/InnerLoading.vue'
 
 const open = defineModel<boolean>('open')
 
@@ -79,7 +87,7 @@ async function onSave() {
       await updateDefaultPreset(defaultCopy.value)
     }
     if (deleteSet.has(activePreset.value?.id || '')) {
-      applyPreset(presets.value[0])
+      applyPreset(presets.value[0]!)
     }
   } catch (e) {
     error.value = (e as Error).message
@@ -144,16 +152,16 @@ async function onSave() {
             </td>
             <td>
               <div class="flex flex-center gap-$xs current-icon-grey">
-                <VuIcon name="i--columns" v-if="preset.content.columnsNames" title="Columns" />
+                <VuIcon name="i--columns" v-if="preset.content['columnsNames']" title="Columns" />
                 <VuIcon
                   name="i--filter"
-                  v-if="preset.content.filtersNames"
+                  v-if="preset.content['filtersNames']"
                   title="Displayed Filters"
                 />
-                <VuIcon name="i--sort-asc" v-if="preset.content.sorters" title="Sorters" />
+                <VuIcon name="i--sort-asc" v-if="preset.content['sorters']" title="Sorters" />
                 <div
                   class="flex gap-$s items-center relative"
-                  v-if="preset.content.fieldsFilters"
+                  v-if="preset.content['fieldsFilters']"
                   title="Applied Filters"
                 >
                   <VuIcon name="i--filter" class="current-icon-grey" />

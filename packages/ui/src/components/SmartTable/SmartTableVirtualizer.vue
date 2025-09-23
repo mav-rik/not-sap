@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends any">
+import { computed, type Ref } from 'vue'
 import { Primitive } from 'radix-vue'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { useParentElement } from '@vueuse/core'

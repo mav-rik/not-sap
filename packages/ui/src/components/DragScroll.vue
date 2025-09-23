@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted, nextTick } from 'vue'
 const isDown = ref(false)
 const container = ref<HTMLDivElement>()
 let startX: number

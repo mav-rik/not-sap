@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { EntitySetField, TEntitySetSorter } from '@/_odata'
+import { computed, ref } from 'vue'
+import type { EntitySetField, TEntitySetSorter } from '@notsap/odata'
 import OrderableListBox from '../OrderableListBox.vue'
 import { isSmartTableInDevMode } from './dev-mode.composable'
 import { useSmartTablePI } from './SmartTable.pi'
+
+import VuButton from 'vunor/Button.vue'
+import VuIcon from 'vunor/Icon.vue'
 
 type TEntitySetSorterNorm = Exclude<TEntitySetSorter, string>
 
