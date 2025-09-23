@@ -1,6 +1,6 @@
 {
   "name": "notsapui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Type-safe Vue 3 component library for building data-driven applications with OData services",
   "type": "module",
   "main": "./dist/index.mjs",
