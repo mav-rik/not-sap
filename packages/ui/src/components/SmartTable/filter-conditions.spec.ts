@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { odataFilterFormat } from '@notsap/odata';
-import { fieldsFiltersToODataFilters } from './filter-conditions';
+import { fieldsFiltersToODataFilters } from './filter-conditions.utils'
 
 describe('filter-conditions', () => {
   it('should transform typed filter to OData filter', () => {

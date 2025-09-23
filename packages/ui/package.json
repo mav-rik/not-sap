@@ -1,6 +1,6 @@
 {
   "name": "notsapui",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "UI components package",
   "type": "module",
   "main": "./dist/index.mjs",
@@ -83,7 +83,7 @@
     "@internationalized/date": "^3.5.5",
     "@tanstack/vue-virtual": "^3.0.0",
     "@vueuse/core": "^11.0.3",
-    "@notsap/odata": "file:../odata",
+    "@notsap/odata": "workspace:^",
     "radix-vue": "^1.9.5",
     "vunor": "^0.0.27"
   },
