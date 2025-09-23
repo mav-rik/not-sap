@@ -1,6 +1,6 @@
 {
   "name": "notsapui",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "UI components package",
   "type": "module",
   "main": "./dist/index.mjs",
