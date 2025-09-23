@@ -44,7 +44,7 @@ export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
 */\n
 `;
       content += `/* eslint-disable */\n/* prettier-ignore */\n\n`;
-      content += `import { OData, type TOdataDummyInterface, type TODataOptions } from "@notsap/odata"\n\n`;
+      content += `import { OData, type TOdataDummyInterface, type TODataOptions } from "notsapodata"\n\n`;
       for (const [serviceName, serviceOptions] of Object.entries(options.services)) {
         const odata = new OData(serviceName, {
           host: env.host,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
-import type { TEntityCurrencyEntry } from '@notsap/odata'
+import type { TEntityCurrencyEntry } from 'notsapodata'
 import { useODataEntitySetPI } from '../../pi';
 
 const props = defineProps<{

@@ -1,13 +1,13 @@
-# @notsap/odata Module Documentation
+# notsapodata Module Documentation
 
 ## Overview
 
-`@notsap/odata` is a TypeScript-first OData client library that provides type-safe access to OData services with automatic type generation through a Vite plugin. It handles OData v2/v4 protocols, batch operations, metadata parsing, and Excel export functionality.
+`notsapodata` is a TypeScript-first OData client library that provides type-safe access to OData services with automatic type generation through a Vite plugin. It handles OData v2/v4 protocols, batch operations, metadata parsing, and Excel export functionality.
 
 ## Installation
 
 ```bash
-npm install @notsap/odata
+npm install notsapodata
 ```
 
 ## Vite Plugin Setup for Type Generation
@@ -18,7 +18,7 @@ The Vite plugin automatically generates TypeScript types from OData service meta
 
 ```typescript
 import { defineConfig } from 'vite'
-import { odataCodegenPlugin } from '@notsap/odata/vite'
+import { odataCodegenPlugin } from 'notsapodata/vite'
 
 export default defineConfig({
   plugins: [
@@ -102,7 +102,7 @@ export type TMainModelCustomersMeasures = "Amount" | ...
 The main class for interacting with OData services:
 
 ```typescript
-import { OData } from '@notsap/odata'
+import { OData } from 'notsapodata'
 
 class MyModel extends OData<TModelType> {
   constructor(opts?: TODataOptions) {
@@ -333,7 +333,7 @@ class SapODataError extends Error {
 Validates filter conditions:
 
 ```typescript
-import { checkODataFilter } from '@notsap/odata'
+import { checkODataFilter } from 'notsapodata'
 
 const filter = fieldsFilters.Customer
 const check = checkODataFilter(filter)
@@ -453,7 +453,7 @@ const customQuery: TODataEntityCustomQuery<FP04Model, 'LineItems'> = async (
 ### Error Handling
 
 ```typescript
-import { IFetchError, SapODataError } from '@notsap/odata'
+import { IFetchError, SapODataError } from 'notsapodata'
 
 try {
   await model.update('Customers', 'CUST001', {
@@ -475,7 +475,7 @@ try {
 ### Using useModel Composable
 
 ```typescript
-import { useModel } from '@notsap/odata'
+import { useModel } from 'notsapodata'
 import { MainModel, type TMainModelType } from '@/.odata.types'
 
 function useGroupTypeahead() {
@@ -597,4 +597,4 @@ for await (const page of paginate()) {
 }
 ```
 
-This documentation provides comprehensive coverage of the @notsap/odata module, including setup, type generation, core functionality, and practical examples for building type-safe OData applications.
+This documentation provides comprehensive coverage of the notsapodata module, including setup, type generation, core functionality, and practical examples for building type-safe OData applications.

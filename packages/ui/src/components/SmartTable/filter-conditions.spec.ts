@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { odataFilterFormat } from '@notsap/odata';
+import { odataFilterFormat } from 'notsapodata';
 import { fieldsFiltersToODataFilters } from './filter-conditions.utils'
 
 describe('filter-conditions', () => {

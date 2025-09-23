@@ -1,5 +1,5 @@
 import { useODataEntitySetPI } from '../../../renderless/ODataEntitySet.pi';
-import type { TODataTypedFilterValue } from '@notsap/odata';
+import type { TODataTypedFilterValue } from 'notsapodata';
 import type { Reactive, ComputedRef, Ref } from 'vue';
 import { reactive, ref, watch } from 'vue';
 import { useProvideInject } from 'vunor/utils';

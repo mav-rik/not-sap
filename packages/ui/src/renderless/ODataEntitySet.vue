@@ -7,7 +7,7 @@
     M extends TOdataDummyInterface = MODEL extends OData<infer M> ? M : TOdataDummyInterface
   "
 >
-import { OData, type TOdataDummyInterface } from '@notsap/odata'
+import { OData, type TOdataDummyInterface } from 'notsapodata'
 import { useODataEntitySetPI } from './ODataEntitySet.pi'
 
 const props = defineProps<{

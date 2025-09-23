@@ -16,7 +16,7 @@ import {
   type TODataFilterConditionType,
   type TODataValueType,
   type TODataTypedFilterValue,
-} from '@notsap/odata'
+} from 'notsapodata'
 import SmartTableRoot from '../SmartTableRoot.vue'
 import FilterToken from '../../FilterToken.vue'
 import { isSmartTableInDevMode } from '../dev-mode.composable'

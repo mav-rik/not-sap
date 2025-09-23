@@ -14,16 +14,16 @@
 
 ## What’s Inside
 
-- `@notsap/odata` — type-safe OData v2/v4 client, metadata utilities, and a Vite plugin that generates strongly typed service models. See [packages/odata/README.md](./packages/odata/README.md).
+- `notsapodata` — type-safe OData v2/v4 client, metadata utilities, and a Vite plugin that generates strongly typed service models. See [packages/odata/README.md](./packages/odata/README.md).
 - `notsapui` — Vue 3 smart components powered by generated metadata, including smart tables, record dialogs, and F4 helpers. See [packages/ui/README.md](./packages/ui/README.md).
 - Shared development patterns: provide/inject context layers, metadata refinement, batch-friendly data access, and optional Excel export.
 
 ## Quick Start
 
-1. Install dependencies: `pnpm install notsapui @notsap/odata`.
+1. Install dependencies: `pnpm install notsapui notsapodata`.
 2. Configure `odataCodegenPlugin` in your app’s `vite.config.ts` to generate `.odata.types.ts` (examples in [packages/odata/README.md](./packages/odata/README.md#vite-plugin-setup-for-type-generation)).
 3. Wrap your Vue app with `<NotSapApp>` and `<ODataEntitySet>` from `notsapui`, then consume smart components such as `<SmartTable>`.
-4. Refine metadata and compose filters with helpers from `@notsap/odata` and `notsapui/utils` to deliver tailored UX.
+4. Refine metadata and compose filters with helpers from `notsapodata` and `notsapui/utils` to deliver tailored UX.
 
 ## Learn More
 

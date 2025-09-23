@@ -5,7 +5,7 @@ import {
   type TODataFilterConditionType,
   type TODataFilters,
   type TODataTypedFilterValue,
-} from '@notsap/odata'
+} from 'notsapodata'
 
 export type TODataTypedFilterValueDisplay = TODataTypedFilterValue & {
   display: string

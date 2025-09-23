@@ -31,16 +31,14 @@
     "moduleResolution": "bundler",
     "baseUrl": "./",
     "paths": {
-      "@notsap/ui": [
+      "notsapui": [
         "packages/ui/src"
       ],
-      "@notsap/odata": [
+      "notsapodata": [
         "packages/odata/src"
       ]
     },
     "types": [
-      "@prostojs/dye/global",
-      "@prostojs/dye/global",
       "@prostojs/dye/global"
     ],
     "resolveJsonModule": true,

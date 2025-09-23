@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EntitySetField } from '@notsap/odata'
+import type { EntitySetField } from 'notsapodata'
 import F4ValueHelp from './F4ValueHelp.vue'
 import F4Conditions from './F4Conditions.vue'
 import {
@@ -8,7 +8,7 @@ import {
   type TODataTypedFilterValueDisplay,
 } from '../SmartTable/filter-conditions.utils'
 import DragScroll from '../DragScroll.vue'
-import { type TODataTypedFilterValue } from '@notsap/odata'
+import { type TODataTypedFilterValue } from 'notsapodata'
 import FilterToken from '../FilterToken.vue'
 import type { ComponentInstance } from 'vue'
 import VuCard from 'vunor/Card.vue'

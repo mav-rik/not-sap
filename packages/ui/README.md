@@ -4,9 +4,9 @@
 
 notsapui is a type-safe Vue 3 component library that provides SAP-like UI components for building data-driven applications with OData services. It offers smart components that automatically handle data fetching, filtering, sorting, and display based on OData metadata.
 
-### Type Safety with @notsap/odata
+### Type Safety with notsapodata
 
-notsapui achieves full type safety through the `@notsap/odata` vite plugin that generates TypeScript types from OData service metadata. This integration provides:
+notsapui achieves full type safety through the `notsapodata` vite plugin that generates TypeScript types from OData service metadata. This integration provides:
 
 - **Compile-time type checking** for all OData operations
 - **IntelliSense support** for entity fields, filters, and sorters
@@ -14,11 +14,11 @@ notsapui achieves full type safety through the `@notsap/odata` vite plugin that 
 - **Type-safe props** in all smart components
 - **Generated model classes** with singleton pattern
 
-The type generation happens at build time using the `.odata.types.ts` file (see [@notsap/odata setup](../odata/README.md#vite-plugin-setup-for-type-generation) for details).
+The type generation happens at build time using the `.odata.types.ts` file (see [notsapodata setup](../odata/README.md#vite-plugin-setup-for-type-generation) for details).
 
 ### Prerequisites
 
-1. Configure the `@notsap/odata` vite plugin to generate types (see [@notsap/odata setup](../odata/README.md#vite-plugin-setup-for-type-generation))
+1. Configure the `notsapodata` vite plugin to generate types (see [notsapodata setup](../odata/README.md#vite-plugin-setup-for-type-generation))
 2. Set up a development proxy for SAP OData services
 3. Import and use the generated types from `.odata.types.ts`
 
@@ -505,7 +505,7 @@ This setup enables the OData plugin to fetch metadata during build time and allo
 
 ## Using Generated Types
 
-After configuring the @notsap/odata plugin (see [@notsap/odata setup](../odata/README.md#vite-plugin-setup-for-type-generation)), import and use the generated types:
+After configuring the notsapodata plugin (see [notsapodata setup](../odata/README.md#vite-plugin-setup-for-type-generation)), import and use the generated types:
 
 ```typescript
 import { ProductModel, type TProductModelType } from '@/.odata.types';
@@ -518,7 +518,7 @@ model.options.useBatch = true;
 const entitySet = ProductModel.entityAliases.Products;
 ```
 
-For metadata refinement and OData operations, refer to the [@notsap/odata reference](../odata/README.md#core-classes-and-types).
+For metadata refinement and OData operations, refer to the [notsapodata reference](../odata/README.md#core-classes-and-types).
 
 ## Complete Type-Safe Example
 
@@ -598,7 +598,7 @@ import SmartTableRoot from 'notsapui/SmartTableRoot.vue';
 import SmartTable from 'notsapui/SmartTable.vue';
 import SmartTableFilter from 'notsapui/SmartTableFilter.vue';
 import SmartRecordDialog from 'notsapui/SmartRecordDialog.vue';
-import { checkODataFilter, type TODataFieldsFilters } from '@notsap/odata';
+import { checkODataFilter, type TODataFieldsFilters } from 'notsapodata';
 import type { TODataEntityCustomQuery } from 'notsapui/pi';
 
 // Type-safe model setup
@@ -689,7 +689,7 @@ const customQuery: TODataEntityCustomQuery<
 };
 ```
 
-For detailed custom query examples, see [@notsap/odata usage examples](../odata/README.md#usage-examples).
+For detailed custom query examples, see [notsapodata usage examples](../odata/README.md#usage-examples).
 
 ## Utility Functions
 
@@ -704,7 +704,7 @@ const filters = fieldsFiltersToODataFilters(fieldsFilters.value);
 // Returns OData-compatible filter array
 ```
 
-For other utility functions like `checkODataFilter`, see the [@notsap/odata utility section](../odata/README.md#utility-functions).
+For other utility functions like `checkODataFilter`, see the [notsapodata utility section](../odata/README.md#utility-functions).
 
 ## Composables
 
@@ -787,7 +787,7 @@ await entity.value.query({ filter: [...] })
    };
    ```
 
-For OData-specific best practices (batch mode, metadata refinement), see the [@notsap/odata best practices](../odata/README.md#best-practices).
+For OData-specific best practices (batch mode, metadata refinement), see the [notsapodata best practices](../odata/README.md#best-practices).
 
 ## Type-Safe Component Props
 
@@ -811,7 +811,7 @@ const columnsNames = ref<TProductModelProductsFields[]>([])
 const fieldsFilters = ref<TODataFieldsFilters<TProductModelProductsFields>>({})
 ```
 
-For complete TypeScript type definitions, see the [@notsap/odata type reference](../odata/README.md#typescript-types).
+For complete TypeScript type definitions, see the [notsapodata type reference](../odata/README.md#typescript-types).
 
 ## Shortcuts Integration
 

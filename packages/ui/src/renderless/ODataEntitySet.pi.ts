@@ -1,7 +1,7 @@
-import type { Metadata, OData, TOdataDummyInterface } from '@notsap/odata';
+import type { Metadata, OData, TOdataDummyInterface } from 'notsapodata';
 import { useProvideInject } from 'vunor/utils';
 import { computed, inject, ref, type ComputedRef, type Ref } from 'vue';
-import type { EntitySet, EntitySetField, EntitySetFields } from '@notsap/odata';
+import type { EntitySet, EntitySetField, EntitySetFields } from 'notsapodata';
 
 export const useODataEntitySetPI = <
   MODEL extends OData<M>,

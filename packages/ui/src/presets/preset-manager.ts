@@ -1,4 +1,4 @@
-import { ifetch, IFetchError } from '@notsap/odata';
+import { ifetch, IFetchError } from 'notsapodata';
 
 export interface TVariant {
   changeType: string;

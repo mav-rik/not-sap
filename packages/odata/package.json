@@ -1,5 +1,5 @@
 {
-  "name": "@notsap/odata",
+  "name": "notsapodata",
   "version": "0.0.1",
   "description": "OData utilities and client package",
   "type": "module",

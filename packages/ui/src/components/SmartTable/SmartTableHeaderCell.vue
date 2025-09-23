@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from 'radix-vue'
-import type { EntitySetField } from '@notsap/odata'
+import type { EntitySetField } from 'notsapodata'
 import { isSmartTableInDevMode } from './dev-mode.composable'
 import { mergeCssClasses, type TVueCssClass } from 'vunor/utils'
 import VuButton from 'vunor/Button.vue'

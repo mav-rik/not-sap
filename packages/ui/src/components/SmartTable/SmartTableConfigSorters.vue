@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { EntitySetField, TEntitySetSorter } from '@notsap/odata'
+import type { EntitySetField, TEntitySetSorter } from 'notsapodata'
 import OrderableListBox from '../OrderableListBox.vue'
 import { isSmartTableInDevMode } from './dev-mode.composable'
 import { useSmartTablePI } from './SmartTable.pi'

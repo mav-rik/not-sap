@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useODataEntitySetPI } from '../../renderless/ODataEntitySet.pi'
 import { useSmartTablePI, type TODataEntityCustomQuery } from './SmartTable.pi'
-import type { TEntitySetSorter, TODataFieldsFilters, TODataFilters } from '@notsap/odata'
+import type { TEntitySetSorter, TODataFieldsFilters, TODataFilters } from 'notsapodata'
 import SmartTableConfigDialog from './SmartTableConfigDialog.vue'
 import SmartTableCreatePreset from './presets/SmartTableCreatePreset.vue'
 import SmartTableManagePresets from './presets/SmartTableManagePresets.vue'

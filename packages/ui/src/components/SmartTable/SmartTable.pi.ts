@@ -10,7 +10,7 @@ import type {
   TODataFieldsFilters,
   TODataFilters,
   TODataParams,
-} from '@notsap/odata';
+} from 'notsapodata';
 import { useProvideInject } from 'vunor/utils';
 import type { ModelRef, Ref, ComputedRef } from 'vue';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';

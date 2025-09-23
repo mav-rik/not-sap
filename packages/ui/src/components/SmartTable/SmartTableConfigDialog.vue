@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { EntitySetField, TEntitySetSorter } from '@notsap/odata'
+import type { EntitySetField, TEntitySetSorter } from 'notsapodata'
 import SmartTableConfigFieldsSelector from './SmartTableConfigFieldsSelector.vue'
 import SmartTableConfigSorters from './SmartTableConfigSorters.vue'
 import { useSmartTablePI } from './SmartTable.pi'

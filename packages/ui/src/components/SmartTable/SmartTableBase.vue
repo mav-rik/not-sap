@@ -5,7 +5,7 @@ import {
   type EntitySetField,
   type EntitySetFields,
   type TODataTypedFilterValue,
-} from '@notsap/odata'
+} from 'notsapodata'
 import {
   ListboxContent,
   ListboxItem,

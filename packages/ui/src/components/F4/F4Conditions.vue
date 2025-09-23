@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EntitySetField, TODataFilterConditionType, TODataTypedFilterValue } from '@notsap/odata'
+import type { EntitySetField, TODataFilterConditionType, TODataTypedFilterValue } from 'notsapodata'
 import { doesConditionHave2ndValue, isConditionFilled } from '../SmartTable/filter-conditions.utils'
 import { ref, type Ref, nextTick, computed } from 'vue'
 import { CalendarDate } from '@internationalized/date'

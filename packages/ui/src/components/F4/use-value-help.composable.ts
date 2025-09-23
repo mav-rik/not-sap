@@ -1,7 +1,7 @@
-import type { EntitySet, TEntitySetQueryParams } from '@notsap/odata';
-import type { OData, TOdataDummyInterface, TODataTypedFilterValue } from '@notsap/odata';
+import type { EntitySet, TEntitySetQueryParams } from 'notsapodata';
+import type { OData, TOdataDummyInterface, TODataTypedFilterValue } from 'notsapodata';
 import { useSmartTablePI } from '../SmartTable/SmartTable.pi';
-import type { TPropertyAnnotations } from '@notsap/odata';
+import type { TPropertyAnnotations } from 'notsapodata';
 import { computed, ref, watch } from 'vue';
 
 export interface TValueHelpQuery {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ListboxRoot, ListboxContent, ListboxItem } from 'radix-vue'
-import type { TODataTypedFilterValue } from '@notsap/odata'
+import type { TODataTypedFilterValue } from 'notsapodata'
 import { useSmartFilterPI } from './SmartFilter.pi'
 import VuInnerLoading from 'vunor/InnerLoading.vue'
 import VuIcon from 'vunor/Icon.vue'

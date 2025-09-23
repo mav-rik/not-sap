@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends Record<K, unknown>, K extends string">
 import { computed } from 'vue'
-import type { EntitySetField, EntitySetFields } from '@notsap/odata'
+import type { EntitySetField, EntitySetFields } from 'notsapodata'
 import SmartTableBase from './SmartTableBase.vue'
 import { useSmartTablePI } from './SmartTable.pi'
 import { ListboxRoot } from 'radix-vue'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import type { TODataTypedFilterValue } from '@notsap/odata'
+import type { TODataTypedFilterValue } from 'notsapodata'
 import { useSmartFilterPI } from './SmartFilter.pi'
 import SmartTableFavFiltersList from './SmartTableFavFiltersList.vue'
 import VuPopover from 'vunor/Popover.vue'

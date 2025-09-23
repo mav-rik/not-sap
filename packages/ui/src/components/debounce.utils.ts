@@ -1,1 +1,1 @@
-export { debounce } from '@notsap/odata'
+export { debounce } from 'notsapodata'
