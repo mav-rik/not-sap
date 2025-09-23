@@ -1,0 +1,17 @@
+{
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-explicit-any": "warn",
+    "no-non-null-assertion": "warn"
+  },
+  "ignore": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "*.config.js",
+    "*.config.ts",
+    ".turbo",
+    ".cache"
+  ]
+}
