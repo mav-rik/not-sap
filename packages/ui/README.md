@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../../notsap.png" alt="Not SAP" width="180" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsap.png" alt="Not SAP" width="180" />
 </p>
 
 # notsapui Library Documentation

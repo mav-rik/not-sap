@@ -115,13 +115,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/not-sap.git",
+    "url": "git+https://github.com/mav-rik/not-sap.git",
     "directory": "packages/ui"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/not-sap/issues"
+    "url": "https://github.com/mav-rik/not-sap/issues"
   },
-  "homepage": "https://github.com/yourusername/not-sap/tree/main/packages/ui#readme",
+  "homepage": "https://github.com/mav-rik/not-sap/tree/main/packages/ui#readme",
   "build": [
     {
       "entries": [

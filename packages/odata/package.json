@@ -45,13 +45,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/not-sap.git",
+    "url": "git+https://github.com/mav-rik/not-sap.git",
     "directory": "packages/odata"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/not-sap/issues"
+    "url": "https://github.com/mav-rik/not-sap/issues"
   },
-  "homepage": "https://github.com/yourusername/not-sap/tree/main/packages/odata#readme",
+  "homepage": "https://github.com/mav-rik/not-sap/tree/main/packages/odata#readme",
   "build": [
     {
       "entries": [
