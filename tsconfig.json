@@ -23,7 +23,7 @@
     "alwaysStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -31,12 +31,11 @@
     "moduleResolution": "bundler",
     "baseUrl": "./",
     "paths": {
-      "notsapui": [
-        "packages/ui/src"
-      ],
-      "notsapodata": [
-        "packages/odata/src"
-      ]
+      "notsapui": ["packages/ui/src"],
+      "notsapodata/codegen": ["packages/odata/src/codegen"],
+      "notsapodata/metadata": ["packages/odata/src/metadata"],
+      "notsapodata/odata": ["packages/odata/src/odata"],
+      "notsapodata": ["packages/odata/src"]
     },
     "types": [
       "@prostojs/dye/global"

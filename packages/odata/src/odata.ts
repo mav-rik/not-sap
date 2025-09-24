@@ -286,6 +286,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
           chunks.push(batch.read(entity, { ..._params, $skip: skip }))
         }
 
+        // @ts-expect-error
         const { abort, promise } = batch.execute({
           maxBatchLength: 1,
           maxConcurrentBatches: 3,
@@ -369,7 +370,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       path = es.prepareRecordKey(record)
     } else {
       const { uri } = this.getRecordV2Metadata(record)
-      path = uri.split(this.service)[1]?.slice(1)
+      path = uri.split(this.service)[1]?.slice(1) || ''
       if (!path) {
         throw new Error(`Failed parsing __metadata.uri: ${uri}`)
       }
@@ -607,7 +608,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       })
 
       const contentType = response.headers.get('content-type') || ''
-      const boundary = contentType.split('boundary=')[1]
+      const boundary = contentType.split('boundary=')[1] || ''
       // Parse the batch response
       this._parseBatchResponse(_requests, response.body, boundary)
     } catch (error) {
@@ -680,7 +681,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
     // For each part, parse the response and resolve/reject the corresponding promise
     parts.forEach(part => {
-      const req = requests[_index.value]
+      const req = requests[_index.value]!
       const trimmedPart = part.trim()
 
       // Split the part into batch part headers and the HTTP response
@@ -690,13 +691,13 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         return
       }
 
-      const batchHeaders = extractBatchHeaders(batchHeadersPart)
-      if (batchHeaders['content-type'].includes('multipart/mixed')) {
+      const batchHeaders = extractBatchHeaders(batchHeadersPart!)
+      if (batchHeaders['content-type']?.includes('multipart/mixed')) {
         const boundary = batchHeaders['content-type'].split('boundary=')[1]
         this._parseBatchResponse(
           requests,
-          trimmedPart.slice(batchHeadersPart.length),
-          boundary,
+          trimmedPart.slice(batchHeadersPart?.length || 0),
+          boundary!,
           _index
         )
       } else {
@@ -714,7 +715,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
           return
         }
 
-        const statusMatch = statusLine.match(/HTTP\/1\.\d (\d{3}) (.*)/)
+        const statusMatch = statusLine.match(/HTTP\/1\.\d (\d{3}) (.*)/) ?? [, '']
         if (!statusMatch) {
           req.reject(new Error('Invalid response status line'))
           return
@@ -729,7 +730,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         const contentType = headers['content-type'] || ''
         if (contentType.includes('application/json')) {
           try {
-            body = JSON.parse(bodyText)
+            body = JSON.parse(bodyText || '')
           } catch (e) {
             req.reject(new Error('Failed to parse JSON response'))
             return
@@ -743,10 +744,10 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         } else {
           // Error
           if (isSapODataError(body)) {
-            req.reject(new SapODataError(body, status, statusText))
+            req.reject(new SapODataError(body, status, statusText!))
           } else {
             const errorMessage = extractGenericErrorMessage(body) || 'Unknown Error'
-            req.reject(new IFetchError<string>(errorMessage, status, statusText))
+            req.reject(new IFetchError<string>(errorMessage, status, statusText!))
           }
         }
         _index.value++
@@ -767,7 +768,7 @@ export class ODataBatch<M extends TOdataDummyInterface = TOdataDummyInterface> e
     this._csrfToken = csrfToken
   }
 
-  public async _fetch<T>(
+  override async _fetch<T>(
     url: string,
     options: { method: string; headers?: Record<string, string>; body?: string },
     expectedFormat: 'json' | 'xml' | 'xlsx' | 'multipart',
@@ -800,7 +801,7 @@ export class ODataBatch<M extends TOdataDummyInterface = TOdataDummyInterface> e
       // eslint-disable-next-line no-constant-condition
       while (!abortRequested) {
         if (currentBatch >= totalBatches) break
-        const batchItems = chunks[currentBatch++]
+        const batchItems = chunks[currentBatch++]!
         await processBatch(batchItems)
       }
     }
@@ -820,7 +821,7 @@ export class ODataBatch<M extends TOdataDummyInterface = TOdataDummyInterface> e
     const abort = () => {
       abortRequested = true
       for (let i = currentBatch; i < totalBatches; i++) {
-        chunks[i].forEach(req => req.reject(new Error('Batch execution aborted')))
+        chunks[i]?.forEach(req => req.reject(new Error('Batch execution aborted')))
       }
     }
 

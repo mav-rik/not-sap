@@ -203,19 +203,13 @@ async function copyRawFiles(ws, build) {
 
 // Generic Vite config creator
 function createViteConfig(ws, build, externals) {
-  console.log('Creating Vite config for', ws, 'with build options:', build);
-  const entries = build.entries.reduce((acc, entry) => {
-    const name = build.output || entry.replace('src/', '').replace('.ts', '');
-    acc[name] = path.resolve(`packages/${ws}/${entry}`);
-    return acc;
-  }, {});
+  const entries = build.entries.map(e => `packages/${ws}/${e}`)
 
   const plugins = [];
 
   // Add UnoCSS plugin if specified for CSS generation (should be before Vue)
   if (build.css) {
     const unoConfig = path.resolve(`packages/${ws}/uno.config.ts`);
-    console.log('Adding UnoCSS plugin with config:', unoConfig);
     plugins.push(UnoCSS({
       configFile: unoConfig,
       // Explicitly set content to scan
@@ -246,19 +240,6 @@ function createViteConfig(ws, build, externals) {
     );
   }
 
-  // Add custom transform plugin if rules provided
-  if (build.transformRules) {
-    plugins.push({
-      name: 'transform-imports',
-      enforce: 'pre',
-      transform(code, id) {
-        if (!id.includes(`packages/${ws}/src`)) return null;
-        const transformed = transformImports(code, build.transformRules);
-        return transformed !== code ? { code: transformed, map: null } : null;
-      },
-    });
-  }
-
   return {
     plugins,
     resolve: {
@@ -270,51 +251,28 @@ function createViteConfig(ws, build, externals) {
       lib: {
         entry: entries,
         formats: build.formats.map((f) => (f === 'esm' ? 'es' : f)),
-        fileName: (format, entryName) => {
-          const ext = format === 'es' ? 'mjs' : 'cjs';
-          return `${entryName}.${ext}`;
+        fileName: (format, entryName, a, b, c) => {
+          const extname = format === 'es' ? 'mjs' : 'cjs';
+          return `${entryName}.${extname}`;
         },
       },
       rollupOptions: {
         external: [
-          ...(build.external || externals || []),
-          // Add self-references that will be resolved at runtime
-          'notsapui/pi',
-          'notsapui/utils',
-          'notsapui/vunor',
-          'notsapui/presets',
-          'notsapui/composables',
-          /^notsapui\/.+\.vue$/,  // Match all .vue imports from notsapui
-          // Exclude .pi.ts, .utils.ts, and .composable.ts files from being bundled
-          (source, importer) => {
-            // Mark .pi and .pi.ts imports as external
-            if (source.endsWith('.pi') || source.endsWith('.pi.ts')) {
-              return true;
-            }
-            // Mark .utils and .utils.ts imports as external
-            if (source.endsWith('.utils') || source.endsWith('.utils.ts')) {
-              return true;
-            }
-            // Mark .composable and .composable.ts imports as external
-            if (source.endsWith('.composable') || source.endsWith('.composable.ts')) {
-              return true;
-            }
-            // Also mark relative pi imports as external
-            if (source.match(/\.\.\/.*\/pi$/) || source === '../pi' || source === '../../pi') {
-              return true;
-            }
-            return false;
-          }
+          ...(build.external || []), ...(externals || []),
         ],
         output: {
           exports: 'named',
           preserveModules: false,
+          // chunkFileNames: (o) => {
+          //   console.log({o})
+          //   return 'chunk/index.js'
+          // }
         },
       },
       outDir: `packages/${ws}/dist`,
       emptyOutDir: false,
       minify: false,
-      sourcemap: true,
+      sourcemap: false,
     },
     configFile: false,
   };
@@ -395,26 +353,38 @@ async function run() {
         }
       } else {
         // Build with rolldown (default)
-        for (const entry of build.entries) {
-          for (const format of build.formats) {
+        for (const format of build.formats) {
+          // for (const entry of build.entries) {
+            const input = {}
+            for (const entry of build.entries) {
+              const path = `packages/${ws}/${entry}`
+              const name = entry.split('/')[1]
+              input[name] = path
+            }
             const config = {
-              input: `packages/${ws}/${entry}`,
-              external: build.external || externals.get(ws),
+              input,
+              external: [ ...(build.external || []),  ...(externals.get(ws) || []) ],
               plugins: [swc, _dye],
             };
             const extname = format === 'esm' ? 'mjs' : 'cjs';
-            const outputName = build.output || entry.replace('src/', '').replace('.ts', '');
-            const outputFile = `${outputName}.${extname}`;
+            // const outputFile = build.output || build.entries.map(e => e.replace('src/', '').replace('.ts', '') + '.' + extname);
+            // const outputFile = `${outputName}.${extname}`;
             const output = {
               dir: `packages/${ws}/dist`,
               format,
-              entryFileNames: outputFile,
+              // entryFileNames: outputFile,
+              entryFileNames: ({name, facadeModuleId}) => {
+                return `${name.replace(/\.ts$/, '')}.${extname}`
+              },
+              chunkFileNames: `chunks/[name].${extname}`,
             };
             const bundle = await rolldown(config);
             await bundle.write(output);
             await bundle.close();
-            done(`Built with Rolldown: ${entry} (${format})`);
-          }
+            for (const entry of build.entries) {
+              done(`Built with Rolldown: ${entry} (${format})`);
+            }
+          // }
         }
       }
     }
@@ -442,13 +412,13 @@ async function run() {
         for (const entry of build.entries) {
           const config = {
             input: `packages/${ws}/${entry}`,
-            external: build.external || externals.get(ws),
+            external: [ ...(build.external || []),  ...(externals.get(ws) || []) ],
             plugins: [dtsPlugin()],
           };
-          const outputName = build.output || entry.replace('src/', '').replace('.ts', '');
+          const outputName = build.output || entry.split('/')[1]
           const output = {
             dir: `packages/${ws}/dist`,
-            entryFileNames: `${outputName}.d.ts`,
+            entryFileNames: `${outputName.replace(/\.ts$/, '')}.d.ts`,
           };
           const bundle = await rollup(config);
           await bundle.write(output);

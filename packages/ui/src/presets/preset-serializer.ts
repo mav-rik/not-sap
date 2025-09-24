@@ -1,7 +1,7 @@
 import { CalendarDate } from '@internationalized/date'
 
 export function stringifyPresetField(field: any) {
-  return JSON.stringify(field, (key: string, value: any) => {
+  return JSON.stringify(field, (_key: string, value: any) => {
     if (value instanceof CalendarDate) {
       return {
         __p_type: 'CalendarDate',
@@ -15,7 +15,7 @@ export function stringifyPresetField(field: any) {
 }
 
 export function parsePresetField(field: string) {
-  return JSON.parse(field, (key: string, value: any) => {
+  return JSON.parse(field, (_key: string, value: any) => {
     if (value?.__p_type === 'CalendarDate') {
       return new CalendarDate(value.year, value.month, value.day)
     }

@@ -1,12 +1,14 @@
 import type { Plugin } from 'vite';
 import { OData } from '../odata';
-import { generateModelTypes, type TGenerateModelOpts } from './types-generators';
+import { generateModelTypes, type TGenerateModelOpts } from '../codegen/types-generators';
 import { writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
-import { readODataEnv } from './env';
+import { readODataEnv } from '../codegen/env';
 
 interface ODataPluginOptions {
-  filename?: string;
+  host?: string
+  headers?: Record<string, string>
+  filename?: string
   services: {
     [serviceName: string]: TGenerateModelOpts;
   };
@@ -30,6 +32,7 @@ export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
     name: 'odata-codegen',
     async buildStart() {
       const env = readODataEnv();
+      const host = options.host || env.host
       if (!env.host) {
         console.error(
           '[odata-codegen] Skipping odata codegen due to missing SAP_ODATA_HOST environment variable'
@@ -47,11 +50,9 @@ export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
       content += `import { OData, type TOdataDummyInterface, type TODataOptions } from "notsapodata"\n\n`;
       for (const [serviceName, serviceOptions] of Object.entries(options.services)) {
         const odata = new OData(serviceName, {
-          host: env.host,
+          host: host,
           url: serviceOptions.odataUrl,
-          headers: {
-            Cookie: env.cookie,
-          },
+          headers: options.headers,
         });
 
         try {

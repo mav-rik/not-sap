@@ -9,18 +9,19 @@ import { existsSync, readFileSync } from 'fs'
  */
 export function readODataEnv(): { host: string; cookie: string } {
   const envString = (existsSync('./.env') && readFileSync('./.env').toString()) || ''
+  const e = process.env as any
   const env = {
-    SAP_ODATA_HOST: process.env.SAP_ODATA_HOST,
-    SAP_COOKIE_VALUE: process.env.SAP_COOKIE_VALUE,
-    SAP_COOKIE_NAME: process.env.SAP_COOKIE_NAME,
-  } as { SAP_ODATA_HOST?: string; SAP_COOKIE_VALUE?: string; SAP_COOKIE_NAME?: string }
+    ODATA_HOST: e.ODATA_HOST,
+    ODATA_COOKIE_VALUE: e.ODATA_COOKIE_VALUE,
+    ODATA_COOKIE_NAME: e.ODATA_COOKIE_NAME,
+  } as { ODATA_HOST?: string; ODATA_COOKIE_VALUE?: string; ODATA_COOKIE_NAME?: string }
   envString.split('\n').forEach(line => {
     const parts = line.split('=')
-    env[parts[0] as 'SAP_ODATA_HOST'] = parts.slice(1).join('')
+    env[parts[0] as 'ODATA_HOST'] = parts.slice(1).join('')
   })
 
   return {
-    host: env.SAP_ODATA_HOST || '',
-    cookie: `${env.SAP_COOKIE_NAME || ''}=${env.SAP_COOKIE_VALUE || ''}`,
+    host: env.ODATA_HOST || '',
+    cookie: `${env.ODATA_COOKIE_NAME || ''}=${env.ODATA_COOKIE_VALUE || ''}`,
   }
 }

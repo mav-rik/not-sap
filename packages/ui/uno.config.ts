@@ -5,8 +5,6 @@ import { notSapIconNames } from './src/icons/icon-map'
 import { notSapUiVunorShortcuts } from './src/vunor'
 import { notSapIconsPreset } from './src/icons'
 
-console.log('---- UNOCSS CONFIG ----')
-
 export default defineConfig({
   presets: [
     presetVunor() as Preset,
@@ -24,7 +22,7 @@ export default defineConfig({
   preflights: [
     {
       getCSS() {
-        return `.i8 input { border: none } .i8 { border-style: solid }`
+        return `.i8 input { border: none } .i8, .not-sap-token { border-style: solid }`
       },
     },
   ],

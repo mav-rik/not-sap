@@ -16,7 +16,7 @@ import type { ModelRef, Ref, ComputedRef } from 'vue';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { fieldsFiltersToODataFilters } from './filter-conditions.utils';
 import { useODataEntitySetPI } from '../../renderless/ODataEntitySet.pi';
-import { debounce } from '../debounce.utils';
+import { debounce } from 'notsapodata'
 import { NotSapPresets, type TNotSapPreset } from '../../presets/presets';
 import { parsePresetField, stringifyPresetField } from '../../presets';
 

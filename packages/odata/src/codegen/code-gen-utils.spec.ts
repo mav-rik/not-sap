@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { codeGen, type TCoGeCodeElement } from './code-gen-utils'
+import { codeGen, type TCoGeCodeElement } from '../vite/code-gen-utils'
 describe('codeGen Utilities', () => {
   it('should generate exported constants correctly', () => {
     const input: TCoGeCodeElement[] = [

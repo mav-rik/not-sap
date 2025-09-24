@@ -77,7 +77,7 @@ export function extractGenericErrorMessage(body: any): string | null {
  * Represents an error response from an SAP OData service.
  */
 export class SapODataError extends Error {
-  name = 'SapODataError'
+  override name = 'SapODataError'
 
   constructor(
     public body: TOdataErrorBody,
@@ -91,7 +91,7 @@ export class SapODataError extends Error {
   /**
    * Shortcut to the main error message.
    */
-  get message(): string {
+  override get message(): string {
     return this.body.error.message.value
   }
 
@@ -114,7 +114,7 @@ export class SapODataError extends Error {
  * Custom error class for fetch-related errors.
  */
 export class IFetchError<T = unknown> extends Error {
-  name = 'IFetchError'
+  override name = 'IFetchError'
 
   constructor(
     public body: T,

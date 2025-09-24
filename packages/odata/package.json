@@ -13,9 +13,19 @@
       "require": "./dist/index.cjs"
     },
     "./vite": {
-      "types": "./dist/vite/index.d.ts",
-      "import": "./dist/vite/index.mjs",
-      "require": "./dist/vite/index.cjs"
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.cjs"
+    },
+    "./codegen": {
+      "types": "./dist/codegen.d.ts",
+      "import": "./dist/codegen.mjs",
+      "require": "./dist/codegen.cjs"
+    },
+    "./metadata": {
+      "types": "./dist/metadata.d.ts",
+      "import": "./dist/metadata.mjs",
+      "require": "./dist/metadata.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -36,7 +46,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.0",
-    "typescript": "^5.5.4",
+    "typescript": "5.8.2",
     "vite": "^5.4.2",
     "vitest": "^2.0.5"
   },
@@ -55,13 +65,10 @@
   "build": [
     {
       "entries": [
-        "src/index.ts"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/vite/index.ts"
+        "src/index.ts",
+        "src/codegen/index.ts",
+        "src/vite/index.ts",
+        "src/metadata/index.ts"
       ],
       "dts": true
     }

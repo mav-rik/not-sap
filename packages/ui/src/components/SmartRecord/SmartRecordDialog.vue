@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import SmartFieldValue from './SmartFieldValue.vue'
 import { isSmartTableInDevMode } from '../SmartTable/dev-mode.composable'
-import { debounce } from '../debounce.utils'
+import { debounce } from 'notsapodata'
 import SmartRecordFields from './SmartRecordFields.vue'
 import { useODataEntitySetPI } from '../../pi';
 import { DialogClose } from 'radix-vue'
@@ -180,7 +180,8 @@ function toId(group: string) {
 
 const tab = ref('')
 
-function onTab(val: string) {
+function onTab(val?: string): any {
+  if (!val) return
   const anchor = document.querySelector(`#smart-record-content #${val}`) as HTMLDivElement
   if (anchor) {
     setTimeout(() => {

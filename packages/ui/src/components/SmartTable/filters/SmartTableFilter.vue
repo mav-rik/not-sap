@@ -10,7 +10,7 @@ import {
 import DragScroll from '../../DragScroll.vue'
 import { useValueHelp } from '../../F4/use-value-help.composable'
 import SmartTableBase from '../../SmartTable/SmartTableBase.vue'
-import { debounce } from '../../debounce.utils'
+import { debounce } from 'notsapodata'
 import {
   odataFilterFormat,
   type TODataFilterConditionType,

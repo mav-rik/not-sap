@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.0",
-    "typescript": "^5.5.4",
+    "typescript": "5.8.2",
     "unocss": "^66.5.2",
     "vite": "^5.4.2",
     "vitest": "^2.0.5",
@@ -125,106 +125,21 @@
   "build": [
     {
       "entries": [
-        "src/index.ts"
+        "src/index.ts",
+        "src/pi.ts",
+        "src/utils.ts",
+        "src/icons.ts",
+        "src/vunor.ts",
+        "src/presets.ts",
+        "src/composables.ts"
+      ],
+      "external": [
+        "vunor/theme"
       ],
       "bundler": "vite",
       "vue": true,
       "css": true,
       "output": "index",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "dts": false,
-      "transformRules": [
-        {
-          "pattern": "from\\s+['\"][./]*[^'\"]*\\.pi(\\.ts)?['\"]",
-          "replacement": "from 'notsapui/pi'"
-        },
-        {
-          "pattern": "from\\s+['\"][./]+(pi|pi/index)(\\.ts)?['\"]",
-          "replacement": "from 'notsapui/pi'"
-        },
-        {
-          "pattern": "from\\s+['\"][./]*[^'\"]*\\.utils(\\.ts)?['\"]",
-          "replacement": "from 'notsapui/utils'"
-        },
-        {
-          "pattern": "from\\s+['\"][./]*[^'\"]*\\.composable(\\.ts)?['\"]",
-          "replacement": "from 'notsapui/composables'"
-        }
-      ]
-    },
-    {
-      "entries": [
-        "src/pi/index.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "pi",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/utils/index.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "utils",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/vunor.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "vunor",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "external": [
-        "vunor",
-        "vunor/theme"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/presets/index.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "presets",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/composables/index.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "composables",
-      "formats": [
-        "esm",
-        "cjs"
-      ],
-      "dts": true
-    },
-    {
-      "entries": [
-        "src/icons/index.ts"
-      ],
-      "bundler": "rolldown",
-      "output": "icons",
       "formats": [
         "esm",
         "cjs"
