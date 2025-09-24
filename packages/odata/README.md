@@ -8,6 +8,10 @@
 
 `notsapodata` is a TypeScript-first OData client library that provides type-safe access to OData services with automatic type generation through a Vite plugin. It handles OData v2/v4 protocols, batch operations, metadata parsing, and Excel export functionality.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/odata.png" alt="Not SAP" />
+</p>
+
 ## Installation
 
 ```bash
