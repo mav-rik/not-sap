@@ -15,7 +15,20 @@
 ## What’s Inside
 
 - `notsapodata` — type-safe OData v2/v4 client, metadata utilities, and a Vite plugin that generates strongly typed service models. See [packages/odata/README.md](./packages/odata/README.md).
+
+<p align="center">
+  <img src="./odata.png" alt="Not SAP"/>
+</p>
+
+
 - `notsapui` — Vue 3 smart components powered by generated metadata, including smart tables, record dialogs, and F4 helpers. See [packages/ui/README.md](./packages/ui/README.md).
+
+
+<p align="center">
+  <img src="./notsapui-table.webp" alt="Not SAP"/>
+</p>
+
+
 - Shared development patterns: provide/inject context layers, metadata refinement, batch-friendly data access, and optional Excel export.
 
 ## Quick Start
