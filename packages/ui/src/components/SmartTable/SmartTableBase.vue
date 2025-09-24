@@ -267,7 +267,7 @@ function over(event: DragEvent, index: number) {
         >
           <SmartTableHeaderCell
             :field
-            :columnMenu
+            :column-menu="columnMenu!"
             :order="_sortersMap.get(field.$Name)"
             :filters="fieldsFilters[field.$Name]"
             :class="{
@@ -310,10 +310,10 @@ function over(event: DragEvent, index: number) {
       >
         <component
           :is="asCombobox ? ComboboxItem : ListboxItem"
-          :value="rowValueFn(item)"
+          :value="rowValueFn(item as any)"
           class="group/lbindicator not-sap-row"
           as="tr"
-          :class="item.__rowClass"
+          :class="item?.['__rowClass']"
           v-bind="rest"
           :style="{
             height: virtualRowHeight ? `${virtualRowHeight}px` : undefined,
@@ -338,7 +338,7 @@ function over(event: DragEvent, index: number) {
           </td>
           <td
             v-for="field of _cols"
-            :key="field.$Name + String(item[field.$Name])"
+            :key="field.$Name + String(item?.[field.$Name] || '')"
             @click="_onItemClick($event, item as unknown as T)"
             :class="{
               'not-sap-col-hl': highlightedColumnName === field.$Name && _cols.length > 1,
@@ -358,11 +358,11 @@ function over(event: DragEvent, index: number) {
             >
               <slot
                 :name="`cell-${field.$Name as K}`"
-                v-bind="{ row: item as unknown as T, value: item[field.$Name], field }"
+                v-bind="{ row: item as unknown as T, value: item?.[field.$Name], field }"
               >
                 <SmartFieldValue
                   :name="field.$Name"
-                  :value="item[field.$Name]"
+                  :value="item?.[field.$Name]"
                   :row="item"
                   v-slot="{ value, units, isMonetary, currency }"
                 >

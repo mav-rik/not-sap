@@ -21,8 +21,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@not-sap/ui': resolve(__dirname, './packages/ui/src'),
-      '@not-sap/odata': resolve(__dirname, './packages/odata/src')
+      'notsapui': resolve(__dirname, './packages/ui/src'),
+      'notsapodata': resolve(__dirname, './packages/odata/src')
     }
   }
 });

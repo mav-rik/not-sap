@@ -62,27 +62,27 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
   protected _types = new Map<
     string,
-    RawMetadata['Edmx']['DataServices']['Schema']['EntityType'][number]
+    TSchema['EntityType'][number]
   >()
   protected _assoc = new Map<
     string,
-    RawMetadata['Edmx']['DataServices']['Schema']['Association'][number]
+    TSchema['Association'][number]
   >()
   protected _sets = new Map<
     keyof M['entitySets'],
-    RawMetadata['Edmx']['DataServices']['Schema']['EntityContainer']['EntitySet'][number]
+    Required<TSchema>['EntityContainer']['EntitySet'][number]
   >()
   protected _assocSets = new Map<
     string,
-    RawMetadata['Edmx']['DataServices']['Schema']['EntityContainer']['AssociationSet'][number]
+    Required<TSchema>['EntityContainer']['AssociationSet'][number]
   >()
   protected _functions = new Map<
     string,
-    RawMetadata['Edmx']['DataServices']['Schema']['EntityContainer']['FunctionImport'][number]
+    Required<TSchema>['EntityContainer']['FunctionImport'][number]
   >()
   protected _annot = new Map<
     string,
-    RawMetadata['Edmx']['DataServices']['Schema']['Annotations'][number]['Annotation']
+    TSchema['Annotations'][number]['Annotation']
   >()
 
   constructor(
@@ -91,41 +91,40 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     public readonly name?: string
   ) {
     this._parsed = parser.parse(xml)
-    const ns = this._parsed.Edmx.DataServices.Schema.$Namespace
-    for (const node of this._parsed.Edmx.DataServices.Schema.EntityType || []) {
-      this._types.set(`${ns}.${node.$Name}`, node)
-    }
-    for (const node of this._parsed.Edmx.DataServices.Schema.Association || []) {
-      this._assoc.set(node.$Name, node)
-    }
-    for (const node of this._parsed.Edmx.DataServices.Schema.EntityContainer.EntitySet || []) {
-      this._sets.set(node.$Name as keyof M['entitySets'], node)
-    }
-    for (const node of this._parsed.Edmx.DataServices.Schema.EntityContainer.AssociationSet || []) {
-      this._assocSets.set(node.$Name, node)
-    }
-    for (const node of this._parsed.Edmx.DataServices.Schema.EntityContainer.FunctionImport || []) {
-      this._functions.set(node.$Name, node)
-    }
-    for (const node of this._parsed.Edmx.DataServices.Schema.Annotations || []) {
-      const target =
-        node.$Target === this.selfContainerTargetV2 ? 'SAP__self.Container' : node.$Target
-      const a = this._annot.get(target)
-      if (a) {
-        const merged = [...[a].flat(), ...[node.Annotation].flat()]
-        this._annot.set(target, merged)
-      } else {
-        this._annot.set(target, node.Annotation)
+    const schemas = [this._parsed.Edmx.DataServices.Schema].flat()
+    for (const schema of schemas) {
+      const ns = schema.$Namespace
+      for (const node of schema.EntityType || []) {
+        this._types.set(`${ns}.${node.$Name}`, node)
+      }
+      for (const node of schema.Association || []) {
+        this._assoc.set(node.$Name, node)
+      }
+      for (const node of schema.EntityContainer?.EntitySet || []) {
+        this._sets.set(node.$Name as keyof M['entitySets'], node)
+      }
+      for (const node of schema.EntityContainer?.AssociationSet || []) {
+        this._assocSets.set(node.$Name, node)
+      }
+      for (const node of schema.EntityContainer?.FunctionImport || []) {
+        this._functions.set(node.$Name, node)
+      }
+      for (const node of schema.Annotations || []) {
+        const target =
+          node.$Target === this.getSelfContainerTargetV2(ns) ? 'SAP__self.Container' : node.$Target
+        const a = this._annot.get(target)
+        if (a) {
+          const merged = [...[a].flat(), ...[node.Annotation].flat()]
+          this._annot.set(target, merged)
+        } else {
+          this._annot.set(target, node.Annotation)
+        }
       }
     }
   }
 
-  get namespace() {
-    return this._parsed.Edmx.DataServices.Schema.$Namespace
-  }
-
-  get selfContainerTargetV2() {
-    return `${this.namespace}.${this.namespace}_Entities`
+  getSelfContainerTargetV2(namespace: string) {
+    return `${namespace}.${namespace}_Entities`
   }
 
   getRawEntityType(name: string) {
@@ -261,23 +260,7 @@ export interface RawMetadataAnnotationRecord {
     | 'Common.ValueListParameterDisplayOnly'
 }
 
-export interface RawMetadata {
-  '?xml': {
-    $version: string
-    $encoding: string
-  }
-  'Edmx': {
-    $Version: '2.0' | '4.0'
-
-    Reference: {
-      Include: {
-        $Namespace: string
-        $Alias: string
-      }[]
-      $Uri: string
-    }[]
-    DataServices: {
-      Schema: {
+export interface TSchema {
         'EntityType': {
           'Key': {
             PropertyRef: {
@@ -310,7 +293,7 @@ export interface RawMetadata {
           '$Name': string
           '$content-version'?: string
         }[]
-        'EntityContainer': {
+        'EntityContainer'?: {
           'EntitySet': {
             '$Name': string
             '$EntityType': string
@@ -363,6 +346,24 @@ export interface RawMetadata {
         '$lang': string
         '$schema-version': string
       }
+
+export interface RawMetadata {
+  '?xml': {
+    $version: string
+    $encoding: string
+  }
+  'Edmx': {
+    $Version: '2.0' | '4.0'
+
+    Reference: {
+      Include: {
+        $Namespace: string
+        $Alias: string
+      }[]
+      $Uri: string
+    }[]
+    DataServices: {
+      Schema: TSchema | TSchema[]
       $DataServiceVersion: string
     }
   }

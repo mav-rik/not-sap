@@ -110,9 +110,9 @@ export class NotSapPresets {
           content: p.content,
         })
       } else if (p.changeType === NOT_SAP_DEFAULT_PRESET) {
-        defaultPreset = p.content.defaultPreset as string
+        defaultPreset = p.content['defaultPreset'] as string
       } else if (p.changeType === NOT_SAP_FAV_PRESETS) {
-        for (const item of p.content.favs as string[]) {
+        for (const item of p.content['favs'] as string[]) {
           favs.add(item)
         }
       }

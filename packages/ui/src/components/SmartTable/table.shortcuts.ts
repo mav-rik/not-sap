@@ -37,7 +37,7 @@ export const notSapTableShortcuts: TVunorShortcut = defineShortcuts({
   'not-sap-listbox-item':
     'flex items-center min-h-fingertip gap-$m px-$card-spacing select-none cursor-default',
   'not-sap-listbox-checkbox': {
-    '': 'checkbox current-bg-scope-color-500 current-border-scope-color-500',
+    '': 'checkbox current-bg-scope-color-500 current-border-scope-color-500 border-solid',
     'group-[[data-state=unchecked]]/lbindicator:': 'current-border-grey-500 border-current/40',
   },
 })

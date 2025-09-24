@@ -83,7 +83,7 @@ const forceFilters = computed(() => {
       ? undefined
       : [
           {
-            [valueList.value?.Parameters.find(p =>
+            [valueList.value?.Parameters.find((p: any) =>
               ['Common.ValueListParameterInOut', 'SAP__common.ValueListParameterInOut'].includes(
                 p.$Type
               )
@@ -110,7 +110,7 @@ const internalFilters = defineModel<TODataTypedFilterValue[]>('filters', {
 
 onMounted(() => {
   if (fieldsFilters.value[props.field]) {
-    internalFilters.value = fieldsFilters.value[props.field]!.map(f =>
+    internalFilters.value = fieldsFilters.value[props.field]!.map((f: any) =>
       odataFilterFormat.toTypedValue(f)
     )
   }
@@ -130,7 +130,7 @@ watch([internalFilters], () => {
 
 const areFiltersEqual = () => {
   const fieldsFiltersTyped =
-    fieldsFilters.value[props.field]?.map(f => odataFilterFormat.toTypedValue(f)) || []
+    fieldsFilters.value[props.field]?.map((f: any) => odataFilterFormat.toTypedValue(f)) || []
 
   return JSON.stringify(fieldsFiltersTyped) === JSON.stringify(internalFilters.value)
 }
@@ -139,7 +139,7 @@ watch([fieldsFilters], () => {
   if (!fieldsFilters.value[props.field]) {
     internalFilters.value = []
   } else if (!areFiltersEqual()) {
-    internalFilters.value = fieldsFilters.value[props.field]!.map(f =>
+    internalFilters.value = fieldsFilters.value[props.field]!.map((f: any) =>
       odataFilterFormat.toTypedValue(f)
     )
   }

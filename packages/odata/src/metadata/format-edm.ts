@@ -16,6 +16,8 @@ function isCalendarDateLike(value: any): boolean {
 
 export type ODataEdmType =
   | 'Edm.String'
+  | 'Edm.Int8'
+  | 'Edm.Int16'
   | 'Edm.Int32'
   | 'Edm.Int64'
   | 'Edm.Decimal'
@@ -59,14 +61,14 @@ export const odataValueFormat = {
         return undefined
       }
       const match = /\/Date\((\d+)\)\//.exec(value)
-      return match ? new Date(parseInt(match[1], 10)) : new Date(value)
+      return match ? new Date(parseInt(match[1] || '', 10)) : new Date(value)
     },
     'Edm.DateTime': (value): Date | undefined => {
       if (!value) {
         return undefined
       }
       const match = /\/Date\((\d+)\)\//.exec(value)
-      return match ? new Date(parseInt(match[1], 10)) : new Date(value)
+      return match ? new Date(parseInt(match[1] || '', 10)) : new Date(value)
     },
     'Edm.Guid': (value): string => {
       return value
@@ -139,6 +141,12 @@ export const odataValueFormat = {
   toDisplay: {
     'Edm.String': (value): string => {
       return value as string
+    },
+    'Edm.Int8': (value): string => {
+      return value.toLocaleString()
+    },
+    'Edm.Int16': (value): string => {
+      return value.toLocaleString()
     },
     'Edm.Int32': (value): string => {
       return value.toLocaleString()

@@ -36,37 +36,43 @@
       "import": "./dist/composables.mjs",
       "require": "./dist/composables.cjs"
     },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.mjs",
+      "require": "./dist/icons.cjs"
+    },
+    "./styles.css": "./dist/style.css",
     "./package.json": "./package.json",
-    "./UseEntitySetContext.vue": "./dist/UseEntitySetContext.vue",
-    "./ODataEntitySet.vue": "./dist/ODataEntitySet.vue",
-    "./NotSapApp.vue": "./dist/NotSapApp.vue",
-    "./OrderableListBox.vue": "./dist/OrderableListBox.vue",
-    "./FilterToken.vue": "./dist/FilterToken.vue",
     "./DragScroll.vue": "./dist/DragScroll.vue",
-    "./SmartTableVirtualizer.vue": "./dist/SmartTableVirtualizer.vue",
-    "./SmartTableRoot.vue": "./dist/SmartTableRoot.vue",
-    "./SmartTableHeaderCell.vue": "./dist/SmartTableHeaderCell.vue",
-    "./SmartTableConfigSorters.vue": "./dist/SmartTableConfigSorters.vue",
-    "./SmartTableConfigFieldsSelector.vue": "./dist/SmartTableConfigFieldsSelector.vue",
-    "./SmartTableConfigDialog.vue": "./dist/SmartTableConfigDialog.vue",
-    "./SmartTableBase.vue": "./dist/SmartTableBase.vue",
-    "./SmartTable.vue": "./dist/SmartTable.vue",
-    "./SmartRecordFields.vue": "./dist/SmartRecordFields.vue",
-    "./SmartRecordDialog.vue": "./dist/SmartRecordDialog.vue",
-    "./SmartFieldValue.vue": "./dist/SmartFieldValue.vue",
-    "./SmartFieldLabel.vue": "./dist/SmartFieldLabel.vue",
-    "./SmartField.vue": "./dist/SmartField.vue",
-    "./F4ValueHelp.vue": "./dist/F4ValueHelp.vue",
-    "./F4Dialog.vue": "./dist/F4Dialog.vue",
     "./F4Conditions.vue": "./dist/F4Conditions.vue",
-    "./SmartTableManagePresets.vue": "./dist/SmartTableManagePresets.vue",
+    "./F4Dialog.vue": "./dist/F4Dialog.vue",
+    "./F4ValueHelp.vue": "./dist/F4ValueHelp.vue",
+    "./FilterToken.vue": "./dist/FilterToken.vue",
+    "./NotSapApp.vue": "./dist/NotSapApp.vue",
+    "./ODataEntitySet.vue": "./dist/ODataEntitySet.vue",
+    "./OrderableListBox.vue": "./dist/OrderableListBox.vue",
+    "./SmartField.vue": "./dist/SmartField.vue",
+    "./SmartFieldLabel.vue": "./dist/SmartFieldLabel.vue",
+    "./SmartFieldValue.vue": "./dist/SmartFieldValue.vue",
+    "./SmartRecordDialog.vue": "./dist/SmartRecordDialog.vue",
+    "./SmartRecordFields.vue": "./dist/SmartRecordFields.vue",
+    "./SmartTable.vue": "./dist/SmartTable.vue",
+    "./SmartTableBase.vue": "./dist/SmartTableBase.vue",
+    "./SmartTableConfigDialog.vue": "./dist/SmartTableConfigDialog.vue",
+    "./SmartTableConfigFieldsSelector.vue": "./dist/SmartTableConfigFieldsSelector.vue",
+    "./SmartTableConfigSorters.vue": "./dist/SmartTableConfigSorters.vue",
     "./SmartTableCreatePreset.vue": "./dist/SmartTableCreatePreset.vue",
-    "./SmartTableSaveFavFiltersDialog.vue": "./dist/SmartTableSaveFavFiltersDialog.vue",
-    "./SmartTableLoadFavFiltersDialog.vue": "./dist/SmartTableLoadFavFiltersDialog.vue",
-    "./SmartTableFilters.vue": "./dist/SmartTableFilters.vue",
-    "./SmartTableFilter.vue": "./dist/SmartTableFilter.vue",
+    "./SmartTableFavFiltersList.vue": "./dist/SmartTableFavFiltersList.vue",
     "./SmartTableFavFiltersMenu.vue": "./dist/SmartTableFavFiltersMenu.vue",
-    "./SmartTableFavFiltersList.vue": "./dist/SmartTableFavFiltersList.vue"
+    "./SmartTableFilter.vue": "./dist/SmartTableFilter.vue",
+    "./SmartTableFilters.vue": "./dist/SmartTableFilters.vue",
+    "./SmartTableHeaderCell.vue": "./dist/SmartTableHeaderCell.vue",
+    "./SmartTableLoadFavFiltersDialog.vue": "./dist/SmartTableLoadFavFiltersDialog.vue",
+    "./SmartTableManagePresets.vue": "./dist/SmartTableManagePresets.vue",
+    "./SmartTableRoot.vue": "./dist/SmartTableRoot.vue",
+    "./SmartTableSaveFavFiltersDialog.vue": "./dist/SmartTableSaveFavFiltersDialog.vue",
+    "./SmartTableVirtualizer.vue": "./dist/SmartTableVirtualizer.vue",
+    "./UseEntitySetContext.vue": "./dist/UseEntitySetContext.vue"
   },
   "files": [
     "dist"
@@ -90,12 +96,17 @@
   "devDependencies": {
     "@types/node": "^22.5.0",
     "typescript": "^5.5.4",
+    "unocss": "^66.5.2",
     "vite": "^5.4.2",
     "vitest": "^2.0.5",
     "vue": "^3.5.6",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "@iconify/types": "^2.0.0",
+    "@iconify/utils": "^3.0.1"
   },
   "peerDependencies": {
+    "@unocss/preset-icons": "^66.5.2",
+    "unocss": "^66.5.2",
     "vue": "^3.5.6",
     "vue-router": "^4.4.5"
   },
@@ -118,6 +129,7 @@
       ],
       "bundler": "vite",
       "vue": true,
+      "css": true,
       "output": "index",
       "formats": [
         "esm",
@@ -126,16 +138,20 @@
       "dts": false,
       "transformRules": [
         {
-          "pattern": "from\\s+['\"](\\.\\.\\/)*renderless\\/ODataEntitySet\\.pi['\"]",
+          "pattern": "from\\s+['\"][./]*[^'\"]*\\.pi(\\.ts)?['\"]",
           "replacement": "from 'notsapui/pi'"
         },
         {
-          "pattern": "from\\s+['\"](\\.\\.\\/)*SmartTable\\/SmartTable\\.pi['\"]",
+          "pattern": "from\\s+['\"][./]+(pi|pi/index)(\\.ts)?['\"]",
           "replacement": "from 'notsapui/pi'"
         },
         {
-          "pattern": "from\\s+['\"](\\.\\.\\/)*filters\\/SmartFilter\\.pi['\"]",
-          "replacement": "from 'notsapui/pi'"
+          "pattern": "from\\s+['\"][./]*[^'\"]*\\.utils(\\.ts)?['\"]",
+          "replacement": "from 'notsapui/utils'"
+        },
+        {
+          "pattern": "from\\s+['\"][./]*[^'\"]*\\.composable(\\.ts)?['\"]",
+          "replacement": "from 'notsapui/composables'"
         }
       ]
     },
@@ -197,6 +213,18 @@
       ],
       "bundler": "rolldown",
       "output": "composables",
+      "formats": [
+        "esm",
+        "cjs"
+      ],
+      "dts": true
+    },
+    {
+      "entries": [
+        "src/icons/index.ts"
+      ],
+      "bundler": "rolldown",
+      "output": "icons",
       "formats": [
         "esm",
         "cjs"

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../../notsap.png" alt="Not SAP" width="180" />
+</p>
+
 # notsapodata Module Documentation
 
 ## Overview

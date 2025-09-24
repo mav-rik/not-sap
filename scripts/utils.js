@@ -36,6 +36,7 @@ export function getBuildOptions(ws) {
 
     // Vite-specific options
     vue: build.vue || false,
+    css: build.css || false,
     alias: build.alias || {},
 
     // Raw copy options

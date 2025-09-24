@@ -2,6 +2,7 @@
 
 import 'zx/globals';
 import { getBuildOptions, getExternals, getWorkspaceFolders } from './utils.js';
+import { postProcessCSS } from './post-css.js';
 import { dye } from '@prostojs/dye';
 import { rollup } from 'rollup';
 import { rolldown } from 'rolldown';
@@ -14,7 +15,34 @@ import swcPlugin from 'unplugin-swc';
 import { build as viteBuild } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import viteDts from 'vite-plugin-dts';
+import UnoCSS from 'unocss/vite';
 import { glob } from 'glob';
+
+// Function to create index.d.ts for Vue components
+async function createIndexDts(ws, vueFiles) {
+  const imports = [];
+  const exports = [];
+
+  // Sort files alphabetically for consistency
+  const sortedFiles = vueFiles.sort((a, b) => a.basename.localeCompare(b.basename));
+
+  for (const file of sortedFiles) {
+    const componentName = file.basename;
+    imports.push(`import { default as ${componentName} } from './${componentName}.vue';`);
+    exports.push(componentName);
+  }
+
+  const content = [
+    ...imports,
+    '',
+    `export { ${exports.join(', ')} };`,
+    ''
+  ].join('\n');
+
+  const dtsPath = `packages/${ws}/dist/index.d.ts`;
+  writeFileSync(dtsPath, content);
+  done(`Created index.d.ts with ${vueFiles.length} component type exports`);
+}
 
 const swc = swcPlugin.rolldown();
 const _dye = dyePlugin();
@@ -175,6 +203,7 @@ async function copyRawFiles(ws, build) {
 
 // Generic Vite config creator
 function createViteConfig(ws, build, externals) {
+  console.log('Creating Vite config for', ws, 'with build options:', build);
   const entries = build.entries.reduce((acc, entry) => {
     const name = build.output || entry.replace('src/', '').replace('.ts', '');
     acc[name] = path.resolve(`packages/${ws}/${entry}`);
@@ -182,6 +211,23 @@ function createViteConfig(ws, build, externals) {
   }, {});
 
   const plugins = [];
+
+  // Add UnoCSS plugin if specified for CSS generation (should be before Vue)
+  if (build.css) {
+    const unoConfig = path.resolve(`packages/${ws}/uno.config.ts`);
+    console.log('Adding UnoCSS plugin with config:', unoConfig);
+    plugins.push(UnoCSS({
+      configFile: unoConfig,
+      // Explicitly set content to scan
+      content: {
+        filesystem: [
+          `packages/${ws}/src/**/*.{vue,js,ts,jsx,tsx}`,
+        ]
+      }
+    }));
+  } else {
+    console.log('CSS flag not set, skipping UnoCSS');
+  }
 
   // Add Vue plugin if specified
   if (build.vue) {
@@ -230,7 +276,36 @@ function createViteConfig(ws, build, externals) {
         },
       },
       rollupOptions: {
-        external: build.external || externals,
+        external: [
+          ...(build.external || externals || []),
+          // Add self-references that will be resolved at runtime
+          'notsapui/pi',
+          'notsapui/utils',
+          'notsapui/vunor',
+          'notsapui/presets',
+          'notsapui/composables',
+          /^notsapui\/.+\.vue$/,  // Match all .vue imports from notsapui
+          // Exclude .pi.ts, .utils.ts, and .composable.ts files from being bundled
+          (source, importer) => {
+            // Mark .pi and .pi.ts imports as external
+            if (source.endsWith('.pi') || source.endsWith('.pi.ts')) {
+              return true;
+            }
+            // Mark .utils and .utils.ts imports as external
+            if (source.endsWith('.utils') || source.endsWith('.utils.ts')) {
+              return true;
+            }
+            // Mark .composable and .composable.ts imports as external
+            if (source.endsWith('.composable') || source.endsWith('.composable.ts')) {
+              return true;
+            }
+            // Also mark relative pi imports as external
+            if (source.match(/\.\.\/.*\/pi$/) || source === '../pi' || source === '../../pi') {
+              return true;
+            }
+            return false;
+          }
+        ],
         output: {
           exports: 'named',
           preserveModules: false,
@@ -312,6 +387,12 @@ async function run() {
         const viteConfig = createViteConfig(ws, build, externals.get(ws));
         await viteBuild(viteConfig);
         done(`Built with Vite: ${build.entries.join(', ')}`);
+
+        // Post-process CSS if css flag is set
+        if (build.css) {
+          const cssPath = path.resolve(`packages/${ws}/dist/style.css`);
+          postProcessCSS(cssPath);
+        }
       } else {
         // Build with rolldown (default)
         for (const entry of build.entries) {
@@ -341,6 +422,11 @@ async function run() {
     // Store Vue files for later export update
     if (allVueFiles.length > 0) {
       workspaceVueFiles.set(ws, allVueFiles);
+
+      // Create index.d.ts for TypeScript definitions
+      if (ws === 'ui') {
+        await createIndexDts(ws, allVueFiles);
+      }
     }
   }
 

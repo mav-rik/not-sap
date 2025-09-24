@@ -137,6 +137,7 @@ export class ExcelGenerator<
       // Determine at which levels the group key has changed
       for (let i = 0; i < subtotalTrackers.length; i++) {
         const tracker = subtotalTrackers[i]
+        if (!tracker) continue
         const { grpBy } = tracker.subtotalConfig
 
         const currentGroupKey = groupKey(grpBy, record)
@@ -162,6 +163,7 @@ export class ExcelGenerator<
         for (let i = subtotalTrackers.length - 1; i >= 0; i--) {
           if (groupKeyChangedAtLevels.includes(i)) {
             const tracker = subtotalTrackers[i]
+            if (!tracker) continue
             this.insertSubtotalRow(worksheet, tracker, columns, currencies)
             // Reset tracker for new group
             tracker.groupStartRowIndex = this.currentRowIndex
@@ -185,7 +187,7 @@ export class ExcelGenerator<
       const row = worksheet.addRow(rowValues.map(r => r.value))
 
       row.eachCell((cell, colNumber) => {
-        const format = rowValues[colNumber - 1].format
+        const format = rowValues[colNumber - 1]?.format
         if (format) {
           cell.numFmt = format
         }
@@ -197,6 +199,7 @@ export class ExcelGenerator<
     // After processing all data rows, insert any remaining subtotals
     for (let i = subtotalTrackers.length - 1; i >= 0; i--) {
       const tracker = subtotalTrackers[i]
+      if (!tracker) continue
       this.insertSubtotalRow(worksheet, tracker, columns, currencies, true)
     }
 
@@ -245,11 +248,11 @@ export class ExcelGenerator<
       .sort((a, b) => a - b)
 
     for (let i = 0; i <= excluded.length; i++) {
-      const rangeEnd = i < excluded.length ? excluded[i] - 1 : endRow
+      const rangeEnd = i < excluded.length ? excluded[i]! - 1 : endRow
       if (rangeStart <= rangeEnd) {
         ranges.push(`${colLetter}${rangeStart}:${colLetter}${rangeEnd}`)
       }
-      rangeStart = i < excluded.length ? excluded[i] + 1 : endRow + 1
+      rangeStart = i < excluded.length ? excluded[i]! + 1 : endRow + 1
     }
 
     return `SUM(${ranges.join(',')})`
@@ -269,7 +272,7 @@ export class ExcelGenerator<
     const subtotalRowValues: any[] = []
     const colFormats: (string | undefined)[] = []
     for (let colIndex = 1; colIndex <= columns.length; colIndex++) {
-      const column = columns[colIndex - 1]
+      const column = columns[colIndex - 1]!
       const fieldName = column.$Name as M['entitySets'][T]['fields']
       const field = this.getField(fieldName)!
 
@@ -378,6 +381,8 @@ export class ExcelGenerator<
       case 'Edm.String':
       case 'Edm.Guid':
         return { value: field.fromRaw.toDisplay(val as string) }
+      case 'Edm.Int8':
+      case 'Edm.Int16':
       case 'Edm.Int32':
       case 'Edm.Int64':
       case 'Edm.Decimal':

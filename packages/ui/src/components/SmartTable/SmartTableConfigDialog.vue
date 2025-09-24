@@ -69,7 +69,7 @@ function onApply() {
   >
     <template v-slot:header>
       <header class="dialog-header border-b z-2 flex justify-between pb-0 max-sm:flex-col">
-        <VuCardHeader class="truncate pr-$m max-w-70% mb-$xxs">
+        <VuCardHeader class="truncate pr-$m max-w-70% mb-$s dialog-title flex items-center">
           {{ tableName || entity?.getLabel() }}
         </VuCardHeader>
 

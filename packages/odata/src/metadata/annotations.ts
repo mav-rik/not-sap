@@ -1,4 +1,4 @@
-import type { RawMetadata, RawMetadataAnnotationRecord, RawMetadataPropertyType } from './metadata'
+import type { RawMetadataAnnotationRecord, RawMetadataPropertyType, TSchema } from './metadata'
 
 /**
  * Converts a list of raw metadata annotations into a structured object.
@@ -7,7 +7,7 @@ import type { RawMetadata, RawMetadataAnnotationRecord, RawMetadataPropertyType 
  * @returns {TPropertyAnnotations} The structured object representing the annotations.
  */
 export function convertAnnotations(
-  annotations?: RawMetadata['Edmx']['DataServices']['Schema']['Annotations'][number]['Annotation']
+  annotations?: TSchema['Annotations'][number]['Annotation']
 ) {
   if (!annotations) {
     return {}
@@ -65,11 +65,11 @@ function processType(
 function processRecord(r: RawMetadataAnnotationRecord[]): Record<string, unknown> {
   const obj = {} as Record<string, unknown>
 
-  for (const prop of r[0].PropertyValue) {
+  for (const prop of r[0]?.PropertyValue || []) {
     obj[prop.$Property] = processType(prop)
   }
-  if (r[0].$Type) {
-    obj.$Type = r[0].$Type
+  if (r[0]?.$Type) {
+    obj['$Type'] = r[0].$Type
   }
   return obj
 }

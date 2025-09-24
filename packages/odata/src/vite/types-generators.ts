@@ -208,7 +208,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const entityNames = {} as Record<string, string>
   for (const entity of entities) {
     entityNames[entity.alias] = `${JSON.stringify(entity.name)} as const`
-    modelInterface.value.entitySets[entity.name] = {
+    modelInterface.value['entitySets'][entity.name] = {
       keys: entity.keysType,
       fields: entity.type,
       measures: entity.measuresType,
@@ -221,7 +221,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       rawFunction.Parameter.filter(p => p.$Mode === 'In')
         .map(p => JSON.stringify(p.$Name))
         .join(' | ') || 'void'
-    modelInterface.value.functions[fName] = { params }
+    modelInterface.value['functions'][fName] = { params }
   }
 
   elements.push(modelInterface)

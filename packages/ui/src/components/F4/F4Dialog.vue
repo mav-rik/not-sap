@@ -178,7 +178,7 @@ function onApply() {
       <header
         class="dialog-header flex justify-between pb-0 max-sm:flex-col shadow-[inset_0_-2px_#77777725] border-none z-1"
       >
-        <VuCardHeader class="truncate pr-$m max-w-70% mb-$xxs">
+        <VuCardHeader class="truncate pr-$m max-w-70% mb-$s dialog-title flex items-center">
           {{ field.$label }}
         </VuCardHeader>
 

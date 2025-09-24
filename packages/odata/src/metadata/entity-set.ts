@@ -1,4 +1,4 @@
-import type { Metadata, RawMetadata, RawMetadataProperty } from './metadata'
+import type { Metadata, TSchema, RawMetadataProperty } from './metadata'
 import { odataValueFormat } from './format-edm'
 import {
   odataFilterFormat,
@@ -59,8 +59,8 @@ export class EntitySet<
   M extends TOdataDummyInterface = TOdataDummyInterface,
   T extends keyof M['entitySets'] = string,
 > {
-  protected _type: RawMetadata['Edmx']['DataServices']['Schema']['EntityType'][number]
-  protected _set: RawMetadata['Edmx']['DataServices']['Schema']['EntityContainer']['EntitySet'][number]
+  protected _type: TSchema['EntityType'][number]
+  protected _set: Required<TSchema>['EntityContainer']['EntitySet'][number]
   protected _fields?: EntitySetFields<M['entitySets'][T]['fields']>
   protected _keys?: M['entitySets'][T]['keys'][]
   protected _fieldsMap?: Map<
@@ -211,8 +211,9 @@ export class EntitySet<
       return {
         ...p,
         ...v4Attrs,
+        $label: p.$label ?? v4Attrs.$label ?? p.$Name,
         ...refiner.refinedField(this._m.name || '', this._name as string, p.$Name),
-        isNumber: ['Edm.Decimal', 'Edm.Int32', 'Edm.Int64'].includes(p.$Type),
+        isNumber: ['Edm.Decimal', 'Edm.Int8', 'Edm.Int16', 'Edm.Int32', 'Edm.Int64'].includes(p.$Type),
         fromJson: {
           toFilter: odataValueFormat.toFilter[p.$Type],
           toDisplay: odataValueFormat.toDisplay[p.$Type],
@@ -270,7 +271,7 @@ export class EntitySet<
 
   async getReferenceMetadata(refPath: string) {
     const p = joinPath(this._m.model.url, refPath).split('/').slice(0, -1)
-    const name = p[p.length - 1]
+    const name = p[p.length - 1]!
     const model = useModel(name, { url: p.join('/'), host: this._m.model.host })
     return model.getMetadata()
   }
@@ -318,7 +319,7 @@ export class EntitySet<
             const parentTypeFallback = `${path
               .split('.')
               .slice(-2, -1)?.[0]
-              .split('-')
+              ?.split('-')
               .pop()
               ?.toUpperCase()}Type`
             this.getReferenceMetadata(path).then(m => {
