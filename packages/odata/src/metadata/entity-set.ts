@@ -272,7 +272,7 @@ export class EntitySet<
   async getReferenceMetadata(refPath: string) {
     const p = joinPath(this._m.model.url, refPath).split('/').slice(0, -1)
     const name = p[p.length - 1]!
-    const model = useModel(name, { url: p.join('/'), host: this._m.model.host })
+    const model = useModel(name, { path: p.join('/'), host: this._m.model.host })
     return model.getMetadata()
   }
 

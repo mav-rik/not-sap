@@ -16,7 +16,7 @@ interface T__Metadata {
 }
 
 export interface TODataOptions {
-  url?: string
+  path?: string
   headers?: Record<string, string>
   host?: string
   csrfTtl?: number
@@ -113,7 +113,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
   ) {}
 
   public get url() {
-    return this.options.url || `${ODATA_PATH}${this.service}`
+    return this.options.path || `${ODATA_PATH}${this.service}`
   }
   public get host() {
     return this.options.host || ''
@@ -472,9 +472,8 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
   protected _metadataInstance?: Promise<Metadata<M>>
 
-  async getMetadata() {
-    if (!this._metadataInstance) {
-      this._metadataInstance = this._fetch<string>(
+  async readMetadata() {
+    return this._fetch<string>(
         this.genRequestUrl('$metadata'),
         {
           method: 'GET',
@@ -489,8 +488,16 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         if (xml.startsWith('<html>')) {
           throw new IFetchError(`Failed to read metadata of "${this.service}"`, 200, 'OK')
         }
-        return new Metadata<M>(xml, this, this.service)
+        return xml
       })
+  }
+
+  async getMetadata() {
+    if (!this._metadataInstance) {
+      this._metadataInstance = (async () => {
+        const xml = await this.readMetadata()
+        return new Metadata<M>(xml, this, this.service)
+      })()
     }
     return this._metadataInstance
   }
@@ -835,7 +842,7 @@ export function useModel<M extends TOdataDummyInterface = TOdataDummyInterface>(
   service: string,
   options?: TODataOptions
 ) {
-  const key = `${options?.url || ODATA_PATH}/${service}`
+  const key = `${options?.path || ODATA_PATH}/${service}`
   let model = modelMap.get(key)
   if (!model) {
     model = new OData<M>(service, options)

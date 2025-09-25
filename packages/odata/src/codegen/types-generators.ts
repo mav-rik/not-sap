@@ -121,9 +121,11 @@ export function generateEntitySetTypes(
  * @param entitySets Specifies which entity sets to include in the generation. Can be an array of entity set names or objects with names and optional aliases, or '*' for all entity sets.
  */
 export interface TGenerateModelOpts {
+  host?: string
+  path?: string
+  headers?: Record<string, string>
   alias?: string
-  odataUrl?: string
-  entitySets: (string | { name: string; alias?: string })[] | '*'
+  entitySets?: (string | { name: string; alias?: string })[]
 }
 
 /**
@@ -152,7 +154,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   })
 
   const entities: TGenerateEntitySetDefinition[] = []
-  const entitiesToGen = opts.entitySets === '*' ? m.getEntitySetsList() : opts.entitySets
+  const entitiesToGen = opts.entitySets ?? m.getEntitySetsList()
 
   for (const entitySetOptions of entitiesToGen) {
     const entitySetName = (
@@ -233,7 +235,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     extends: `OData<${modelType}>`,
     props: [
       {
-        name: 'readonly name',
+        name: 'readonly serviceName',
         static: true,
         visibility: 'public',
         value: `${JSON.stringify(serviceName)} as const`,
@@ -273,7 +275,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           'opts?': 'TODataOptions',
         },
         body: [
-          `super(${JSON.stringify(serviceName)}, {...opts, url: ${JSON.stringify(opts.odataUrl)}})`,
+          `super(${JSON.stringify(serviceName)}, {...opts, host: ${JSON.stringify(opts.host)}, path: ${JSON.stringify(opts.path)}})`,
         ],
       },
     ],
