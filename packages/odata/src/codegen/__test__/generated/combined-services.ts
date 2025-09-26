@@ -14,9 +14,87 @@ import { OData, type TOdataDummyInterface, type TODataOptions } from "notsapodat
 /**
  * Fields and Keys as Constants
  * 
- * Model: hanaV4Param
+ * Model: sapService
  */
-export const hanaV4ParamConsts = {
+export const sapServiceConsts = {
+  "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001": {
+    "line_itemsType": {
+      fields: ["DocumentNo", "ItemNo", "SubItemNo", "Partner", "HotelGroupingKey", "ClearingStatus", "DocCurrency", "DocAmount", "LocalCurrency", "LocalAmount", "Currency", "Amount", "HotelId", "bukrs", "HotelName", "InvoiceNo", "ClearingDoc", "Ty", "DocDate", "PaymentMethod", "PaymentMethodDesc", "ConAccount", "NetPayDueDate", "ClearingDate", "LegalId", "PbbProduct", "country", "DunningBlockReason", "DunningBlockReasonDescription", "PaymentBlockReason", "PaymentBlockReasonDescription", "ExtranetHotelStatus", "FirstControllerid", "region", "clusterid", "DocumentTypeDesc", "ItemText", "Text", "PostingDate", "paymentlot", "CollectionStep", "BillableItemText"] as const,
+      keys: ["DocumentNo", "ItemNo", "SubItemNo", "Partner", "HotelGroupingKey", "ClearingStatus", "DocCurrency", "DocAmount", "LocalCurrency", "LocalAmount", "Currency", "Amount", "HotelId", "bukrs", "HotelName", "InvoiceNo", "ClearingDoc", "Ty", "DocDate", "PaymentMethod", "PaymentMethodDesc", "ConAccount", "NetPayDueDate", "ClearingDate", "LegalId", "PbbProduct", "country", "DunningBlockReason", "DunningBlockReasonDescription", "PaymentBlockReason", "PaymentBlockReasonDescription", "ExtranetHotelStatus", "FirstControllerid", "region", "clusterid", "DocumentTypeDesc", "ItemText", "Text", "PostingDate", "paymentlot", "CollectionStep", "BillableItemText"] as const,
+      measures: ["LocalAmount"] as const,
+    },
+  },
+};
+
+/**
+ * Types for Keys and Fields
+ * 
+ * Model: sapService
+ */
+export interface TSapService {
+  "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001": {
+    "line_itemsType": {
+      fields: (typeof sapServiceConsts)["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["fields"][number];
+      keys: (typeof sapServiceConsts)["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["keys"][number];
+      measures: (typeof sapServiceConsts)["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["measures"][number];
+    };
+  };
+}
+
+/**
+ * Main OData Interface
+ * 
+ * Model: sapService
+ */
+export interface TSapServiceOData extends TOdataDummyInterface {
+  entitySets: {
+    'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_items': "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType";
+  };
+  entityTypes: {
+    'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType': {
+      keys: TSapService["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["keys"];
+      fields: TSapService["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["fields"];
+      measures: TSapService["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["measures"];
+      navToMany: {};
+      navToOne: {};
+    };
+  };
+  functions: {};
+}
+
+/**
+ * oData class
+ * 
+ * Model: SapService
+ * 
+ * @example
+ * const model = SapService.getInstance()
+ */
+export class SapService extends OData<TSapServiceOData> {
+  public static readonly serviceName = "sapService" as const;
+  private static instance?: SapService;
+  public static getInstance() {
+    if (!SapService.instance) {
+      SapService.instance = new SapService()
+    }
+    return SapService.instance
+  }
+  public static async entitySet<T extends keyof TSapServiceOData['entitySets']>(name: T) {
+    const instance = SapService.getInstance()
+    return instance.entitySet<T>(name)
+  }
+  private constructor(opts?: TODataOptions) {
+    super("sapService", {...opts, host: "http://localhost", path: "/odata/sap-v4"})
+  }
+}
+
+
+/**
+ * Fields and Keys as Constants
+ * 
+ * Model: hanaService
+ */
+export const hanaServiceConsts = {
   "UKDataService": {
     "MyPartnersParameters": {
       fields: ["YEAR"] as const,
@@ -34,19 +112,19 @@ export const hanaV4ParamConsts = {
 /**
  * Types for Keys and Fields
  * 
- * Model: hanaV4Param
+ * Model: hanaService
  */
-export interface THanaV4Param {
+export interface THanaService {
   "UKDataService": {
     "MyPartnersParameters": {
-      fields: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersParameters"]["fields"][number];
-      keys: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersParameters"]["keys"][number];
-      measures: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersParameters"]["measures"][number];
+      fields: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersParameters"]["fields"][number];
+      keys: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersParameters"]["keys"][number];
+      measures: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersParameters"]["measures"][number];
     };
     "MyPartnersType": {
-      fields: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersType"]["fields"][number];
-      keys: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersType"]["keys"][number];
-      measures: (typeof hanaV4ParamConsts)["UKDataService"]["MyPartnersType"]["measures"][number];
+      fields: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersType"]["fields"][number];
+      keys: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersType"]["keys"][number];
+      measures: (typeof hanaServiceConsts)["UKDataService"]["MyPartnersType"]["measures"][number];
     };
   };
 }
@@ -54,26 +132,26 @@ export interface THanaV4Param {
 /**
  * Main OData Interface
  * 
- * Model: hanaV4Param
+ * Model: hanaService
  */
-export interface THanaV4ParamOData extends TOdataDummyInterface {
+export interface THanaServiceOData extends TOdataDummyInterface {
   entitySets: {
     'UKDataService.MyPartners': "UKDataService.MyPartnersParameters";
   };
   entityTypes: {
     'UKDataService.MyPartnersParameters': {
-      keys: THanaV4Param["UKDataService"]["MyPartnersParameters"]["keys"];
-      fields: THanaV4Param["UKDataService"]["MyPartnersParameters"]["fields"];
-      measures: THanaV4Param["UKDataService"]["MyPartnersParameters"]["measures"];
+      keys: THanaService["UKDataService"]["MyPartnersParameters"]["keys"];
+      fields: THanaService["UKDataService"]["MyPartnersParameters"]["fields"];
+      measures: THanaService["UKDataService"]["MyPartnersParameters"]["measures"];
       navToMany: {
         Set: "UKDataService.MyPartnersType";
       };
       navToOne: {};
     };
     'UKDataService.MyPartnersType': {
-      keys: THanaV4Param["UKDataService"]["MyPartnersType"]["keys"];
-      fields: THanaV4Param["UKDataService"]["MyPartnersType"]["fields"];
-      measures: THanaV4Param["UKDataService"]["MyPartnersType"]["measures"];
+      keys: THanaService["UKDataService"]["MyPartnersType"]["keys"];
+      fields: THanaService["UKDataService"]["MyPartnersType"]["fields"];
+      measures: THanaService["UKDataService"]["MyPartnersType"]["measures"];
       navToMany: {};
       navToOne: {
         Parameters: "UKDataService.MyPartnersParameters";
@@ -86,26 +164,26 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
 /**
  * oData class
  * 
- * Model: HanaV4Param
+ * Model: HanaService
  * 
  * @example
- * const model = HanaV4Param.getInstance()
+ * const model = HanaService.getInstance()
  */
-export class HanaV4Param extends OData<THanaV4ParamOData> {
-  public static readonly serviceName = "hanaV4Param" as const;
-  private static instance?: HanaV4Param;
+export class HanaService extends OData<THanaServiceOData> {
+  public static readonly serviceName = "hanaService" as const;
+  private static instance?: HanaService;
   public static getInstance() {
-    if (!HanaV4Param.instance) {
-      HanaV4Param.instance = new HanaV4Param()
+    if (!HanaService.instance) {
+      HanaService.instance = new HanaService()
     }
-    return HanaV4Param.instance
+    return HanaService.instance
   }
-  public static async entitySet<T extends keyof THanaV4ParamOData['entitySets']>(name: T) {
-    const instance = HanaV4Param.getInstance()
+  public static async entitySet<T extends keyof THanaServiceOData['entitySets']>(name: T) {
+    const instance = HanaService.getInstance()
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("hanaV4Param", {...opts, path: "/odata/hana-v4-param"})
+    super("hanaService", {...opts, host: "http://localhost", path: "/odata/hana-v4-param"})
   }
 }
 

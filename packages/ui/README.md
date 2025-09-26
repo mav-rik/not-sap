@@ -524,7 +524,7 @@ const model = ProductModel.getInstance();
 model.options.useBatch = true;
 
 // Type-safe entity set reference
-const entitySet = ProductModel.entityAliases.Products;
+const entitySet = ProductModel.entitySetAliases.Products;
 ```
 
 For metadata refinement and OData operations, refer to the [notsapodata reference](../odata/README.md#core-classes-and-types).
@@ -613,7 +613,7 @@ import type { TODataEntityCustomQuery } from 'notsapui/pi';
 // Type-safe model setup
 const model = ProductModel.getInstance();
 model.options.useBatch = true;
-const entitySet = ProductModel.entityAliases.Products;
+const entitySet = ProductModel.entitySetAliases.Products;
 
 // Type-safe state with generated types
 const results = ref<Record<TProductModelProductsFields, string>[]>([]);
@@ -637,7 +637,7 @@ const selectedRow = ref<Record<TProductModelProductsFields, string>>();
 // Custom query for complex scenarios (optional)
 const customQuery: TODataEntityCustomQuery<
   ProductModel,
-  typeof ProductModel.entityAliases.Products
+  typeof ProductModel.entitySetAliases.Products
 > = async (entity, mainParams, append) => {
   // Custom data fetching logic
   const result = await entity.query(mainParams);
@@ -680,13 +680,13 @@ import { ProductModel, type TProductModelType } from '@/.odata.types';
 
 const customQuery: TODataEntityCustomQuery<
   ProductModel,
-  typeof ProductModel.entityAliases.Products
+  typeof ProductModel.entitySetAliases.Products
 > = async (entity, mainParams, append) => {
   // Type-safe entity and params
   const batch = entity.getModel().createBatch();
 
   // Your custom logic here
-  const result = await batch.read(ProductModel.entityAliases.Products, mainParams);
+  const result = await batch.read(ProductModel.entitySetAliases.Products, mainParams);
 
   return {
     records: result.data,
@@ -790,7 +790,7 @@ await entity.value.query({ filter: [...] })
    ```typescript
    const customQuery: TODataEntityCustomQuery<
      ProductModel,
-     typeof ProductModel.entityAliases.Products
+     typeof ProductModel.entitySetAliases.Products
    > = async (entity, params, append) => {
      // Type-safe custom logic
    };

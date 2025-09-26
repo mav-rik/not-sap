@@ -121,6 +121,12 @@ export interface TCoGeObjectDeclaration {
   value: Record<string, TCoGeValueDeclaration>
 }
 
+export interface TCoGeDeepObjectDeclaration {
+  type: 'deepObject'
+  value: Record<string, any>
+}
+
+
 /**
  * Interface representing an 'interface' declaration in the code generation utility.
  */
@@ -130,6 +136,7 @@ export interface TCoGeInterfaceDeclaration {
   value: Record<string, any>
   extends?: string[]
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
@@ -140,6 +147,7 @@ export interface TCoGeTypeAliasDeclaration {
   name: string
   value: string
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
@@ -150,6 +158,7 @@ export interface TCoGeConstantDeclaration {
   name: string
   value: TCoGeValueDeclaration
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
@@ -172,6 +181,7 @@ export interface TCoGeFunctionDeclaration {
   returnType?: string
   body: TCoGeCodeElement[]
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
@@ -185,6 +195,7 @@ export interface TCoGeClassDeclaration {
   props?: TCoGePropDeclaration[]
   methods?: TCoGeMethodDeclaration[]
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
@@ -197,6 +208,7 @@ export interface TCoGePropDeclaration {
   type?: string
   optional?: boolean
   value?: TCoGeValueDeclaration
+  jsDocs?: string[]
 }
 
 /**
@@ -209,6 +221,7 @@ export interface TCoGeMethodDeclaration {
   args: Record<string, string>
   returnType?: string
   body?: TCoGeCodeElement[]
+  jsDocs?: string[]
 }
 
 /**
@@ -219,12 +232,13 @@ export interface TCoGeEnumDeclaration {
   name: string
   members: (string | { name: string; value: string | number })[]
   exported?: boolean
+  jsDocs?: string[]
 }
 
 /**
  * Represents a value declaration which can be a string, an object declaration, or an arrow function declaration.
  */
-export type TCoGeValueDeclaration = string | TCoGeObjectDeclaration | TCoGeArrowFunctionDeclaration
+export type TCoGeValueDeclaration = string | TCoGeObjectDeclaration | TCoGeArrowFunctionDeclaration | TCoGeDeepObjectDeclaration
 
 /**
  * Generates code from an array of code elements.
@@ -292,6 +306,25 @@ function indent(level: number): string {
   return '  '.repeat(level)
 }
 
+/**
+ * Generates JSDoc comments from an array of strings.
+ *
+ * @param {string[] | undefined} lines - The lines of JSDoc comments.
+ * @param {number} indentLevel - The indentation level.
+ * @returns {string} The formatted JSDoc comment.
+ */
+function generateJSDoc(lines: string[] | undefined, indentLevel: number): string {
+  if (!lines || lines.length === 0) {
+    return ''
+  }
+  let code = indent(indentLevel) + '/**\n'
+  for (const line of lines) {
+    code += indent(indentLevel) + ' * ' + line + '\n'
+  }
+  code += indent(indentLevel) + ' */\n'
+  return code
+}
+
 function generateValue(value: TCoGeValueDeclaration, indentLevel: number): string {
   if (typeof value === 'string') {
     return value
@@ -299,12 +332,17 @@ function generateValue(value: TCoGeValueDeclaration, indentLevel: number): strin
     return generateObject(value as TCoGeObjectDeclaration, indentLevel)
   } else if (value.type === 'arrowFunction') {
     return generateArrowFunction(value as TCoGeArrowFunctionDeclaration, indentLevel, true)
+  } else if (value.type === 'deepObject') {
+    return generateDeepObject(value.value, indentLevel)
   } else {
     throw new Error(`Unsupported value type in generateValue: ${(value as any).type}`)
   }
 }
 
 function generateObject(decl: TCoGeObjectDeclaration, indentLevel: number): string {
+  if (!Object.keys(decl.value).length) {
+    return '{}'
+  }
   let code = '{\n'
   const entries = Object.entries(decl.value)
   entries.forEach(([key, val], index) => {
@@ -316,6 +354,24 @@ function generateObject(decl: TCoGeObjectDeclaration, indentLevel: number): stri
     }
   })
   code += indent(indentLevel) + '}'
+  return code
+}
+
+function generateDeepObject(value: any, indentLevel: number): string {
+  let code = ''
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    code += '{\n'
+    const entries = Object.entries(value)
+    entries.forEach(([key, val]) => {
+      code += indent(indentLevel + 1) + `${key}: `
+      code += generateDeepObject(val, indentLevel + 1)
+      code += ',\n'
+    })
+    code += indent(indentLevel) + '}'
+  }
+  if (typeof value === 'string') {
+    return value
+  }
   return code
 }
 
@@ -346,6 +402,7 @@ function generateArrowFunction(
 
 function generateConstant(decl: TCoGeConstantDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '
@@ -358,6 +415,7 @@ function generateConstant(decl: TCoGeConstantDeclaration, indentLevel: number): 
 
 function generateProp(decl: TCoGePropDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   const visibility = decl.visibility ? decl.visibility + ' ' : ''
   const isStatic = decl.static ? 'static ' : ''
   const optional = decl.optional ? '?' : ''
@@ -372,6 +430,7 @@ function generateProp(decl: TCoGePropDeclaration, indentLevel: number): string {
 
 function generateClass(decl: TCoGeClassDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '
@@ -458,6 +517,7 @@ function generateForOfLoop(decl: TCoGeForOfLoopStatement, indentLevel: number): 
 // Function to generate interface code
 function generateInterface(decl: TCoGeInterfaceDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '
@@ -465,6 +525,10 @@ function generateInterface(decl: TCoGeInterfaceDeclaration, indentLevel: number)
   code += `interface ${decl.name}`
   if (decl.extends?.length) {
     code += ` extends ${decl.extends.join(', ')}`
+  }
+  if (!Object.keys(decl.value).length) {
+    code += ' {}\n'
+    return code
   }
   code += ` {\n`
   code += generateInterfaceBody(decl.value, indentLevel + 1)
@@ -478,6 +542,10 @@ function generateInterfaceBody(value: Record<string, any>, indentLevel: number):
     if (typeof propValue === 'string') {
       code += indent(indentLevel) + `${propName}: ${propValue};\n`
     } else if (typeof propValue === 'object') {
+      if (!Object.keys(propValue).length) {
+        code += indent(indentLevel) + `${propName}: {};\n`
+        continue
+      }
       code += indent(indentLevel) + `${propName}: {\n`
       code += generateInterfaceBody(propValue, indentLevel + 1)
       code += indent(indentLevel) + '};\n'
@@ -490,6 +558,7 @@ function generateInterfaceBody(value: Record<string, any>, indentLevel: number):
 
 function generateTypeAlias(decl: TCoGeTypeAliasDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '
@@ -500,6 +569,7 @@ function generateTypeAlias(decl: TCoGeTypeAliasDeclaration, indentLevel: number)
 
 function generateFunction(decl: TCoGeFunctionDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '
@@ -519,6 +589,7 @@ function generateFunction(decl: TCoGeFunctionDeclaration, indentLevel: number): 
 
 function generateMethod(decl: TCoGeMethodDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   const visibility = decl.visibility ? decl.visibility + ' ' : ''
   const isStatic = decl.static ? 'static ' : ''
   const args = Object.entries(decl.args)
@@ -540,6 +611,7 @@ function generateMethod(decl: TCoGeMethodDeclaration, indentLevel: number): stri
 
 function generateEnum(decl: TCoGeEnumDeclaration, indentLevel: number): string {
   let code = ''
+  code += generateJSDoc(decl.jsDocs, indentLevel)
   code += indent(indentLevel)
   if (decl.exported) {
     code += 'export '

@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx"
+    xmlns="http://docs.oasis-open.org/odata/ns/edm">
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1" Alias="Communication" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PERSONALDATA',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.PersonalData.v1" Alias="PersonalData" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_ANALYTICS',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Analytics.v1" Alias="Analytics" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMON',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="SAP__common" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_MEASURES',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="Org.OData.Measures.V1" Alias="SAP__measures" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CORE',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="Org.OData.Core.V1" Alias="SAP__core" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CAPABILITIES',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="Org.OData.Capabilities.V1" Alias="SAP__capabilities" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_AGGREGATION',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="Org.OData.Aggregation.V1" Alias="SAP__aggregation" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_VALIDATION',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="Org.OData.Validation.V1" Alias="SAP__validation" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CODELIST',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.CodeList.v1" Alias="SAP__CodeList" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="SAP__UI" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_HTML5',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.HTML5.v1" Alias="SAP__HTML5" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_PDF',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.PDF.v1" Alias="SAP__PDF" />
+    </edmx:Reference>
+    <edmx:Reference
+        Uri="/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_SESSION',Version='0001',SAP__Origin='LOCAL_TGW')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Session.v1" Alias="SAP__session" />
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001" Alias="SAP__self">
+            <Annotation Term="SAP__core.SchemaVersion" String="1.0.0" />
+            <EntityType Name="line_itemsType">
+                <Key>
+                    <PropertyRef Name="DocumentNo" />
+                    <PropertyRef Name="ItemNo" />
+                    <PropertyRef Name="SubItemNo" />
+                </Key>
+                <Property Name="DocumentNo" Type="Edm.String" Nullable="false" MaxLength="12" />
+                <Property Name="ItemNo" Type="Edm.String" Nullable="false" MaxLength="4" />
+                <Property Name="SubItemNo" Type="Edm.String" Nullable="false" MaxLength="3" />
+                <Property Name="Partner" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="HotelGroupingKey" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="ClearingStatus" Type="Edm.String" Nullable="false" MaxLength="12" />
+                <Property Name="DocCurrency" Type="Edm.String" Nullable="false" MaxLength="5" />
+                <Property Name="DocAmount" Type="Edm.Decimal" Nullable="false" Precision="18"
+                    Scale="variable" />
+                <Property Name="LocalCurrency" Type="Edm.String" Nullable="false" MaxLength="5" />
+                <Property Name="LocalAmount" Type="Edm.Decimal" Nullable="false" Precision="18"
+                    Scale="variable" />
+                <Property Name="Currency" Type="Edm.String" Nullable="false" MaxLength="5" />
+                <Property Name="Amount" Type="Edm.Decimal" Nullable="false" Precision="13"
+                    Scale="variable" />
+                <Property Name="HotelId" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="bukrs" Type="Edm.String" Nullable="false" MaxLength="4" />
+                <Property Name="HotelName" Type="Edm.String" Nullable="false" MaxLength="40" />
+                <Property Name="InvoiceNo" Type="Edm.String" Nullable="false" MaxLength="16" />
+                <Property Name="ClearingDoc" Type="Edm.String" Nullable="false" MaxLength="12" />
+                <Property Name="Ty" Type="Edm.String" Nullable="false" MaxLength="2" />
+                <Property Name="DocDate" Type="Edm.Date" />
+                <Property Name="PaymentMethod" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="PaymentMethodDesc" Type="Edm.String" Nullable="false" MaxLength="50" />
+                <Property Name="ConAccount" Type="Edm.String" Nullable="false" MaxLength="12" />
+                <Property Name="NetPayDueDate" Type="Edm.Date" />
+                <Property Name="ClearingDate" Type="Edm.Date" />
+                <Property Name="LegalId" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="PbbProduct" Type="Edm.String" Nullable="false" MaxLength="9" />
+                <Property Name="country" Type="Edm.String" Nullable="false" MaxLength="3" />
+                <Property Name="DunningBlockReason" Type="Edm.String" Nullable="false" MaxLength="1" />
+                <Property Name="DunningBlockReasonDescription" Type="Edm.String" Nullable="false"
+                    MaxLength="50" />
+                <Property Name="PaymentBlockReason" Type="Edm.String" Nullable="false" MaxLength="1" />
+                <Property Name="PaymentBlockReasonDescription" Type="Edm.String" Nullable="false"
+                    MaxLength="40" />
+                <Property Name="ExtranetHotelStatus" Type="Edm.String" Nullable="false"
+                    MaxLength="30" />
+                <Property Name="FirstControllerid" Type="Edm.String" Nullable="false" MaxLength="15" />
+                <Property Name="region" Type="Edm.String" Nullable="false" MaxLength="10" />
+                <Property Name="clusterid" Type="Edm.String" Nullable="false" MaxLength="20" />
+                <Property Name="DocumentTypeDesc" Type="Edm.String" Nullable="false" MaxLength="20" />
+                <Property Name="ItemText" Type="Edm.String" Nullable="false" MaxLength="50" />
+                <Property Name="Text" Type="Edm.String" Nullable="false" MaxLength="20" />
+                <Property Name="PostingDate" Type="Edm.Date" />
+                <Property Name="paymentlot" Type="Edm.String" Nullable="false" MaxLength="12" />
+                <Property Name="CollectionStep" Type="Edm.String" Nullable="false" MaxLength="4" />
+                <Property Name="BillableItemText" Type="Edm.String" Nullable="false" MaxLength="50" />
+            </EntityType>
+            <EntityContainer Name="Container">
+                <EntitySet Name="line_items"
+                    EntityType="com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType" />
+            </EntityContainer>
+            <Annotations Target="SAP__self.line_itemsType/DocumentNo">
+                <Annotation Term="SAP__common.Label" String="Document Number" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_fp04_docno_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.documentno'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="Doc. No." />
+                <Annotation Term="SAP__common.QuickInfo" String="Number of a FI-CA Document" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ItemNo">
+                <Annotation Term="SAP__common.Label" String="Item Number" />
+                <Annotation Term="SAP__common.IsDigitSequence" />
+                <Annotation Term="SAP__common.Heading" String="Itm" />
+                <Annotation Term="SAP__common.QuickInfo" String="Item Number in FI-CA Document" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/SubItemNo">
+                <Annotation Term="SAP__common.IsDigitSequence" />
+                <Annotation Term="SAP__common.Label" String="Subitem" />
+                <Annotation Term="SAP__common.Heading" String="Sub" />
+                <Annotation Term="SAP__common.QuickInfo"
+                    String="Subitem for a Partial Clearing in Document" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/Partner">
+                <Annotation Term="SAP__common.Label" String="Partner" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_customer_f4_help/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.partner'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="BPartner" />
+                <Annotation Term="SAP__common.QuickInfo" String="Business Partner Number" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/HotelGroupingKey">
+                <Annotation Term="SAP__common.Label" String="Hotel Grouping Key" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_hgroup_key_f4_help/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.hotelgroupingkey'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="Hotel Grouping Key" />
+                <Annotation Term="SAP__common.QuickInfo" String="Hotel Grouping Key" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ClearingStatus">
+                <Annotation Term="SAP__common.Label" String="Clearing Status" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_clear_status_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.clearingstatus'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DocCurrency">
+                <Annotation Term="SAP__common.IsCurrency" />
+                <Annotation Term="SAP__common.Label" String="Document Currency" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Heading" String="Crcy" />
+                <Annotation Term="SAP__common.QuickInfo" String="Transaction Currency" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DocAmount">
+                <Annotation Term="SAP__common.Label" String="Document Amount" />
+                <Annotation Term="SAP__measures.ISOCurrency" Path="DocCurrency" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/LocalCurrency">
+                <Annotation Term="SAP__common.IsCurrency" />
+                <Annotation Term="SAP__common.Label" String="Local Currency" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Heading" String="Crcy" />
+                <Annotation Term="SAP__common.QuickInfo" String="Currency Key" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/LocalAmount">
+                <Annotation Term="SAP__common.Label" String="Local Amount" />
+                <Annotation Term="SAP__measures.ISOCurrency" Path="LocalCurrency" />
+                <Annotation Term="SAP__aggregation.CustomAggregate" Qualifier="LocalAmount"
+                    String="Edm.Decimal" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/Currency">
+                <Annotation Term="SAP__common.IsCurrency" />
+                <Annotation Term="SAP__common.Label" String="Currency" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/Amount">
+                <Annotation Term="SAP__common.Label" String="Amount(EUR)" />
+                <Annotation Term="SAP__measures.ISOCurrency" Path="Currency" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/HotelId">
+                <Annotation Term="SAP__common.Label" String="Hotel Id" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_hotel_f4_help/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.hotelid'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/bukrs">
+                <Annotation Term="SAP__common.Label" String="Company Code" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Heading" String="CoCd" />
+                <Annotation Term="SAP__common.QuickInfo" String="Company Code" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/HotelName">
+                <Annotation Term="SAP__common.Label" String="Hotel Name" />
+                <Annotation Term="SAP__common.Heading" String="Name 3" />
+                <Annotation Term="SAP__common.QuickInfo" String="Name 3 of organization" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/InvoiceNo">
+                <Annotation Term="SAP__common.Label" String="Invoice Number" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_fp04_invno_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.invoiceno'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="Reference" />
+                <Annotation Term="SAP__common.QuickInfo" String="Reference document number" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ClearingDoc">
+                <Annotation Term="SAP__common.Label" String="Clearing Document" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Heading" String="Clear.Doc." />
+                <Annotation Term="SAP__common.QuickInfo"
+                    String="Clearing Document or Printed Document" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/Ty">
+                <Annotation Term="SAP__common.Label" String="Document type" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_doc_type_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.ty'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="DT" />
+                <Annotation Term="SAP__common.QuickInfo" String="Document Type" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DocDate">
+                <Annotation Term="SAP__common.Label" String="Document Date" />
+                <Annotation Term="SAP__common.Heading" String="Doc. Date" />
+                <Annotation Term="SAP__common.QuickInfo" String="Document Date in Document" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PaymentMethod">
+                <Annotation Term="SAP__common.Label" String="Payment Method" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_pay_meth_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.paymentmethod'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PaymentMethodDesc">
+                <Annotation Term="SAP__common.Label" String="Payment Method Description" />
+                <Annotation Term="SAP__common.Heading" String="Domain value" />
+                <Annotation Term="SAP__common.QuickInfo" String="Domain value" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ConAccount">
+                <Annotation Term="SAP__common.Label" String="Contract Account Number" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Heading" String="Cont.Account" />
+                <Annotation Term="SAP__common.QuickInfo" String="Contract Account Number" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/NetPayDueDate">
+                <Annotation Term="SAP__common.Label" String="Net Payment Due Date" />
+                <Annotation Term="SAP__common.Heading" String="Due" />
+                <Annotation Term="SAP__common.QuickInfo" String="Due date for net payment" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ClearingDate">
+                <Annotation Term="SAP__common.Label" String="Clearing Date" />
+                <Annotation Term="SAP__common.Heading" String="Clear.Date" />
+                <Annotation Term="SAP__common.QuickInfo" String="Clearing Date" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/LegalId">
+                <Annotation Term="SAP__common.Label" String="Legal ID" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_legal_f4_help/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.legalid'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PbbProduct">
+                <Annotation Term="SAP__common.Label" String="PBB Product" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/country">
+                <Annotation Term="SAP__common.Label" String="Asset Country" />
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_regn_cnty_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.country'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="C/R" />
+                <Annotation Term="SAP__common.QuickInfo" String="Country/Region Key" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DunningBlockReason">
+                <Annotation Term="SAP__common.Label" String="Dunning Block" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_dunn_block_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.dunningblockreason'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DunningBlockReasonDescription">
+                <Annotation Term="SAP__common.Label" String="Dunning Block Description" />
+                <Annotation Term="SAP__common.Heading" String="Name of Dunning Lock Reason" />
+                <Annotation Term="SAP__common.QuickInfo" String="Name of Dunning Lock Reason" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PaymentBlockReason">
+                <Annotation Term="SAP__common.Label" String="Payment Block" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_pay_block_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.paymentblockreason'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PaymentBlockReasonDescription">
+                <Annotation Term="SAP__common.Label" String="Payment Block Description" />
+                <Annotation Term="SAP__common.Heading" String="Name" />
+                <Annotation Term="SAP__common.QuickInfo" String="Name of Lock Reason" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ExtranetHotelStatus">
+                <Annotation Term="SAP__common.Label" String="Extranet Hotel Status" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_status_codes_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.extranethotelstatus'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="Status" />
+                <Annotation Term="SAP__common.QuickInfo" String="Individual Status of an Object" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/FirstControllerid">
+                <Annotation Term="SAP__common.Label" String="First Controller ID" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_first_ctrl_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.firstcontrollerid'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/region">
+                <Annotation Term="SAP__common.Label" String="Region" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_region_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.region'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/clusterid">
+                <Annotation Term="SAP__common.Label" String="Cluster" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_cluster_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.clusterid'/$metadata</String>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/DocumentTypeDesc">
+                <Annotation Term="SAP__common.Label" String="Document Type Description" />
+                <Annotation Term="SAP__common.Heading" String="Description" />
+                <Annotation Term="SAP__common.QuickInfo" String="Document Type Description" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/ItemText">
+                <Annotation Term="SAP__common.Label" String="Item Text" />
+                <Annotation Term="SAP__common.Heading" String="Text" />
+                <Annotation Term="SAP__common.QuickInfo" String="Item text" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/paymentlot">
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Label" String="Lot" />
+                <Annotation Term="SAP__common.QuickInfo" String="Payment Lot" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/CollectionStep">
+                <Annotation Term="SAP__common.IsUpperCase" />
+                <Annotation Term="SAP__common.Label" String="Collection Step" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/BillableItemText">
+                <Annotation Term="SAP__common.Label" String="Billable Item Text" />
+                <Annotation Term="SAP__common.ValueListReferences">
+                    <Collection>
+                        <String>
+                            ../../../../srvd_f4/sap/zvei_mdg_bp_bill_item_text_vh/0001;ps='srvd-zsd_mdg_bp_fp04_data-0001';va='com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.et-zvec_mdg_bp_fp04_data_ana.billableitemtext'/$metadata</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Heading" String="Item Text" />
+                <Annotation Term="SAP__common.QuickInfo"
+                    String="Text of Main Billable Item (50 Characters)" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType">
+                <Annotation Term="SAP__common.Label" String="Group Line Items" />
+                <Annotation Term="SAP__UI.Facets">
+                    <Collection>
+                        <Record Type="SAP__UI.ReferenceFacet">
+                            <PropertyValue Property="Label" String="Group Line Items" />
+                            <PropertyValue Property="ID" String="GroupLineItems" />
+                            <PropertyValue Property="Target"
+                                AnnotationPath="@SAP__UI.Identification" />
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__UI.HeaderInfo">
+                    <Record>
+                        <PropertyValue Property="TypeName" String="Group Line Item" />
+                        <PropertyValue Property="TypeNamePlural" String="Group Line Items" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__UI.Identification">
+                    <Collection>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Grouping Key" />
+                            <PropertyValue Property="Value" Path="HotelGroupingKey" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Partner" />
+                            <PropertyValue Property="Value" Path="Partner" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Type Description" />
+                            <PropertyValue Property="Value" Path="DocumentTypeDesc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Number" />
+                            <PropertyValue Property="Value" Path="DocumentNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Item Number" />
+                            <PropertyValue Property="Value" Path="ItemNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Status" />
+                            <PropertyValue Property="Value" Path="ClearingStatus" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Currency" />
+                            <PropertyValue Property="Value" Path="DocCurrency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Local Currency" />
+                            <PropertyValue Property="Value" Path="LocalCurrency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Amount" />
+                            <PropertyValue Property="Value" Path="DocAmount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Local Amount" />
+                            <PropertyValue Property="Value" Path="LocalAmount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Currency" />
+                            <PropertyValue Property="Value" Path="Currency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Amount(EUR)" />
+                            <PropertyValue Property="Value" Path="Amount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Id" />
+                            <PropertyValue Property="Value" Path="HotelId" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Company Code" />
+                            <PropertyValue Property="Value" Path="bukrs" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Name" />
+                            <PropertyValue Property="Value" Path="HotelName" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Invoice Number" />
+                            <PropertyValue Property="Value" Path="InvoiceNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Document" />
+                            <PropertyValue Property="Value" Path="ClearingDoc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document type" />
+                            <PropertyValue Property="Value" Path="Ty" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Date" />
+                            <PropertyValue Property="Value" Path="DocDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Method" />
+                            <PropertyValue Property="Value" Path="PaymentMethod" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Method Description" />
+                            <PropertyValue Property="Value" Path="PaymentMethodDesc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Contract Account Number" />
+                            <PropertyValue Property="Value" Path="ConAccount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Net Payment Due Date" />
+                            <PropertyValue Property="Value" Path="NetPayDueDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Item Text" />
+                            <PropertyValue Property="Value" Path="ItemText" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Date" />
+                            <PropertyValue Property="Value" Path="ClearingDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Legal ID" />
+                            <PropertyValue Property="Value" Path="LegalId" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="PBB Product" />
+                            <PropertyValue Property="Value" Path="PbbProduct" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Asset Country" />
+                            <PropertyValue Property="Value" Path="country" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Dunning Block" />
+                            <PropertyValue Property="Value" Path="DunningBlockReason" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Dunning Block Description" />
+                            <PropertyValue Property="Value" Path="DunningBlockReasonDescription" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Block" />
+                            <PropertyValue Property="Value" Path="PaymentBlockReason" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Block Description" />
+                            <PropertyValue Property="Value" Path="PaymentBlockReasonDescription" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Extranet Hotel Status" />
+                            <PropertyValue Property="Value" Path="ExtranetHotelStatus" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="First Controller ID" />
+                            <PropertyValue Property="Value" Path="FirstControllerid" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Billable Item Text" />
+                            <PropertyValue Property="Value" Path="BillableItemText" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Region" />
+                            <PropertyValue Property="Value" Path="region" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Cluster" />
+                            <PropertyValue Property="Value" Path="clusterid" />
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__UI.LineItem">
+                    <Collection>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Grouping Key" />
+                            <PropertyValue Property="Value" Path="HotelGroupingKey" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Partner" />
+                            <PropertyValue Property="Value" Path="Partner" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Number" />
+                            <PropertyValue Property="Value" Path="DocumentNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Item Number" />
+                            <PropertyValue Property="Value" Path="ItemNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Status" />
+                            <PropertyValue Property="Value" Path="ClearingStatus" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Currency" />
+                            <PropertyValue Property="Value" Path="DocCurrency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Amount" />
+                            <PropertyValue Property="Value" Path="DocAmount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Local Currency" />
+                            <PropertyValue Property="Value" Path="LocalCurrency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Local Amount" />
+                            <PropertyValue Property="Value" Path="LocalAmount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Currency" />
+                            <PropertyValue Property="Value" Path="Currency" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Amount(EUR)" />
+                            <PropertyValue Property="Value" Path="Amount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Id" />
+                            <PropertyValue Property="Value" Path="HotelId" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Company Code" />
+                            <PropertyValue Property="Value" Path="bukrs" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Hotel Name" />
+                            <PropertyValue Property="Value" Path="HotelName" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Invoice Number" />
+                            <PropertyValue Property="Value" Path="InvoiceNo" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Document" />
+                            <PropertyValue Property="Value" Path="ClearingDoc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document type" />
+                            <PropertyValue Property="Value" Path="Ty" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Type Description" />
+                            <PropertyValue Property="Value" Path="DocumentTypeDesc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Document Date" />
+                            <PropertyValue Property="Value" Path="DocDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Method" />
+                            <PropertyValue Property="Value" Path="PaymentMethod" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Method Description" />
+                            <PropertyValue Property="Value" Path="PaymentMethodDesc" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Contract Account Number" />
+                            <PropertyValue Property="Value" Path="ConAccount" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Net Payment Due Date" />
+                            <PropertyValue Property="Value" Path="NetPayDueDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Item Text" />
+                            <PropertyValue Property="Value" Path="ItemText" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Clearing Date" />
+                            <PropertyValue Property="Value" Path="ClearingDate" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Legal ID" />
+                            <PropertyValue Property="Value" Path="LegalId" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="PBB Product" />
+                            <PropertyValue Property="Value" Path="PbbProduct" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Asset Country" />
+                            <PropertyValue Property="Value" Path="country" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Dunning Block" />
+                            <PropertyValue Property="Value" Path="DunningBlockReason" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Dunning Block Description" />
+                            <PropertyValue Property="Value" Path="DunningBlockReasonDescription" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Block" />
+                            <PropertyValue Property="Value" Path="PaymentBlockReason" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Payment Block Description" />
+                            <PropertyValue Property="Value" Path="PaymentBlockReasonDescription" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Extranet Hotel Status" />
+                            <PropertyValue Property="Value" Path="ExtranetHotelStatus" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="First Controller ID" />
+                            <PropertyValue Property="Value" Path="FirstControllerid" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Billable Item Text" />
+                            <PropertyValue Property="Value" Path="BillableItemText" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Region" />
+                            <PropertyValue Property="Value" Path="region" />
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Cluster" />
+                            <PropertyValue Property="Value" Path="clusterid" />
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__UI.SelectionFields">
+                    <Collection>
+                        <PropertyPath>HotelGroupingKey</PropertyPath>
+                        <PropertyPath>ClearingStatus</PropertyPath>
+                        <PropertyPath>DocumentNo</PropertyPath>
+                        <PropertyPath>Ty</PropertyPath>
+                        <PropertyPath>DocDate</PropertyPath>
+                        <PropertyPath>PaymentMethod</PropertyPath>
+                        <PropertyPath>LegalId</PropertyPath>
+                        <PropertyPath>country</PropertyPath>
+                        <PropertyPath>InvoiceNo</PropertyPath>
+                        <PropertyPath>DunningBlockReason</PropertyPath>
+                        <PropertyPath>PaymentBlockReason</PropertyPath>
+                        <PropertyPath>ExtranetHotelStatus</PropertyPath>
+                        <PropertyPath>FirstControllerid</PropertyPath>
+                        <PropertyPath>BillableItemText</PropertyPath>
+                        <PropertyPath>region</PropertyPath>
+                        <PropertyPath>clusterid</PropertyPath>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.Container/line_items">
+                <Annotation Term="SAP__capabilities.SearchRestrictions">
+                    <Record>
+                        <PropertyValue Property="Searchable" Bool="false" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__capabilities.InsertRestrictions">
+                    <Record>
+                        <PropertyValue Property="Insertable" Bool="false" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__capabilities.DeleteRestrictions">
+                    <Record>
+                        <PropertyValue Property="Deletable" Bool="false" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__capabilities.UpdateRestrictions">
+                    <Record>
+                        <PropertyValue Property="Updatable" Bool="false" />
+                        <PropertyValue Property="QueryOptions">
+                            <Record>
+                                <PropertyValue Property="SelectSupported" Bool="true" />
+                            </Record>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__core.OptimisticConcurrency">
+                    <Collection />
+                </Annotation>
+                <Annotation Term="SAP__capabilities.FilterRestrictions">
+                    <Record>
+                        <PropertyValue Property="FilterExpressionRestrictions">
+                            <Collection>
+                                <Record>
+                                    <PropertyValue Property="Property"
+                                        PropertyPath="HotelGroupingKey" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="DocAmount" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="LocalAmount" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="Amount" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="bukrs" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="Ty" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="country" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="paymentlot" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                                <Record>
+                                    <PropertyValue Property="Property" PropertyPath="CollectionStep" />
+                                    <PropertyValue Property="AllowedExpressions" String="MultiValue" />
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.Container">
+                <Annotation Term="SAP__CodeList.CurrencyCodes">
+                    <Record>
+                        <PropertyValue Property="Url"
+                            String="../../../../default/iwbep/common/0001/$metadata" />
+                        <PropertyValue Property="CollectionPath" String="Currencies" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__aggregation.ApplySupported">
+                    <Record>
+                        <PropertyValue Property="Transformations">
+                            <Collection>
+                                <String>aggregate</String>
+                                <String>groupby</String>
+                                <String>filter</String>
+                            </Collection>
+                        </PropertyValue>
+                        <PropertyValue Property="Rollup"
+                            EnumMember="SAP__aggregation.RollupType/None" />
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__common.ApplyMultiUnitBehaviorForSortingAndFiltering"
+                    Bool="true" />
+                <Annotation Term="SAP__capabilities.FilterFunctions">
+                    <Collection>
+                        <String>eq</String>
+                        <String>ne</String>
+                        <String>gt</String>
+                        <String>ge</String>
+                        <String>lt</String>
+                        <String>le</String>
+                        <String>and</String>
+                        <String>or</String>
+                        <String>contains</String>
+                        <String>startswith</String>
+                        <String>endswith</String>
+                        <String>any</String>
+                        <String>all</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__capabilities.SupportedFormats">
+                    <Collection>
+                        <String>application/json</String>
+                        <String>application/pdf</String>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__PDF.Features">
+                    <Record>
+                        <PropertyValue Property="DocumentDescriptionReference"
+                            String="../../../../default/iwbep/common/0001/$metadata" />
+                        <PropertyValue Property="DocumentDescriptionCollection"
+                            String="MyDocumentDescriptions" />
+                        <PropertyValue Property="ArchiveFormat" Bool="true" />
+                        <PropertyValue Property="Border" Bool="true" />
+                        <PropertyValue Property="CoverPage" Bool="true" />
+                        <PropertyValue Property="FitToPage" Bool="true" />
+                        <PropertyValue Property="FontName" Bool="true" />
+                        <PropertyValue Property="FontSize" Bool="true" />
+                        <PropertyValue Property="Margin" Bool="true" />
+                        <PropertyValue Property="Signature" Bool="true" />
+                        <PropertyValue Property="ResultSizeDefault" Int="20000" />
+                        <PropertyValue Property="ResultSizeMaximum" Int="20000" />
+                    </Record>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/Text">
+                <Annotation Term="SAP__common.Label" String="Text" />
+                <Annotation Term="SAP__common.QuickInfo" String="Item text - 20 Characters" />
+            </Annotations>
+            <Annotations Target="SAP__self.line_itemsType/PostingDate">
+                <Annotation Term="SAP__common.Label" String="Posting Date" />
+                <Annotation Term="SAP__common.Heading" String="Pstng Date" />
+                <Annotation Term="SAP__common.QuickInfo" String="Posting Date in the Document" />
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

@@ -1,4 +1,4 @@
-import type { EntitySet } from '../metadata/entity-set'
+import { EntityType } from '../metadata/entity-type'
 import type { Metadata } from '../metadata/metadata'
 import {
   codeGen,
@@ -8,107 +8,108 @@ import {
 } from './code-gen-utils'
 
 export interface TGenerateEntitySetDefinition {
-  alias: string
+  name: string
+  type: string
+}
+export interface TGenerateEntityTypeDefinition {
   type: string
   keysType: string
   measuresType: string
   name: string
   keys: string
   measures: string
+  navToMany: Record<string, string>
+  navToOne: Record<string, string>
 }
 
-/**
- * Generates TypeScript types and constants for a given EntitySet.
- *
- * @param {EntitySet} d - The EntitySet for which to generate types.
- * @param {Object} opts - Options for generating the types.
- * @param {string} opts.modelAlias - The alias for the model.
- * @param {string} opts.entitySetAlias - The alias for the entity set.
- * @returns {Object} An object containing the generated code and entity details.
- * @returns {string} code - The generated TypeScript code as a string.
- * @returns {Object} entity - Details about the generated entity.
- * @returns {string} entity.alias - The alias for the entity set.
- * @returns {string} entity.type - The TypeScript type for the entity fields.
- * @returns {string} entity.name - The name of the entity set.
- * @returns {string} entity.keys - The keys of the entity set, joined by ' | '.
- */
-export function generateEntitySetTypes(
-  d: EntitySet,
+interface TEntityTypeConsts {
+  keys: string
+  fields: string
+  measures: string
+}
+                            // namespace.entityType
+type TModelConsts = Record<string, Record<string, TEntityTypeConsts>> 
+type TModelTypes = Record<string, Record<string, TEntityTypeConsts>> 
+
+const isPlainObject = (value: unknown): value is Record<string, any> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const mergeDeep = <T extends Record<string, any>>(target: T, source: Record<string, any>): T => {
+  for (const key of Object.keys(source)) {
+    const sourceValue = source[key]
+    if (isPlainObject(sourceValue)) {
+      const targetValue = target[key]
+      const nextTarget = isPlainObject(targetValue) ? targetValue : {}
+      ;(target as any)[key] = nextTarget
+      mergeDeep(nextTarget, sourceValue)
+    } else {
+      ;(target as any)[key] = sourceValue
+    }
+  }
+
+  return target
+}
+
+export function generateEntityTypeTypes(
+  d: EntityType<any>,
   opts: {
     modelAlias: string
-    entitySetAlias: string
+    capitalizedAlias?: string
   }
 ): {
-  code: string
-  entity: TGenerateEntitySetDefinition
+  consts: TModelConsts
+  types: TModelTypes
+  entity: TGenerateEntityTypeDefinition
 } {
   const fieldNames = d.fields.map(field => field.$Name)
   const keys = d.keys
   const measures = d.fields.filter(f => f.isMeasure).map(field => field.$Name)
+  const ns = d.entityTypeNS
+  const typeName = d.name.split('.').pop()!
+  const typeConsts = {} as TModelConsts[string][string]
+  const typeTypes = {} as TModelTypes[string][string]
+  const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
 
-  const entitySetTypeName = `${opts.modelAlias}${opts.entitySetAlias}`
-
-  const elements: TCoGeCodeElement[] = []
-
-  elements.push({
-    type: 'const',
-    name: `${entitySetTypeName}EntitySet`,
-    value: JSON.stringify(d.name),
-    exported: true,
-  })
-
-  elements.push({
-    type: 'const',
-    name: `${entitySetTypeName}Fields`,
-    value: `[\n  ${fieldNames.map(name => JSON.stringify(name)).join(',\n  ')}\n] as const`,
-    exported: true,
-  })
-  elements.push({
-    type: 'const',
-    name: `${entitySetTypeName}Keys`,
-    value: `[\n  ${keys.map(name => JSON.stringify(name)).join(',\n  ')}\n] as const`,
-    exported: true,
-  })
-  elements.push({
-    type: 'const',
-    name: `${entitySetTypeName}Measures`,
-    value: measures.length
-      ? `[\n  ${measures.map(name => JSON.stringify(name)).join(',\n  ')}\n] as const`
+  typeConsts.fields = typeConsts.fields = `[${fieldNames.map(name => JSON.stringify(name)).join(', ')}] as const`
+  typeConsts.keys = typeConsts.keys = `[${fieldNames.map(name => JSON.stringify(name)).join(', ')}] as const`
+  typeConsts.measures =  measures.length
+      ? `[${measures.map(name => JSON.stringify(name)).join(', ')}] as const`
       : '[] as const',
-    exported: true,
-  })
 
-  elements.push({
-    type: 'type',
-    name: `T${entitySetTypeName}Fields`,
-    value: `typeof ${entitySetTypeName}Fields[number]`,
-    exported: true,
-  })
-  elements.push({
-    type: 'type',
-    name: `T${entitySetTypeName}Keys`,
-    value: `typeof ${entitySetTypeName}Keys[number]`,
-    exported: true,
-  })
-  elements.push({
-    type: 'type',
-    name: `T${entitySetTypeName}Measures`,
-    value: `typeof ${entitySetTypeName}Measures[number]`,
-    exported: true,
-  })
+  typeTypes.fields = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["fields"][number]`
+  typeTypes.keys = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["keys"][number]`
+  typeTypes.measures = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["measures"][number]`
 
-  const code = codeGen(elements)
+  d.getNavsMap()
+
+  const navToMany: TGenerateEntityTypeDefinition['navToMany'] = {}
+  const navToOne: TGenerateEntityTypeDefinition['navToOne'] = {}
+
+  for (const nav of Array.from(d.getNavsMap().values())) {
+    const target = nav.toMany ? navToMany : navToOne
+    target[nav.$Name as string] = JSON.stringify(nav.$Type)
+  }
 
   return {
-    code,
+    consts: {
+      [JSON.stringify(ns)]: {
+        [JSON.stringify(typeName)]: typeConsts,
+      },
+    },
+    types: {
+      [JSON.stringify(ns)]: {
+        [JSON.stringify(typeName)]: typeTypes,
+      }
+    },
     entity: {
-      alias: opts.entitySetAlias,
-      type: `T${entitySetTypeName}Fields`,
-      keysType: `T${entitySetTypeName}Keys`,
-      measuresType: `T${entitySetTypeName}Measures`,
+      type: `T${capitalizedAlias}[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["fields"]`,
+      keysType: `T${capitalizedAlias}[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["keys"]`,
+      measuresType: `T${capitalizedAlias}[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["measures"]`,
       name: d.name,
       keys: keys.map(k => JSON.stringify(k)).join(' | '),
       measures: measures.map(k => JSON.stringify(k)).join(' | '),
+      navToMany,
+      navToOne,
     },
   }
 }
@@ -125,7 +126,7 @@ export interface TGenerateModelOpts {
   path?: string
   headers?: Record<string, string>
   alias?: string
-  entitySets?: (string | { name: string; alias?: string })[]
+  entitySets?: string[]
 }
 
 /**
@@ -142,59 +143,85 @@ export interface TGenerateModelOpts {
  */
 export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): string {
   const serviceName = m.name!
-  const modelAlias = opts.alias || serviceName
+  const modelAlias =  toSafeVariableName(opts.alias || serviceName)
+  const cModelAlias = capitalize(modelAlias)
   const elements: TCoGeCodeElement[] = []
 
   // Exported constant for the model name
-  elements.push({
-    type: 'const',
-    name: `${modelAlias}Name`,
-    value: JSON.stringify(m.name),
-    exported: true,
-  })
+  // elements.push({
+  //   type: 'const',
+  //   name: `${modelAlias}Name`,
+  //   value: JSON.stringify(m.name),
+  //   exported: true,
+  // })
 
-  const entities: TGenerateEntitySetDefinition[] = []
-  const entitiesToGen = opts.entitySets ?? m.getEntitySetsList()
+  const entitySets: TGenerateEntitySetDefinition[] = []
+  const entityTypes: TGenerateEntityTypeDefinition[] = []
+  const entitiesToGen = (opts.entitySets ?? m.getEntitySetsList()) as string[]
+  const entityTypesToGen = new Set<string>()
 
-  for (const entitySetOptions of entitiesToGen) {
-    const entitySetName = (
-      typeof entitySetOptions === 'object' ? entitySetOptions.name : entitySetOptions
-    ) as string
+  for (const entitySetName of entitiesToGen) {
     const entitySet = m.getEntitySet(entitySetName)
     if (entitySet) {
-      const entitySetAlias = (
-        typeof entitySetOptions === 'object'
-          ? entitySetOptions.alias || entitySetName
-          : entitySetName
-      ) as string
-      const { code, entity } = generateEntitySetTypes(entitySet as EntitySet, {
-        modelAlias,
-        entitySetAlias,
+      const entityTypeName = entitySet.typeName
+      entityTypesToGen.add(entityTypeName)
+      entitySets.push({
+        name: entitySet.name,
+        type: entityTypeName,
       })
-      entities.push({
-        alias: entity.alias,
-        type: entity.type,
-        keysType: entity.keysType,
-        measuresType: entity.measuresType,
-        name: entity.name,
-        keys: entity.keys,
-        measures: entity.measures,
-      })
-
-      // Add a comment line
-      elements.push(`// ${serviceName}/${entitySetName}`)
-
-      // Since `generateEntitySetTypes` returns code, we need to parse it into CodeElements
-      // Alternatively, we can modify `generateEntitySetTypes` to return CodeElements directly
-      // For now, we can include the generated code as CodeLines
-      const entitySetCodeLines = code.split('\n').filter(line => line.trim() !== '')
-      elements.push(...entitySetCodeLines)
-
-      console.log(`[odata-codegen] Generated types for "${serviceName}/${entitySetName}"`)
     }
   }
 
-  const modelType = `T${modelAlias}Type`
+  const modelConsts: TModelConsts = {}
+  const modelTypes: TModelTypes = {}
+
+  for (const et of Array.from(entityTypesToGen)) {
+    const entityType = m.getEntityType(et)
+    entityType.navToMany?.forEach(n => entityTypesToGen.add(n.$Type))
+    entityType.navToOne?.forEach(n => entityTypesToGen.add(n.$Type))
+  }
+
+  for (const et of Array.from(entityTypesToGen)) {
+    const entityType = m.getEntityType(et)
+    const { entity, consts, types } = generateEntityTypeTypes(entityType, {
+      modelAlias,
+      capitalizedAlias: cModelAlias
+    })
+    mergeDeep(modelConsts, consts)
+    mergeDeep(modelTypes, types)
+
+    entityTypes.push({
+      type: entity.type,
+      keysType: entity.keysType,
+      measuresType: entity.measuresType,
+      name: entity.name,
+      keys: entity.keys,
+      measures: entity.measures,
+      navToMany: entity.navToMany,
+      navToOne: entity.navToOne,
+    })
+  }
+
+  elements.push({
+    type: 'const',
+    name: modelAlias + "Consts",
+    value: {
+      type: 'deepObject',
+      value: modelConsts
+    },
+    exported: true,
+    jsDocs: ['Fields and Keys as Constants', '', `Model: ${modelAlias}`]
+  })
+
+  elements.push({
+    type: 'interface',
+    name: 'T' + cModelAlias,
+    value: modelTypes,
+    exported: true,
+    jsDocs: ['Types for Keys and Fields', '', `Model: ${modelAlias}`]
+  })
+
+  const modelType = `T${cModelAlias}OData`
 
   const modelInterface: TCoGeInterfaceDeclaration = {
     type: 'interface',
@@ -203,18 +230,24 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     extends: ['TOdataDummyInterface'],
     value: {
       entitySets: {},
+      entityTypes: {},
       functions: {},
     },
+    jsDocs: ['Main OData Interface', '', `Model: ${modelAlias}`]
   }
 
-  const entityNames = {} as Record<string, string>
-  for (const entity of entities) {
-    entityNames[entity.alias] = `${JSON.stringify(entity.name)} as const`
-    modelInterface.value['entitySets'][entity.name] = {
-      keys: entity.keysType,
-      fields: entity.type,
-      measures: entity.measuresType,
+  for (const entityType of entityTypes) {
+    modelInterface.value['entityTypes'][`'${entityType.name}'`] = {
+      keys: entityType.keysType,
+      fields: entityType.type,
+      measures: entityType.measuresType,
+      navToMany: entityType.navToMany,
+      navToOne: entityType.navToOne,
     }
+  }
+
+  for (const entitySet of entitySets) {
+    modelInterface.value['entitySets'][`'${entitySet.name}'`] = JSON.stringify(entitySet.type)
   }
 
   for (const fName of m.getFunctionsList()) {
@@ -229,8 +262,9 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   elements.push(modelInterface)
 
   const modelClass: TCoGeClassDeclaration = {
+    jsDocs: ['oData class', '', `Model: ${cModelAlias}`, '', '@example', `const model = ${cModelAlias}.getInstance()`],
     type: 'class',
-    name: modelAlias,
+    name: cModelAlias,
     exported: true,
     extends: `OData<${modelType}>`,
     props: [
@@ -244,15 +278,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         name: 'instance?',
         static: true,
         visibility: 'private',
-        type: modelAlias,
-      },
-      {
-        name: 'entityAliases',
-        static: true,
-        value: {
-          type: 'object',
-          value: entityNames,
-        },
+        type: cModelAlias,
       },
     ],
     methods: [
@@ -262,11 +288,27 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         static: true,
         args: {},
         body: [
-          `if (!${modelAlias}.instance) {`,
-          `  ${modelAlias}.instance = new ${modelAlias}()`,
+          `if (!${cModelAlias}.instance) {`,
+          `  ${cModelAlias}.instance = new ${cModelAlias}()`,
           `}`,
-          `return ${modelAlias}.instance`,
+          `return ${cModelAlias}.instance`,
         ],
+      },
+  // public static async entitySet<T extends keyof THanaV4ParamOData['entitySets']>(name: T) {
+  //   const instance = await HanaV4Param.getInstance()
+  //   return instance.entitySet<T>(name)
+  // }      
+      {
+        name: `async entitySet<T extends keyof T${cModelAlias}OData['entitySets']>`,
+        visibility: 'public',
+        static: true,
+        args: {
+          name: 'T',
+        },
+        body: [
+          `const instance = ${cModelAlias}.getInstance()`,
+          `return instance.entitySet<T>(name)`,
+        ]
       },
       {
         name: 'constructor',
@@ -275,7 +317,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           'opts?': 'TODataOptions',
         },
         body: [
-          `super(${JSON.stringify(serviceName)}, {...opts, host: ${JSON.stringify(opts.host)}, path: ${JSON.stringify(opts.path)}})`,
+          `super(${JSON.stringify(serviceName)}, {...opts, ${opts.host ? 'host: ' + JSON.stringify(opts.host) + ', ' : ''}path: ${JSON.stringify(opts.path)}})`,
         ],
       },
     ],
@@ -285,4 +327,47 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
 
   const code = codeGen(elements)
   return code
+}
+
+
+
+/**
+ * Transforms a service name to be safe for TypeScript variable names.
+ * Converts kebab-case, snake_case, or other formats to camelCase.
+ *
+ * @param name - The original service name
+ * @returns The transformed name safe for TypeScript variables
+ *
+ * @example
+ * toSafeVariableName('my-service') // returns 'myService'
+ * toSafeVariableName('my_service') // returns 'myService'
+ * toSafeVariableName('my-service-2') // returns 'myService2'
+ * toSafeVariableName('123service') // returns '_123service'
+ */
+export function toSafeVariableName(name: string): string {
+  // If name starts with a number, prefix with underscore
+  if (/^\d/.test(name)) {
+    name = '_' + name;
+  }
+
+  // Replace special characters and convert to camelCase
+  return name
+    .replace(/[-_\s]+(.)?/g, (_, char) => char ? char.toUpperCase() : '')
+    .replace(/[^a-zA-Z0-9$_]/g, '') // Remove any remaining invalid characters
+    .replace(/^(.)/, (char) => char.toLowerCase()); // Ensure first character is lowercase
+}
+
+/**
+ * Capitalizes the first letter of a string.
+ *
+ * @param str - The string to capitalize
+ * @returns The string with first letter capitalized
+ *
+ * @example
+ * capitalize('hello') // returns 'Hello'
+ * capitalize('myService') // returns 'MyService'
+ */
+function capitalize(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -84,7 +84,7 @@ export class MainModel extends OData<TMainModelType> {
   public static readonly name = "ZSVC_MODEL";
   private static instance?: MainModel;
 
-  static entityAliases = {
+  static entitySetAliases = {
     Customers: "ZSET_CUSTOMERS",
     Groups: "ZSET_GROUPS"
   };
@@ -382,7 +382,7 @@ const model = MainModel.getInstance()
 model.options.useBatch = true
 
 // Simple read
-const customers = await model.read(MainModel.entityAliases.Customers, {
+const customers = await model.read(MainModel.entitySetAliases.Customers, {
   $top: 50,
   $filter: "Country eq 'US'",
   $select: ['Customer', 'Name', 'Country'],
@@ -397,7 +397,7 @@ console.log(customers.data)
 ```typescript
 onMounted(async () => {
   const metadata = await model.getMetadata()
-  const customerSet = metadata.getEntitySet(MainModel.entityAliases.Customers)
+  const customerSet = metadata.getEntitySet(MainModel.entitySetAliases.Customers)
 
   // Customize labels
   customerSet.refineField('Customer', { $label: 'Business Partner' })
@@ -490,7 +490,7 @@ function useGroupTypeahead() {
   const model = useModel<TMainModelType>(MainModel.name)
 
   async function loadKeys() {
-    const result = await model.read(MainModel.entityAliases.Groups, {
+    const result = await model.read(MainModel.entitySetAliases.Groups, {
       $top: 999,
       $select: ['Grouping'],
     })

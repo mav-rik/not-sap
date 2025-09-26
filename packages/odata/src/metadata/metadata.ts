@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser'
 import { EntitySet } from './entity-set'
 import type { OData, TOdataDummyInterface } from '../odata'
 import type { ODataEdmType } from './format-edm'
+import { EntityType } from './entity-type'
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -35,6 +36,7 @@ const parser = new XMLParser({
       'EntityType',
       'PropertyRef',
       'Property',
+      'NavigationProperty',
       'ComplexType',
       'Association',
       'EntitySet',
@@ -98,16 +100,16 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
         this._types.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.Association || []) {
-        this._assoc.set(node.$Name, node)
+        this._assoc.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.EntityContainer?.EntitySet || []) {
-        this._sets.set(node.$Name as keyof M['entitySets'], node)
+        this._sets.set(`${ns}.${node.$Name}` as keyof M['entitySets'], node)
       }
       for (const node of schema.EntityContainer?.AssociationSet || []) {
-        this._assocSets.set(node.$Name, node)
+        this._assocSets.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.EntityContainer?.FunctionImport || []) {
-        this._functions.set(node.$Name, node)
+        this._functions.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.Annotations || []) {
         const target =
@@ -146,7 +148,12 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     return this._functions.get(name)
   }
 
-  protected _entitySetsMap = new Map<keyof M['entitySets'], EntitySet<M, keyof M['entitySets']>>()
+  getRawAssociation(name: string) {
+    return this._assoc.get(name)
+  }
+
+  protected _entitySetsMap = new Map<keyof M['entitySets'], EntitySet<M, keyof M['entitySets'], any>>()
+  protected _entityTypesMap = new Map<keyof M['entityTypes'], EntityType<M, any>>()
 
   get isV4() {
     return this._parsed.Edmx.$Version === '4.0'
@@ -160,18 +167,31 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
    * @returns The EntitySet corresponding to the provided name.
    * @throws Will throw an error if the EntitySet does not exist in the metadata.
    */
-  getEntitySet<T extends keyof M['entitySets']>(name: T) {
+  getEntitySet<T extends keyof M['entitySets']>(name: T): EntitySet<M, T, M['entitySets'][T]> {
     if (!this._sets.has(name)) {
       throw new Error(`EntitySet "${name as string}" does not exist in metadata`)
     }
     let cached = this._entitySetsMap.get(name)
     if (!cached) {
-      cached = new EntitySet<M, keyof M['entitySets']>(this, name)
+      cached = new EntitySet<M, T, M['entitySets'][T]>(this, name)
       this._entitySetsMap.set(name, cached)
     }
-    return cached as EntitySet<M, T>
+    return cached as EntitySet<M, T, M['entitySets'][T]>
+  }
+
+  getEntityType<T extends keyof M['entityTypes']>(name: T) {
+    if (!this._types.has(name as string)) {
+      throw new Error(`EntityType "${name as string}" does not exist in metadata`)
+    }
+    let cached = this._entityTypesMap.get(name)
+    if (!cached) {
+      cached = new EntityType<M, T>(this, name)
+      this._entityTypesMap.set(name as string, cached)
+    }
+    return cached as EntityType<M, T>
   }
 }
+
 
 export interface RawMetadataProperty<T extends PropertyKey = string> {
   '$Name': T
@@ -268,12 +288,22 @@ export interface TSchema {
             }[]
           }
           'Property': RawMetadataProperty[]
-          'NavigationProperty'?: {
-            $Name: string
-            $Relationship: string
-            $FromRole: string
-            $ToRole: string
-          }[]
+          'NavigationProperty'?: (
+            | {
+              // v2 format
+              $Name: string
+              $Relationship: string
+              $FromRole: string
+              $ToRole: string
+            }
+            | {
+              // v4 format
+              $Name: string
+              $Type: string
+              $Partner?: string
+              $ContainsTarget?: boolean
+            }
+          )[]
           '$Name': string
           '$label'?: string
           '$value-list'?: boolean

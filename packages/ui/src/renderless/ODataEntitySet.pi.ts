@@ -11,12 +11,12 @@ export const useODataEntitySetPI = <
   useProvideInject('not-sap-ui-entity-set', () => {
     const toInject = {} as {
       entity: Ref<EntitySet<M, K> | undefined>;
-      fields: ComputedRef<EntitySetFields<M['entitySets'][K]['fields']>>;
+      fields: ComputedRef<EntitySetFields<M['entityTypes'][M['entitySets'][K]]['fields']>>;
       metadataLoading: Ref<boolean | undefined>;
       metadataLoadingPromise: Ref<Promise<Metadata<M>>>;
       metadataLoadingError: Ref<Error | undefined>;
       metadata: Ref<Metadata<M> | undefined>;
-      fieldsMap: ComputedRef<Map<M['entitySets'][K]['fields'], EntitySetField>>;
+      fieldsMap: ComputedRef<Map<M['entityTypes'][M['entitySets'][K]]['fields'], EntitySetField>>;
       model: MODEL;
       appNamespace?: ComputedRef<string>;
       entitySet: ComputedRef<K>;
@@ -65,7 +65,7 @@ export const useODataEntitySetPI = <
         toInject.fieldsMap = computed(
           () =>
             toInject.entity.value?.fieldsMap ||
-            new Map<M['entitySets'][K]['fields'], EntitySetField>()
+            new Map<M['entityTypes'][M['entitySets'][K]]['fields'], EntitySetField>()
         );
 
         toInject.model = props.model;

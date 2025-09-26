@@ -1,14 +1,15 @@
-import { type EntitySetField, type TEntityCurrencyEntry } from './entity-set'
+import { type EntitySetField } from './entity-set'
 import { type TOdataDummyInterface } from '../odata'
 import { type TODataValueType } from './format-filters'
+import { TEntityCurrencyEntry } from './entity-type'
 
 export type TExcelSubtotalConfig<
   M extends TOdataDummyInterface = TOdataDummyInterface,
   T extends keyof M['entitySets'] = string,
 > = {
-  grpBy: M['entitySets'][T]['fields'][]
-  aggregate: M['entitySets'][T]['fields'][]
-  aggregatedValues?: Record<M['entitySets'][T]['fields'], TODataValueType>[]
+  grpBy: M['entityTypes'][M['entitySets'][T]]['fields'][]
+  aggregate: M['entityTypes'][M['entitySets'][T]]['fields'][]
+  aggregatedValues?: Record<M['entityTypes'][M['entitySets'][T]]['fields'], TODataValueType>[]
   bg?: string
 }
 
@@ -18,9 +19,9 @@ type Tracker<
 > = {
   subtotalConfig: TExcelSubtotalConfig<M, T>
   lastGroupKey?: string
-  lastGroupValues?: Record<M['entitySets'][T]['fields'], any>
+  lastGroupValues?: Record<M['entityTypes'][M['entitySets'][T]]['fields'], any>
   groupStartRowIndex: number
-  aggregatedMap: Map<string, Record<M['entitySets'][T]['fields'], any>>
+  aggregatedMap: Map<string, Record<M['entityTypes'][M['entitySets'][T]]['fields'], any>>
 }
 
 export class ExcelGenerator<
@@ -28,12 +29,12 @@ export class ExcelGenerator<
   T extends keyof M['entitySets'] = string,
 > {
   constructor(
-    private getField: (fieldName: M['entitySets'][T]['fields']) => EntitySetField | undefined,
+    private getField: (fieldName: M['entityTypes'][M['entitySets'][T]]['fields']) => EntitySetField | undefined,
     private readCurrencies: () => Promise<Map<string, TEntityCurrencyEntry> | undefined>
   ) {}
 
-  protected currentRecord: Record<M['entitySets'][T]['fields'], TODataValueType> = {} as Record<
-    M['entitySets'][T]['fields'],
+  protected currentRecord: Record<M['entityTypes'][M['entitySets'][T]]['fields'], TODataValueType> = {} as Record<
+    M['entityTypes'][M['entitySets'][T]]['fields'],
     TODataValueType
   >
 
@@ -41,8 +42,8 @@ export class ExcelGenerator<
   protected currentRowIndex = 0
 
   async generateExcel(
-    columnsNames: M['entitySets'][T]['fields'][],
-    dataRows: Record<M['entitySets'][T]['fields'], TODataValueType>[],
+    columnsNames: M['entityTypes'][M['entitySets'][T]]['fields'][],
+    dataRows: Record<M['entityTypes'][M['entitySets'][T]]['fields'], TODataValueType>[],
     opts?: {
       subtotals?: TExcelSubtotalConfig<M, T>[]
     }
@@ -107,7 +108,7 @@ export class ExcelGenerator<
     const subtotalConfigs = opts?.subtotals || []
     // Initialize subtotal trackers
     const subtotalTrackers: Tracker[] = subtotalConfigs.map(subtotalConfig => {
-      const aggregatedMap = new Map<string, Record<M['entitySets'][T]['fields'], any>>()
+      const aggregatedMap = new Map<string, Record<M['entityTypes'][M['entitySets'][T]]['fields'], any>>()
       if (subtotalConfig.aggregatedValues) {
         subtotalConfig.aggregatedValues.forEach(r =>
           aggregatedMap.set(groupKey(subtotalConfig.grpBy, r), r)
@@ -123,10 +124,10 @@ export class ExcelGenerator<
     this.currentRowIndex = 2 // Start from the row after the header
 
     function groupKey(
-      grpBy: M['entitySets'][T]['fields'][],
-      record: Record<M['entitySets'][T]['fields'], TODataValueType>
+      grpBy: M['entityTypes'][M['entitySets'][T]]['fields'][],
+      record: Record<M['entityTypes'][M['entitySets'][T]]['fields'], TODataValueType>
     ): string {
-      return grpBy.map((field: M['entitySets'][T]['fields']) => record[field]).join('||')
+      return grpBy.map((field: M['entityTypes'][M['entitySets'][T]]['fields']) => record[field]).join('||')
     }
 
     dataRows.forEach(record => {
@@ -145,7 +146,7 @@ export class ExcelGenerator<
           // First time encountering this group
           tracker.lastGroupKey = currentGroupKey
           tracker.lastGroupValues = grpBy.reduce(
-            (acc, field: M['entitySets'][T]['fields']) => {
+            (acc, field: M['entityTypes'][M['entitySets'][T]]['fields']) => {
               acc[field] = record[field]
               return acc
             },
@@ -170,7 +171,7 @@ export class ExcelGenerator<
             const { grpBy } = tracker.subtotalConfig
             tracker.lastGroupKey = groupKey(grpBy, record)
             tracker.lastGroupValues = grpBy.reduce(
-              (acc, field: M['entitySets'][T]['fields']) => {
+              (acc, field: M['entityTypes'][M['entitySets'][T]]['fields']) => {
                 acc[field] = record[field]
                 return acc
               },
@@ -182,7 +183,7 @@ export class ExcelGenerator<
 
       // Add the data row
       const rowValues = columns.map(c =>
-        this.getValue(c, record[c.$Name as M['entitySets'][T]['fields']], record, currencies)
+        this.getValue(c, record[c.$Name as M['entityTypes'][M['entitySets'][T]]['fields']], record, currencies)
       )
       const row = worksheet.addRow(rowValues.map(r => r.value))
 
@@ -273,7 +274,7 @@ export class ExcelGenerator<
     const colFormats: (string | undefined)[] = []
     for (let colIndex = 1; colIndex <= columns.length; colIndex++) {
       const column = columns[colIndex - 1]!
-      const fieldName = column.$Name as M['entitySets'][T]['fields']
+      const fieldName = column.$Name as M['entityTypes'][M['entitySets'][T]]['fields']
       const field = this.getField(fieldName)!
 
       colFormats.push(
@@ -354,10 +355,10 @@ export class ExcelGenerator<
     if (!isFinalSubtotal) {
       tracker.groupStartRowIndex = this.currentRowIndex
       tracker.lastGroupKey = tracker.subtotalConfig.grpBy
-        .map((field: M['entitySets'][T]['fields']) => this.currentRecord[field])
+        .map((field: M['entityTypes'][M['entitySets'][T]]['fields']) => this.currentRecord[field])
         .join('||')
       tracker.lastGroupValues = tracker.subtotalConfig.grpBy.reduce(
-        (acc: any, field: M['entitySets'][T]['fields']) => {
+        (acc: any, field: M['entityTypes'][M['entitySets'][T]]['fields']) => {
           acc[field] = this.currentRecord[field]
           return acc
         },
@@ -370,7 +371,7 @@ export class ExcelGenerator<
   private getValue(
     field: EntitySetField,
     val: TODataValueType,
-    row: Record<M['entitySets'][T]['fields'], TODataValueType>,
+    row: Record<M['entityTypes'][M['entitySets'][T]]['fields'], TODataValueType>,
     currencies: Map<string, { DecimalPlaces: number }> | undefined
   ) {
     const units = field.$unit && (row[field.$unit as keyof typeof row] as string)

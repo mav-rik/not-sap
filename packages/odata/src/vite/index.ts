@@ -2,7 +2,7 @@ import type { Plugin } from 'vite';
 import { writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { readODataEnv } from '../codegen/env';
-import { generateTypes, TODataServicesToParse } from '../codegen';
+import { generate, TODataServicesToParse } from '../codegen';
 
 interface ODataPluginOptions {
   filename?: string
@@ -29,11 +29,11 @@ const root = process.cwd();
  * @example
  * ```typescript
  * // vite.config.ts
- * import { odataCodegenPlugin } from 'notsapodata/vite';
+ * import { notSapODataVitePlugin } from 'notsapodata/vite';
  *
  * export default {
  *   plugins: [
- *     odataCodegenPlugin({
+ *     notSapODataVitePlugin({
  *       services: {
  *         MyService: {
  *           host: 'https://api.example.com',
@@ -49,7 +49,7 @@ const root = process.cwd();
  * The plugin reads ODATA_HOST and ODATA_COOKIE from environment variables
  * if not specified in the service configuration.
  */
-export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
+export function notSapODataVitePlugin(options: ODataPluginOptions): Plugin {
   return {
     name: 'odata-codegen',
     async buildStart() {
@@ -69,7 +69,7 @@ export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
           services[key] = service
         }
       }
-      const content = await generateTypes({ services })
+      const content = await generate({ services })
       const outputPath = join(root, options.filename || defaultFilename);
       if (existsSync(outputPath)) {
         unlinkSync(outputPath);
@@ -80,3 +80,5 @@ export function odataCodegenPlugin(options: ODataPluginOptions): Plugin {
     },
   };
 }
+
+export default notSapODataVitePlugin

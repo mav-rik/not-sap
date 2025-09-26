@@ -33,7 +33,7 @@ export function useValueHelp<
         helpEntitySet.value = es as EntitySet<TOdataDummyInterface, string>;
         model.value = (es as EntitySet<TOdataDummyInterface, string>).getModel();
         valueList.value = entity.value?.getField(
-          fieldName as M['entitySets'][K]['fields']
+          fieldName as M['entityTypes'][M['entitySets'][K]]['fields']
         )?.annotations['Common.ValueList'];
         columnsNames.value =
           valueList.value?.Parameters.filter((p) => outputFields.includes(p.$Type)).map(

@@ -28,10 +28,10 @@ export type TODataEntityCustomQuery<
   entity: EntitySet<M, K>,
   params: TODataParams,
   append: boolean,
-  records: Record<M['entitySets'][K]['fields'], string>[]
+  records: Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]
 ) => Promise<{
   inlineCount?: number;
-  records: Record<M['entitySets'][K]['fields'], string>[];
+  records: Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[];
   append?: boolean;
   nextTop?: number;
   nextSkip?: number;
@@ -49,7 +49,7 @@ export const useSmartTablePI = <
       model: MODEL;
       getODataFilters: () => TODataFilters;
       getFilterString: () => string | undefined;
-      results: ModelRef<Record<M['entitySets'][K]['fields'], string>[]>;
+      results: ModelRef<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
       inlineCount: Ref<number | undefined>;
       query: (params?: TEntitySetQueryParams) => void;
       queryImmediate: (params?: TEntitySetQueryParams, append?: boolean) => Promise<void>;
@@ -60,16 +60,16 @@ export const useSmartTablePI = <
         }
       ) => {
         abort: () => void;
-        records: Ref<Record<M['entitySets'][K]['fields'], string>[]>;
+        records: Ref<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
         count: Ref<number>;
         total: Ref<number>;
         done: Ref<boolean>;
         error: Ref<Error | undefined>;
       };
-      filtersNames: Ref<M['entitySets'][K]['fields'][]>;
+      filtersNames: Ref<M['entityTypes'][M['entitySets'][K]]['fields'][]>;
       fieldsFilters: Ref<TODataFieldsFilters>;
       fieldsFiltersCount: Ref<number>;
-      columnsNames: Ref<M['entitySets'][K]['fields'][]>;
+      columnsNames: Ref<M['entityTypes'][M['entitySets'][K]]['fields'][]>;
       top: ComputedRef<number | undefined>;
       skip: ComputedRef<number | undefined>;
       forceFilters: ComputedRef<string | TODataFilters | undefined>;
@@ -97,7 +97,7 @@ export const useSmartTablePI = <
       metadataLoading: Ref<boolean | undefined>;
       metadataLoadingPromise: Ref<Promise<Metadata<M>>>;
       metadataLoadingError: Ref<Error | undefined>;
-      fieldsMap: ComputedRef<Map<M['entitySets'][K]['fields'], EntitySetField>>;
+      fieldsMap: ComputedRef<Map<M['entityTypes'][M['entitySets'][K]]['fields'], EntitySetField>>;
       queryError: Ref<Error | undefined>;
       loadedCount: Ref<number>;
       blockQuery: ComputedRef<boolean | undefined>;
@@ -140,11 +140,11 @@ export const useSmartTablePI = <
     return {
       _inject: () => toInject,
       _provide: (opts: {
-        filtersNames: Ref<M['entitySets'][K]['fields'][]>;
+        filtersNames: Ref<M['entityTypes'][M['entitySets'][K]]['fields'][]>;
         fieldsFilters: Ref<TODataFieldsFilters>;
-        columnsNames: Ref<M['entitySets'][K]['fields'][]>;
+        columnsNames: Ref<M['entityTypes'][M['entitySets'][K]]['fields'][]>;
         sorters: ModelRef<TEntitySetSorter[]>;
-        results: ModelRef<Record<M['entitySets'][K]['fields'], string>[]>;
+        results: ModelRef<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
         top: ComputedRef<number | undefined>;
         skip: ComputedRef<number | undefined>;
         searchTerm: ComputedRef<string | undefined>;
@@ -354,7 +354,7 @@ export const useSmartTablePI = <
             throw new Error('EntitySet not initialized');
           }
           const q = prepareQuery(params);
-          const records = ref([]) as Ref<Record<M['entitySets'][K]['fields'], string>[]>;
+          const records = ref([]) as Ref<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
           const count = ref(0);
           const total = ref(toInject.inlineCount.value || 0);
           const done = ref(false);

@@ -8,6 +8,7 @@
     "lint": "oxlint -c .oxlintrc.json",
     "build": "pnpm -r before-build && node ./scripts/build.js",
     "build-only": "node ./scripts/build.js",
+    "pretest": "tsx packages/odata/src/codegen/__test__/pre-test.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
