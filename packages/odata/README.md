@@ -2,50 +2,59 @@
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsap.png" alt="Not SAP" width="180" />
 </p>
 
-# notsapodata Module Documentation
-
-## Overview
-
-`notsapodata` is a TypeScript-first OData client library that provides type-safe access to OData services with automatic type generation through a Vite plugin. It handles OData v2/v4 protocols, batch operations, metadata parsing, and Excel export functionality.
+# notsapodata
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/odata.png" alt="Not SAP" />
 </p>
 
+## Overview
+
+`notsapodata` is a TypeScript-first toolkit for working with OData v2/v4 services—SAP, HANA, Microsoft, custom providers, or anything else that speaks OData. It combines:
+
+- a lightweight runtime `OData` client with CSRF handling, batching and metadata-aware helpers,
+- metadata utilities for value help discovery, filter rendering and Excel export,
+- a code generator (Vite plugin or programmatic API) that turns OData metadata into strongly typed models.
+
+When the runtime is paired with generated models, every request becomes fully type-safe: entity set names, fields, navigation properties and function parameters are all validated at compile time. Everything in this README is derived from the current source code – every example maps to exports in `packages/odata/src`.
+
 ## Installation
 
 ```bash
 npm install notsapodata
+# or
+pnpm add notsapodata
+yarn add notsapodata
 ```
 
-## Vite Plugin Setup for Type Generation
+## Type Generation
 
-The Vite plugin automatically generates TypeScript types from OData service metadata, providing full IntelliSense and type safety.
+### Using the Vite Plugin
 
-### Configuration in vite.config.ts
+The package ships with `notSapODataVitePlugin` (`import notSapODataVitePlugin from 'notsapodata/vite'`). The plugin fetches metadata (or uses a provided XML string), generates strongly-typed models and writes them to `src/.odata.types.ts` by default.
 
 ```typescript
 import { defineConfig } from 'vite'
-import { odataCodegenPlugin } from 'notsapodata/vite'
+import notSapODataVitePlugin from 'notsapodata/vite'
+
+const cookie = process.env.ODATA_COOKIE_NAME && process.env.ODATA_COOKIE_VALUE
+  ? `${process.env.ODATA_COOKIE_NAME}=${process.env.ODATA_COOKIE_VALUE}`
+  : undefined
 
 export default defineConfig({
   plugins: [
-    odataCodegenPlugin({
+    notSapODataVitePlugin({
+      filename: 'src/.odata.types.ts',
       services: {
-        // OData v2 service
-        ZSVC_MODEL: {
-          alias: 'MainModel',
+        sapV4: {
+          host: process.env.ODATA_HOST ?? 'https://my.sap.example',
+          path: '/sap/opu/odata4/sap/zsb_bp_data/srvd/sap/zsd_bp_data/0001',
+          alias: 'SapV4',
           entitySets: [
-            { name: 'ZSET_CUSTOMERS', alias: 'Customers' },
-            { name: 'ZSET_GROUPS', alias: 'Groups' },
+            'ZSD_BP_DATA_CDS.CustomerSet',
+            'ZSD_BP_DATA_CDS.Groups',
           ],
-        },
-
-        // OData v4 service
-        zsd_bp_data: {
-          odataUrl: '/sap/opu/odata4/sap/zsb_bp_data/srvd/sap/zsd_bp_data/0001',
-          alias: 'BPModel',
-          entitySets: [{ name: 'line_items', alias: 'LineItems' }],
+          headers: cookie ? { cookie } : {},
         },
       },
     }),
@@ -53,556 +62,365 @@ export default defineConfig({
 })
 ```
 
-### Plugin Options
+Environment variables read by `readODataEnv()`:
 
-- **services**: Object defining OData services to generate types for
-- **alias**: Model class name to generate
-- **entitySets**: Array of entity sets with optional aliases
-- **odataUrl**: (Optional) Custom OData URL for v4 services
+- `ODATA_HOST` – default host when `service.host` is not provided.
+- `ODATA_COOKIE_NAME` and `ODATA_COOKIE_VALUE` – combined into a `cookie` header when present.
 
-### Generated Types (.odata.types.ts)
+> **Type safety** – the generated `*.odata.types.ts` file provides literal types for entity sets, fields, keys and functions. Passing those types to the runtime (`OData<TModel>`) means every CRUD call, filter and navigation path is validated by TypeScript.
 
-The plugin generates a `.odata.types.ts` file with:
+### Service Options
+
+Each service entry matches `TGenerateModelOpts`:
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `host?` | `string` | Base host for all requests. Required when metadata is fetched from the service. |
+| `path?` | `string` | Service path (e.g. `/sap/opu/odata/sap/MY_SERVICE`). Used by generated models and metadata fetch. |
+| `headers?` | `Record<string,string>` | Extra headers (cookies, language, etc.). |
+| `alias?` | `string` | Overrides the generated class/interface base name. |
+| `entitySets?` | `string[]` | Restrict generation to specific entity sets (fully-qualified names). Omit to include everything. |
+| `metadata?` | `string \| (odata, opts) => string \| Promise<string>` | Provide inline metadata or a custom loader (no network call). |
+
+### Programmatic Generation
+
+The generator can be used without Vite:
 
 ```typescript
-// Auto-generated types
-export interface TMainModelType extends TOdataDummyInterface {
-  entitySets: {
-    ZVEC_MDG_BP_HOTEL_GRP_KEY: {
-      keys: TMainModelCustomersKeys;
-      fields: TMainModelCustomersFields;
-      measures: TMainModelCustomersMeasures;
-    };
-  };
-  functions: {
-    ConfirmGrpKey: { params: "Customer" };
-  };
+import { generate } from 'notsapodata/codegen'
+import { writeFileSync } from 'node:fs'
+
+const content = await generate({
+  NorthwindV4: {
+    host: 'https://services.odata.org',
+    path: '/V4/Northwind/Northwind.svc',
+    entitySets: [
+      'ODataWebV4.Northwind.Model.Products',
+      'ODataWebV4.Northwind.Model.Orders',
+    ],
+  },
+})
+
+writeFileSync('src/.odata.types.ts', content)
+```
+
+### Using Local Metadata (no network)
+
+Both the plugin and the `generate` function accept inline metadata. This is handy for mocking services in tests or working offline:
+
+```typescript
+import { readFileSync } from 'node:fs'
+import { generate } from 'notsapodata/codegen'
+
+const metadataXml = readFileSync('./fixtures/northwind-v4.xml', 'utf-8')
+
+const content = await generate({
+  MockNorthwind: {
+    metadata: metadataXml,
+    path: '/mock/Northwind',
+  },
+})
+```
+
+The same `metadata` property can be passed to the Vite plugin (`metadata: readFileSync('metadata.xml', 'utf-8')`) to skip live service calls during development.
+
+### Generated Output Shape
+
+The generator creates four exports per service:
+
+```typescript
+export const northwindV4Consts = {
+  "NorthwindModel": {
+    "Product": {
+      fields: [/* ... */] as const,
+      keys: [/* ... */] as const,
+      measures: [/* ... */] as const,
+    },
+  },
 }
 
-// Model class with singleton pattern
-export class MainModel extends OData<TMainModelType> {
-  public static readonly name = "ZSVC_MODEL";
-  private static instance?: MainModel;
-
-  static entitySetAliases = {
-    Customers: "ZSET_CUSTOMERS",
-    Groups: "ZSET_GROUPS"
-  };
-
-  public static getInstance() {
-    if (!MainModel.instance) {
-      MainModel.instance = new MainModel()
+export interface TNorthwindV4 {
+  "NorthwindModel": {
+    "Product": {
+      fields: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["fields"][number]
+      keys: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["keys"][number]
+      measures: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["measures"][number]
     }
-    return MainModel.instance
   }
 }
 
-// Type exports for fields, keys, and measures
-export type TMainModelCustomersFields = "Customer" | "Grouping" | ...
-export type TMainModelCustomersKeys = "Customer"
-export type TMainModelCustomersMeasures = "Amount" | ...
+export interface TNorthwindV4OData extends TOdataDummyInterface {
+  entitySets: {
+    'ODataWebV4.Northwind.Model.Products': "NorthwindModel.Product"
+  }
+  entityTypes: {
+    'NorthwindModel.Product': {
+      keys: TNorthwindV4["NorthwindModel"]["Product"]["keys"]
+      fields: TNorthwindV4["NorthwindModel"]["Product"]["fields"]
+      measures: TNorthwindV4["NorthwindModel"]["Product"]["measures"]
+      navToMany: Record<string, string>
+      navToOne: Record<string, string>
+    }
+  }
+  functions: Record<string, { params: string }>
+}
+
+export class NorthwindV4 extends OData<TNorthwindV4OData> {
+  public static readonly serviceName = 'NorthwindV4' as const
+  private static instance?: NorthwindV4
+
+  public static getInstance() {
+    if (!NorthwindV4.instance) {
+      NorthwindV4.instance = new NorthwindV4()
+    }
+    return NorthwindV4.instance
+  }
+
+  public static async entitySet<T extends keyof TNorthwindV4OData['entitySets']>(name: T) {
+    const instance = NorthwindV4.getInstance()
+    return instance.entitySet<T>(name)
+  }
+
+  private constructor(opts?: TODataOptions) {
+    super('NorthwindV4', { ...opts, path: '/V4/Northwind/Northwind.svc' })
+  }
+}
 ```
 
-## Core Classes and Types
+The generated class inherits all runtime helpers, including batching, metadata access and typed queries.
 
-### OData Class
+## Runtime Client
 
-The main class for interacting with OData services:
+### Creating or Reusing a Model
 
 ```typescript
 import { OData } from 'notsapodata'
+import { NorthwindV4, type TNorthwindV4OData } from '@/.odata.types'
 
-class MyModel extends OData<TModelType> {
-  constructor(opts?: TODataOptions) {
-    super('SERVICE_NAME', {
-      url: '/sap/opu/odata/sap/SERVICE_NAME',
-      csrfFetch: true,
-      useBatch: false,
-      ...opts,
-    })
-  }
-}
+// Preferred: reuse the generated singleton (fully typed)
+const model = NorthwindV4.getInstance()
+
+// Manual client – still type-safe because we pass the generated interface
+const custom = new OData<TNorthwindV4OData>('NorthwindV4', {
+  host: 'https://services.odata.org',
+  path: '/V4/Northwind/Northwind.svc',
+})
 ```
 
-#### Options (TODataOptions)
-
-- **url**: Base URL for the OData service
-- **csrfFetch**: Enable CSRF token handling (default: true for SAP)
-- **useBatch**: Enable batch request mode
-- **headers**: Additional HTTP headers
-
-### Model Instance Methods
-
-#### Basic CRUD Operations
+### Reading Data
 
 ```typescript
-const model = MainModel.getInstance()
+const products = await model.entitySet('ODataWebV4.Northwind.Model.Products')
 
-// Read entities
-const result = await model.read('EntitySet', {
-  $top: 50,
-  $skip: 0,
-  $filter: 'Field eq "value"',
-  $select: ['Field1', 'Field2'],
-  $orderby: 'Field1 desc',
-  $expand: 'NavigationProperty',
+const { data, count } = await products.query({
+  top: 5,
+  select: ['ProductID', 'ProductName', 'UnitPrice'],
+  sorters: [{ name: 'ProductName' }],
+  inlinecount: 'allpages',
+  filter: [
+    { ProductName: { contains: 'Chai' } },
+    { UnitPrice: { bw: ['10', '50'] } },
+  ],
 })
-
-// Create entity
-await model.create('EntitySet', {
-  Field1: 'value1',
-  Field2: 'value2',
-})
-
-// Update entity
-await model.update('EntitySet', 'KeyValue', {
-  Field1: 'new value',
-})
-
-// Delete entity
-await model.delete('EntitySet', 'KeyValue')
-
-// Execute function import
-await model.execute('FunctionName', {
-  param1: 'value',
-})
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(contains(ProductName,'Chai') and (UnitPrice ge 10 and UnitPrice le 50))&$orderby=ProductName&$top=5&$count=true&$select=ProductID,ProductName,UnitPrice
 ```
 
-#### Batch Operations
+The result is still `TOdataReadResult<TFields>` coming from the generated metadata, so `data` is strongly typed and `count` is populated when `$count` is requested.
+
+More filter shapes are supported – the query builder mirrors the scenarios covered in the tests from `generated-filters.spec.ts`:
 
 ```typescript
-model.options.useBatch = true
+// OR expression using $or
+await products.query({
+  top: 3,
+  filter: {
+    $or: [
+      { ProductID: { eq: '1' } },
+      { ProductID: { eq: '2' } },
+      { ProductID: { eq: '3' } },
+    ],
+  },
+})
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(ProductID eq 1 or ProductID eq 2 or ProductID eq 3)&$top=3
 
-const batch = model.createBatch()
-
-// Queue multiple operations
-const read1 = batch.read('EntitySet1', { $top: 10 })
-const read2 = batch.read('EntitySet2', { $top: 20 })
-const create1 = batch.create('EntitySet3', { data })
-
-// Execute all at once
-const { promise } = batch.execute()
-await promise
-
-// Get results
-const { data: data1 } = await read1
-const { data: data2 } = await read2
-const createdEntity = await create1
+// Comparison helpers map to OData operators automatically
+await products.query({
+  filter: {
+    UnitPrice: { gt: '50' },
+    UnitsInStock: { le: '100' },
+  },
+})
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(UnitPrice gt 50 and UnitsInStock le 100)
 ```
 
-### EntitySet Class
+### Working with Large Result Sets
 
-Work with entity sets and metadata:
+```typescript
+const progress: number[] = []
+const query = model.readAllEntries('ODataWebV4.Northwind.Model.Products', {
+  chunkSize: 500,
+  progressCb: (loaded, total, done) => {
+    progress.push(loaded)
+    if (done) {
+      console.log(`Loaded ${loaded} of ${total}`)
+    }
+  },
+})
+
+const rows = await query.promise
+// Abort if needed: query.abort()
+```
+
+`readAllEntries` performs chunked reads (defaults to 100 records) and reuses the batching engine under the hood.
+
+### Updating Data
 
 ```typescript
 const metadata = await model.getMetadata()
-const entitySet = metadata.getEntitySet('EntitySetName')
+const products = metadata.getEntitySet('ODataWebV4.Northwind.Model.Products')
+const key = products.prepareRecordKey({ ProductID: '1' })
 
-// Refine field metadata
-entitySet.refineField('Customer', {
-  $label: 'Business Partner',
-  $MaxLength: 10,
+await model.updateRecordByKey(key, {
+  ProductName: 'Updated product name',
 })
+```
 
-// Add description field references
-entitySet.refineField('CompanyCode', {
-  $$description: 'CompanyCodeDesc',
+### Calling Function Imports
+
+```typescript
+await model.callFunction('SapService.CalculateTotals', {
+  FiscalYear: '2024',
 })
+```
 
-// Query with prepared parameters
-const { params } = entitySet.prepareQuery({
-  filter: { Field: { eq: 'value' } },
-  select: ['Field1', 'Field2'],
-  orderby: [{ field: 'Field1', order: 'desc' }],
+Replace `'SapService.CalculateTotals'` with the exact function import name defined in your metadata. The helper validates the name before sending the request and throws when the function is missing. Arguments are typed as `Record<M['functions'][T]['params'], string>`, so only declared parameters are accepted.
+
+### Batch Execution
+
+There are two batching modes:
+
+1. **Implicit queueing** – set `model.options.useBatch = true` and the client will coalesce consecutive calls automatically.
+2. **Manual control** – create a dedicated batch instance.
+
+```typescript
+const batch = model.createBatch()
+const productsPromise = batch.read('ODataWebV4.Northwind.Model.Products', { $top: 10 })
+const ordersPromise = batch.read('ODataWebV4.Northwind.Model.Orders', { $top: 10 })
+
+const { promise } = batch.execute({ maxBatchLength: 10, maxConcurrentBatches: 2 })
+await promise
+
+const products = await productsPromise
+const orders = await ordersPromise
+```
+
+`execute` also provides `abort()` to cancel outstanding work.
+
+## Metadata Helpers
+
+All metadata helpers live under `notsapodata/metadata` and are also exported from the package root.
+
+### Accessing Entity Sets and Types
+
+```typescript
+const metadata = await model.getMetadata()
+const products = metadata.getEntitySet('ODataWebV4.Northwind.Model.Products')
+const productType = metadata.getEntityType('NorthwindModel.Product')
+
+const { data } = await products.query({
+  select: ['ProductID', 'ProductName', 'UnitPrice'],
+  filter: { ProductID: { eq: '42' } },
 })
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=ProductID eq 42&$select=ProductID,ProductName,UnitPrice
+```
 
-const result = await entitySet.query(params)
+Structured filters accept either single objects (`{ Field: { eq: 'Value' } }`), arrays to imply `and`, or `$or`/`$and` groups exactly like the examples in `generated-filters.spec.ts`.
+
+### Refining Metadata
+
+```typescript
+products.refineField('ProductName', {
+  $label: 'Product',
+  $MaxLength: 100,
+})
+```
+
+Refinements are cached per model. All future calls to `getField` reflect the refinements.
+
+### Working with Navigation Properties
+
+```typescript
+const record = products.withKey({ ProductID: '1' })
+const orderDetailsSet = record.toMany('Order_Details')
+
+const orderDetails = await orderDetailsSet.query({ top: 5 })
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products(ProductID=1)/Order_Details?$top=5
+
+const supplier = await record.toOne('Supplier').read()
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products(ProductID=1)/Supplier
 ```
 
 ### Excel Export
 
-Generate Excel files from OData results:
-
 ```typescript
-const records = await model.read('EntitySet', { $top: 1000 })
+const { data } = await products.query({
+  select: ['ProductID', 'ProductName', 'UnitPrice', 'CategoryID'],
+})
 
-const buffer = await entitySet.generateExcel(
-  ['Column1', 'Column2'], // columns to include
-  records.data,
+const buffer = await products.generateExcel(
+  ['ProductID', 'ProductName', 'UnitPrice', 'CategoryID'],
+  data,
   {
     subtotals: [
       {
-        groupBy: 'Category',
-        aggregate: ['Amount'],
+        grpBy: ['CategoryID'],
+        aggregate: ['UnitPrice'],
       },
     ],
   }
 )
 
-// Download the file
-const blob = new Blob([buffer], { type: 'application/octet-stream' })
-const url = URL.createObjectURL(blob)
-const a = document.createElement('a')
-a.href = url
-a.download = 'export.xlsx'
-a.click()
+// buffer is a Node.js Buffer (Excel workbook)
 ```
 
-## TypeScript Types
+`generateExcel` automatically pulls currency metadata via `SAP__CodeList.CurrencyCodes` annotations when present.
 
-### Core Types
+### Value Help Discovery
 
-```typescript
-// OData query parameters
-type TODataParams = {
-  $top?: number
-  $skip?: number
-  $filter?: string
-  $select?: string[]
-  $orderby?: string
-  $expand?: string
-  $count?: boolean
-  $apply?: string
-}
+`EntityType.getValueHelpEntitySet(field)` inspects value-list annotations (both V2 and V4) and returns an `EntitySet` instance if the service exposes a value help collection.
 
-// Read result
-type TOdataReadResult<T> = {
-  data: T[]
-  count?: number
-}
+### Currency Metadata
 
-// Record type
-type TOdataRecord<TFields> = Record<TFields, any> & {
-  __metadata: {
-    id: string
-    type: string
-    uri: string
-  }
-}
+`EntityType.readCurrencies()` loads the referenced currency collection once and caches it for `ExcelGenerator` and custom code.
 
-// Field filters
-type TODataFieldsFilters<TFields = string> = {
-  [K in TFields]?: TODataFilterValWithType[]
-}
+## Errors and Fetch
 
-// Filter value with type
-type TODataFilterValWithType = {
-  value: any[]
-  type?: 'date' | 'datetime' | 'time'
-  operator?: 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'contains'
-}
+`ifetch` wraps the Fetch API and raises rich error objects:
 
-// Entity set sorter
-type TEntitySetSorter<TFields = string> = {
-  field: TFields
-  order: 'asc' | 'desc'
-}
-
-// Custom query function
-type TODataEntityCustomQuery<MODEL, K> = (
-  entity: EntitySet,
-  mainParams: TODataParams,
-  append: boolean
-) => Promise<{
-  records: any[]
-  inlineCount?: number
-  append: boolean
-  nextSkip: number
-  loadedCount: number
-}>
-```
-
-### Error Types
-
-```typescript
-// Fetch error interface
-interface IFetchError extends Error {
-  status: number
-  statusText: string
-  response: Response
-}
-
-// SAP OData error
-class SapODataError extends Error {
-  code: string
-  message: string
-  innererror?: {
-    application?: object
-    transactionid?: string
-    timestamp?: string
-  }
-}
-```
-
-## Utility Functions
-
-### checkODataFilter
-
-Validates filter conditions:
-
-```typescript
-import { checkODataFilter } from 'notsapodata'
-
-const filter = fieldsFilters.Customer
-const check = checkODataFilter(filter)
-
-check.hasEmpty() // true if filter is empty
-check.hasConditional() // true if has conditional operators
-check.isValid() // true if filter is valid
-```
-
-### fieldsFiltersToODataFilters
-
-Convert UI filters to OData format (from notsapui/utils):
-
-```typescript
-import { fieldsFiltersToODataFilters } from 'notsapui/utils'
-
-const uiFilters = {
-  Customer: [{ value: ['CUST001', 'CUST002'] }],
-  Status: [{ value: ['ACTIVE'], operator: 'eq' }],
-}
-
-const odataFilters = fieldsFiltersToODataFilters(uiFilters)
-// Result: [
-//   { Customer: { in: ['CUST001', 'CUST002'] } },
-//   { Status: { eq: 'ACTIVE' } }
-// ]
-```
-
-## Usage Examples
-
-### Basic Setup and Query
-
-```typescript
-import { MainModel } from '@/.odata.types'
-
-// Get model instance
-const model = MainModel.getInstance()
-model.options.useBatch = true
-
-// Simple read
-const customers = await model.read(MainModel.entitySetAliases.Customers, {
-  $top: 50,
-  $filter: "Country eq 'US'",
-  $select: ['Customer', 'Name', 'Country'],
-  $orderby: 'Name asc',
-})
-
-console.log(customers.data)
-```
-
-### With Metadata Refinement
-
-```typescript
-onMounted(async () => {
-  const metadata = await model.getMetadata()
-  const customerSet = metadata.getEntitySet(MainModel.entitySetAliases.Customers)
-
-  // Customize labels
-  customerSet.refineField('Customer', { $label: 'Business Partner' })
-  customerSet.refineField('HotelGroupingKey', { $label: 'Grouping Key' })
-
-  // Add description fields
-  customerSet.refineField('CompanyCode', { $$description: 'CompanyCodeDesc' })
-})
-```
-
-### Complex Query with Aggregation
-
-```typescript
-const customQuery: TODataEntityCustomQuery<FP04Model, 'LineItems'> = async (
-  entity,
-  mainParams,
-  append
-) => {
-  const batch = entity.getModel().createBatch()
-  const metadata = await entity.getModel().getMetadata()
-  const entitySet = metadata.getEntitySet('LineItems')
-
-  // Main data
-  const lines = batch.read('LineItems', mainParams)
-
-  // Aggregated totals
-  const { params: aggParams } = entitySet.prepareQuery({
-    apply: {
-      filters: mainParams.$filter,
-      group: {
-        fields: ['Category', 'Currency'],
-        aggregate: ['Amount'],
-      },
-    },
-  })
-
-  const totals = batch.read('LineItems', {
-    ...mainParams,
-    $apply: aggParams.$apply,
-    $top: 999999,
-  })
-
-  await batch.execute().promise
-
-  const { data: lineData, count } = await lines
-  const { data: totalData } = await totals
-
-  // Process and merge results
-  const processedResults = mergeWithTotals(lineData, totalData)
-
-  return {
-    records: processedResults,
-    inlineCount: count,
-    append: false,
-    nextSkip: lineData.length,
-    loadedCount: lineData.length,
-  }
-}
-```
-
-### Error Handling
+- `SapODataError` – thrown when the response body matches the SAP error schema.
+- `IFetchError` – thrown for network errors or non-OData error responses.
 
 ```typescript
 import { IFetchError, SapODataError } from 'notsapodata'
 
 try {
-  await model.update('Customers', 'CUST001', {
-    Status: 'INACTIVE',
-  })
+  await model.updateRecordByKey('Products(1)', { ProductName: 'Test' })
 } catch (error) {
   if (error instanceof SapODataError) {
-    console.error('SAP Error:', error.code, error.message)
-    console.error('Transaction ID:', error.innererror?.transactionid)
-  } else if ((error as IFetchError).status) {
-    const fetchError = error as IFetchError
-    console.error('HTTP Error:', fetchError.status, fetchError.statusText)
-  } else {
-    console.error('Unknown error:', error)
+    console.error(error.code, error.message)
+  } else if (error instanceof IFetchError) {
+    console.error(error.status, error.statusText)
   }
-}
-```
-
-### Using useModel Composable
-
-```typescript
-import { useModel } from 'notsapodata'
-import { MainModel, type TMainModelType } from '@/.odata.types'
-
-function useGroupTypeahead() {
-  const model = useModel<TMainModelType>(MainModel.name)
-
-  async function loadKeys() {
-    const result = await model.read(MainModel.entitySetAliases.Groups, {
-      $top: 999,
-      $select: ['Grouping'],
-    })
-
-    return result.data.map(r => r.Grouping).filter(Boolean)
-  }
-
-  return { loadKeys }
 }
 ```
 
 ## Best Practices
 
-1. **Always use the singleton pattern** for model instances:
+- Always pair the runtime with generated types (`new OData<TModel>()` or `Service.getInstance()`) to keep entity sets, fields and functions type-safe.
+- Use generated models (`Service.getInstance()`) whenever possible – they carry service metadata, entity type mappings and helper statics.
+- Always request metadata once and reuse `EntitySet` instances; they cache field maps, annotations and value help lookups.
+- Use `EntitySet.query` with structured filter objects (`{ Field: { gt: '10' } }`, `{ $or: [...] }`, etc.) so OData expressions are generated for you.
+- When batching via `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size.
+- Handle `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI.
 
-   ```typescript
-   const model = MainModel.getInstance()
-   ```
-
-2. **Enable batch mode** for multiple operations:
-
-   ```typescript
-   model.options.useBatch = true
-   ```
-
-3. **Type your filters and sorters**:
-
-   ```typescript
-   const filters: TODataFieldsFilters<TCustomersFields> = {}
-   const sorters: TEntitySetSorter<TCustomersFields>[] = []
-   ```
-
-4. **Handle errors appropriately**:
-
-   ```typescript
-   try {
-     await model.operation()
-   } catch (error) {
-     if (error instanceof SapODataError) {
-       // Handle SAP-specific errors
-     }
-   }
-   ```
-
-5. **Use metadata refinement** for better UX:
-
-   ```typescript
-   entitySet.refineField('Field', {
-     $label: 'User Friendly Label',
-     $$description: 'DescriptionField',
-   })
-   ```
-
-6. **Leverage TypeScript** for compile-time safety:
-   ```typescript
-   // This will error if 'InvalidField' doesn't exist
-   const fields: TMainModelCustomersFields[] = ['Customer', 'InvalidField']
-   ```
-
-## Advanced Features
-
-### Apply Operations (OData v4)
-
-```typescript
-const result = await model.read('EntitySet', {
-  $apply: 'groupby((Category,Country),aggregate(Amount with sum as TotalAmount))',
-})
-```
-
-### Custom Headers
-
-```typescript
-model.options.headers = {
-  'X-Custom-Header': 'value',
-  'Accept-Language': 'en-US',
-}
-```
-
-### CSRF Token Handling
-
-Automatically handled when `csrfFetch: true`:
-
-```typescript
-// Token is fetched and included automatically
-await model.create('EntitySet', data)
-```
-
-### Pagination Helper
-
-```typescript
-async function* paginate(pageSize = 50) {
-  let skip = 0
-  let hasMore = true
-
-  while (hasMore) {
-    const result = await model.read('EntitySet', {
-      $top: pageSize,
-      $skip: skip,
-      $count: true,
-    })
-
-    yield result.data
-
-    skip += pageSize
-    hasMore = skip < (result.count || 0)
-  }
-}
-
-// Usage
-for await (const page of paginate()) {
-  processRecords(page)
-}
-```
-
-This documentation provides comprehensive coverage of the notsapodata module, including setup, type generation, core functionality, and practical examples for building type-safe OData applications.
+This README reflects the current behaviour of `packages/odata`. Refer to the source files in `src/` for deeper detail or additional extension points.

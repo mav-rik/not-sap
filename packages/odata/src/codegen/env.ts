@@ -22,6 +22,6 @@ export function readODataEnv(): { host: string; cookie: string } {
 
   return {
     host: env.ODATA_HOST || '',
-    cookie: `${env.ODATA_COOKIE_NAME || ''}=${env.ODATA_COOKIE_VALUE || ''}`,
+    cookie: env.ODATA_COOKIE_NAME ? `${env.ODATA_COOKIE_NAME || ''}=${env.ODATA_COOKIE_VALUE || ''}` : '',
   }
 }

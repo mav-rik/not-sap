@@ -69,7 +69,7 @@ export function notSapODataVitePlugin(options: ODataPluginOptions): Plugin {
           services[key] = service
         }
       }
-      const content = await generate({ services })
+      const content = await generate(services)
       const outputPath = join(root, options.filename || defaultFilename);
       if (existsSync(outputPath)) {
         unlinkSync(outputPath);

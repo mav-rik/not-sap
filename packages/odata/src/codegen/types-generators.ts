@@ -317,7 +317,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           'opts?': 'TODataOptions',
         },
         body: [
-          `super(${JSON.stringify(serviceName)}, {...opts, ${opts.host ? 'host: ' + JSON.stringify(opts.host) + ', ' : ''}path: ${JSON.stringify(opts.path)}})`,
+          `super(${JSON.stringify(serviceName)}, {...opts, path: ${JSON.stringify(opts.path)}})`,
         ],
       },
     ],

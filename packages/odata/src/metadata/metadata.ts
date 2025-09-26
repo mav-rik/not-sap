@@ -70,6 +70,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     string,
     TSchema['Association'][number]
   >()
+  protected _namespacedSets = new Map<
+    keyof M['entitySets'],
+    Required<TSchema>['EntityContainer']['EntitySet'][number]
+  >()
   protected _sets = new Map<
     keyof M['entitySets'],
     Required<TSchema>['EntityContainer']['EntitySet'][number]
@@ -103,7 +107,8 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
         this._assoc.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.EntityContainer?.EntitySet || []) {
-        this._sets.set(`${ns}.${node.$Name}` as keyof M['entitySets'], node)
+        this._namespacedSets.set(`${ns}.${node.$Name}` as keyof M['entitySets'], node)
+        this._sets.set(node.$Name as keyof M['entitySets'], node)
       }
       for (const node of schema.EntityContainer?.AssociationSet || []) {
         this._assocSets.set(`${ns}.${node.$Name}`, node)
@@ -133,13 +138,13 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     return this._types.get(name)
   }
   getRawEntitySet(name: keyof M['entitySets']) {
-    return this._sets.get(name)
+    return this._sets.get(name) || this._namespacedSets.get(name)
   }
   getRawAnnotations(target: string) {
     return this._annot.get(target)
   }
-  getEntitySetsList() {
-    return Array.from(this._sets.keys())
+  getEntitySetsList(suppressNamespace = false) {
+    return suppressNamespace ? Array.from(this._sets.keys()) : Array.from(this._namespacedSets.keys())
   }
   getFunctionsList() {
     return Array.from(this._functions.keys())
@@ -168,7 +173,7 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
    * @throws Will throw an error if the EntitySet does not exist in the metadata.
    */
   getEntitySet<T extends keyof M['entitySets']>(name: T): EntitySet<M, T, M['entitySets'][T]> {
-    if (!this._sets.has(name)) {
+    if (!this._sets.has(name) && !this._namespacedSets.has(name)) {
       throw new Error(`EntitySet "${name as string}" does not exist in metadata`)
     }
     let cached = this._entitySetsMap.get(name)
