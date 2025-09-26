@@ -4,15 +4,16 @@
   generic="
     MODEL extends OData<M>,
     K extends keyof M['entitySets'],
-    M extends TOdataDummyInterface = MODEL extends OData<infer M> ? M : TOdataDummyInterface
+    M extends TOdataDummyInterface = MODEL extends OData<infer M> ? M : TOdataDummyInterface,
+    ES extends EntitySet<M, any> = EntitySet<M, K>,
   "
 >
-import { OData, type TOdataDummyInterface } from 'notsapodata'
+import { EntitySet, OData, type TOdataDummyInterface } from 'notsapodata'
 import { useODataEntitySetPI } from './ODataEntitySet.pi'
 
 const props = defineProps<{
   model: MODEL
-  entitySet: K
+  entitySet: K | ES | undefined
 }>()
 
 const {

@@ -49,6 +49,7 @@ export interface TOdataDummyInterface {
       measures: string
       navToMany: Record<string, string>
       navToOne: Record<string, string>
+      record: Record<string, unknown>
     }
   >
   functions: Record<
@@ -59,17 +60,15 @@ export interface TOdataDummyInterface {
   >
 }
 
-export type TWrapODataRecord<T extends PropertyKey = string> = {
+export type TWrapODataRecord<T = Record<string, unknown>> = {
   // v2
   'd'?: TOdataRecord<T>
   // v4
   '@odata.context'?: string
   '@odata.metadataEtag'?: string
-} & {
-  [key in T]?: string
-}
+} & T
 
-export type TWrapODataResults<T extends PropertyKey = string> = {
+export type TWrapODataResults<T = Record<string, unknown>> = {
   // v2
   'd'?: {
     __count?: string
@@ -81,14 +80,14 @@ export type TWrapODataResults<T extends PropertyKey = string> = {
   '@odata.count'?: number
   'value'?: TOdataRecord<T>[]
 }
-export type TOdataRecord<T extends PropertyKey = string> = { [key in T]: string } & {
+export type TOdataRecord<T = Record<string, unknown>> = T & {
   '@odata.context'?: string
   '@odata.metadataEtag'?: string
   '__metadata'?: T__Metadata
   // row styles
   '__rowClass': string
 }
-export type TOdataReadResult<T extends PropertyKey = string> = {
+export type TOdataReadResult<T = Record<string, unknown>> = {
   data: TOdataRecord<T>[]
   count?: number
 }
@@ -210,8 +209,8 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
   async read<T extends keyof M['entitySets']>(
     entity: T,
     params?: TODataParams
-  ): Promise<TOdataReadResult<M['entityTypes'][M['entitySets'][T]]['fields']>> {
-    const data = await this._fetch<TWrapODataResults<M['entityTypes'][M['entitySets'][T]]['fields']>>(
+  ): Promise<TOdataReadResult<M['entityTypes'][M['entitySets'][T]]['record']>> {
+    const data = await this._fetch<TWrapODataResults<M['entityTypes'][M['entitySets'][T]]['record']>>(
       this.genRequestUrl(entity as string, params),
       {
         method: 'GET',
@@ -277,7 +276,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     const run = async () => {
       try {
         const count = await this.readCount(entity, params)
-        const chunks = [] as Promise<TOdataReadResult<M['entityTypes'][M['entitySets'][T]]['fields']>>[]
+        const chunks = [] as Promise<TOdataReadResult<M['entityTypes'][M['entitySets'][T]]['record']>>[]
 
         const _params: TODataParams = {
           '$filter': params?.['$filter'],
@@ -302,7 +301,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         if (abortRequested) {
           return []
         }
-        const results = [] as TOdataRecord<M['entityTypes'][M['entitySets'][T]]['fields']>[]
+        const results = [] as TOdataRecord<M['entityTypes'][M['entitySets'][T]]['record']>[]
         for (let i = 0; i < chunks.length; i++) {
           if (abortRequested) {
             break
@@ -344,7 +343,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
    * @throws {Error} - Throws an error if the OData request fails.
    */
   async readRecordByKey<T extends keyof M['entitySets']>(key: string) {
-    const data = await this._fetch<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['fields']>>(
+    const data = await this._fetch<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['record']>>(
       this.genRequestUrl(key),
       {
         method: 'GET',
@@ -362,27 +361,27 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
    * Reads a record from the specified OData entity set using the provided record object.
    *
    * @template T - The key of the entity set in the OData model.
-   * @param {Record<M['entityTypes'][M['entitySets'][T]]['fields'], string>} record - The record object to identify the record.
-   * @returns {Promise<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['fields']>>} - The data read from the entity set.
+   * @param {Partial<M['entityTypes'][M['entitySets'][T]]['record']>} record - The record object to identify the record (must include all key fields).
+   * @returns {Promise<M['entityTypes'][M['entitySets'][T]]['record']>} - The data read from the entity set.
    * @throws {Error} - Throws an error if the OData request fails or if the URI parsing fails.
    */
   async readRecord<T extends keyof M['entitySets']>(
     entitySet: T,
-    record: Record<M['entityTypes'][M['entitySets'][T]]['fields'], string>
-  ): Promise<Record<M['entityTypes'][M['entitySets'][T]]['fields'], string>> {
+    record: Partial<M['entityTypes'][M['entitySets'][T]]['record']>
+  ): Promise<M['entityTypes'][M['entitySets'][T]]['record']> {
     const m = await this.getMetadata()
     const es = m.getEntitySet(entitySet)
     let path = ''
     if (m.isV4) {
-      path = es.prepareRecordKey(record)
+      path = es.prepareRecordKey(record as any)
     } else {
-      const { uri } = this.getRecordV2Metadata(record)
+      const { uri } = this.getRecordV2Metadata(record as any)
       path = uri.split(this.service)[1]?.slice(1) || ''
       if (!path) {
         throw new Error(`Failed parsing __metadata.uri: ${uri}`)
       }
     }
-    const data = await this._fetch<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['fields']>>(
+    const data = await this._fetch<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['record']>>(
       this.genRequestUrl(path),
       {
         method: 'GET',
@@ -393,12 +392,12 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       },
       'json'
     )
-    return (m.isV4 ? data : data.d) as Record<M['entityTypes'][M['entitySets'][T]]['fields'], string>
+    return (m.isV4 ? data : data.d) as M['entityTypes'][M['entitySets'][T]]['record']
   }
 
   async updateRecordByKey<T extends keyof M['entitySets']>(
     key: string,
-    change: Partial<Record<M['entityTypes'][M['entitySets'][T]]['fields'], string | number | boolean | undefined>>
+    change: Partial<M['entityTypes'][M['entitySets'][T]]['record']>
   ) {
     return this._fetch<void>(
       this.genRequestUrl(key),
@@ -416,10 +415,10 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
   }
 
   async updateRecord<T extends keyof M['entitySets']>(
-    record: Record<M['entityTypes'][M['entitySets'][T]]['fields'], string | number | boolean | undefined>,
-    change: Partial<Record<M['entityTypes'][M['entitySets'][T]]['fields'], string | number | boolean | undefined>>
+    record: Partial<M['entityTypes'][M['entitySets'][T]]['record']>,
+    change: Partial<M['entityTypes'][M['entitySets'][T]]['record']>
   ) {
-    const { uri } = this.getRecordV2Metadata(record)
+    const { uri } = this.getRecordV2Metadata(record as any)
     const path = uri.split(this.service)[1]?.slice(1)
     if (path) {
       return this._fetch<void>(

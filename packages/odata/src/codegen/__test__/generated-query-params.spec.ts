@@ -27,7 +27,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         sorters: ['ProductName']
@@ -40,7 +40,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         sorters: [
@@ -58,7 +58,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         select: ['ProductID', 'ProductName', 'UnitPrice']
@@ -73,7 +73,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         top: 20,
@@ -88,7 +88,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({})
 
@@ -101,7 +101,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         inlinecount: 'allpages' as const
@@ -117,7 +117,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV2.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
 
-      const entitySet = await NorthwindV2.entitySet('ODataWeb.Northwind.Model.Products')
+      const entitySet = await NorthwindV2.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         inlinecount: 'allpages' as const
@@ -135,7 +135,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         top: 10,
@@ -162,7 +162,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: [
@@ -180,7 +180,7 @@ describe('Query parameters generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: {

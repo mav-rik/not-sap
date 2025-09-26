@@ -3,7 +3,7 @@ import {
   type TODataFilters,
   type TODataValueType,
 } from './format-filters'
-import { type TOdataDummyInterface, type TODataParams } from '../odata'
+import { TOdataReadResult, type TOdataDummyInterface, type TODataParams } from '../odata'
 import { type TPropertyAnnotations } from './annotations'
 import { ExcelGenerator, type TExcelSubtotalConfig } from './excel'
 import { EntityType } from './entity-type'
@@ -48,6 +48,14 @@ export type EntitySetField<T extends PropertyKey = string> = RawMetadataProperty
     toDisplay: (v: string) => string
   }
 }
+
+/**
+ * Utility type to extract key fields with their proper types from the entity record
+ */
+type KeysWithTypes<
+  M extends TOdataDummyInterface,
+  ET extends keyof M['entityTypes']
+> = Pick<M['entityTypes'][ET]['record'], M['entityTypes'][ET]['keys']>
 
 /**
  * Represents an EntitySet which provides methods to interact with and manipulate metadata and data for a specific entity set.
@@ -110,17 +118,18 @@ export class EntitySet<
   /**
    * Prepares a record key for an entity set based on the provided key-value pairs.
    *
-   * @param keys - A record containing the key fields and their corresponding values.
+   * @param keys - A record containing the key fields and their corresponding values with proper types.
    * @returns A string representing the prepared record key in the format "EntitySetName(key1=value1,key2=value2,...)"
    * @throws Will throw an error if a key field is not provided in the input keys.
    */
-  prepareRecordKey(keys: Record<M['entityTypes'][ET]['keys'], string>) {
+  prepareRecordKey(keys: KeysWithTypes<M, ET>) {
     const _keys = [] as string[]
     for (const k of this.keys) {
       const field = this.fieldsMap.get(k as M['entityTypes'][ET]['fields'])!
       if (Object.prototype.hasOwnProperty.call(keys, field.$Name)) {
         const prefix = this.keys.length ? `${k}=` : ''
-        _keys.push(`${prefix}${field.fromJson.toFilter(keys[k])}`)
+        const value = (keys as any)[k]
+        _keys.push(`${prefix}${field.fromJson.toFilter(value)}`)
       } else {
         throw new Error(`Key field "${field.$Name}" not provided`)
       }
@@ -128,12 +137,12 @@ export class EntitySet<
     return `${this.name as string}(${_keys.join(',')})`
   }
 
-  async readRecord(keys: Record<M['entityTypes'][ET]['keys'], string>) {
+  async readRecord(keys: KeysWithTypes<M, ET>) {
     const key = this.prepareRecordKey(keys)
     return this.getModel().readRecordByKey(key)
   }
 
-  withKey(keys: Record<M['entityTypes'][ET]['keys'], string>) {
+  withKey(keys: KeysWithTypes<M, ET>) {
     const key = this.prepareRecordKey(keys)
     return new EntityRecord(this._m, this._entityType, key)
   }
@@ -198,7 +207,7 @@ export class EntitySet<
     }
   }
 
-  async query(params: TEntitySetQueryParams<M, T>) {
+  async query(params: TEntitySetQueryParams<M, T>): Promise<TOdataReadResult<M['entityTypes'][ET]['record']>> {
     const q = this.prepareQuery(params)
     return this.getModel().read(q.entitySet, q.params)
   }

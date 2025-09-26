@@ -48,7 +48,7 @@ export interface TSapV4 {
  */
 export interface TSapV4OData extends TOdataDummyInterface {
   entitySets: {
-    'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_items': "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType";
+    'line_items': "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType";
   };
   entityTypes: {
     'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType': {
@@ -57,6 +57,50 @@ export interface TSapV4OData extends TOdataDummyInterface {
       measures: TSapV4["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["measures"];
       navToMany: {};
       navToOne: {};
+      record: {
+        DocumentNo: string;
+        ItemNo: string;
+        SubItemNo: string;
+        Partner: string;
+        HotelGroupingKey: string;
+        ClearingStatus: string;
+        DocCurrency: string;
+        DocAmount: number;
+        LocalCurrency: string;
+        LocalAmount: number;
+        Currency: string;
+        Amount: number;
+        HotelId: string;
+        bukrs: string;
+        HotelName: string;
+        InvoiceNo: string;
+        ClearingDoc: string;
+        Ty: string;
+        DocDate?: Date;
+        PaymentMethod: string;
+        PaymentMethodDesc: string;
+        ConAccount: string;
+        NetPayDueDate?: Date;
+        ClearingDate?: Date;
+        LegalId: string;
+        PbbProduct: string;
+        country: string;
+        DunningBlockReason: string;
+        DunningBlockReasonDescription: string;
+        PaymentBlockReason: string;
+        PaymentBlockReasonDescription: string;
+        ExtranetHotelStatus: string;
+        FirstControllerid: string;
+        region: string;
+        clusterid: string;
+        DocumentTypeDesc: string;
+        ItemText: string;
+        Text: string;
+        PostingDate?: Date;
+        paymentlot: string;
+        CollectionStep: string;
+        BillableItemText: string;
+      };
     };
   };
   functions: {};

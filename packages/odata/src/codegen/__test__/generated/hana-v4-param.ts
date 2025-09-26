@@ -58,7 +58,7 @@ export interface THanaV4Param {
  */
 export interface THanaV4ParamOData extends TOdataDummyInterface {
   entitySets: {
-    'UKDataService.MyPartners': "UKDataService.MyPartnersParameters";
+    'MyPartners': "UKDataService.MyPartnersParameters";
   };
   entityTypes: {
     'UKDataService.MyPartnersParameters': {
@@ -69,6 +69,10 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
         Set: "UKDataService.MyPartnersType";
       };
       navToOne: {};
+      record: {
+        YEAR: string;
+        Set?: Array<THanaV4ParamOData['entityTypes']['UKDataService.MyPartnersType']['record']>;
+      };
     };
     'UKDataService.MyPartnersType': {
       keys: THanaV4Param["UKDataService"]["MyPartnersType"]["keys"];
@@ -77,6 +81,91 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
       navToMany: {};
       navToOne: {
         Parameters: "UKDataService.MyPartnersParameters";
+      };
+      record: {
+        Entity_IN: string;
+        Entity_IN_issuedBy: string;
+        Entity_IN_INType: string;
+        Entity_TIN: string;
+        Entity_VAT: string;
+        Entity_Name: string;
+        Entity_Address_CountryCode: string;
+        Entity_Address_Free: string;
+        Entity_Address_Street: string;
+        Entity_Address_BuildingIdentifier: string;
+        Entity_Address_SuiteIdentifier: string;
+        Entity_Address_FloorIdentifier: string;
+        Entity_Address_DistrictName: string;
+        Entity_Address_POB: string;
+        Entity_Address_PostCode: string;
+        Entity_Address_City: string;
+        Entity_Address_CountrySubentity: string;
+        Entity_FinancialIdentifier: string;
+        Entity_AccountNumberType: string;
+        Entity_AccountHolderName: string;
+        Entity_FinancialIdentifierOtherInfo: string;
+        Entity_PermanentEstablishment: string;
+        TransportationRental_ConsQ1_currCode: string;
+        TransportationRental_ConsQ2_currCode: string;
+        TransportationRental_ConsQ3_currCode: string;
+        TransportationRental_ConsQ4_currCode: string;
+        TransportationRental_FeesQ1_currCode: string;
+        TransportationRental_FeesQ2_currCode: string;
+        TransportationRental_FeesQ3_currCode: string;
+        TransportationRental_FeesQ4_currCode: string;
+        BTL_SOURCE: string;
+        TransportationRental_TaxQ1_currCode: string;
+        TransportationRental_TaxQ2_currCode: string;
+        TransportationRental_TaxQ3_currCode: string;
+        TransportationRental_TaxQ4_currCode: string;
+        PersonalService_ConsQ1_currCode: string;
+        PersonalService_ConsQ2_currCode: string;
+        PersonalService_ConsQ3_currCode: string;
+        PersonalService_ConsQ4_currCode: string;
+        PersonalService_FeesQ1_currCode: string;
+        PersonalService_FeesQ2_currCode: string;
+        PersonalService_FeesQ3_currCode: string;
+        PersonalService_FeesQ4_currCode: string;
+        PersonalService_TaxQ1_currCode: string;
+        PersonalService_TaxQ2_currCode: string;
+        PersonalService_TaxQ3_currCode: string;
+        PersonalService_TaxQ4_currCode: string;
+        Entity_Address_legalAddressType: string;
+        Entity_TIN_issuedBy: string;
+        Entity_ResCountryCode: string;
+        TransportationRental_ConsQ1?: number;
+        TransportationRental_ConsQ2?: number;
+        TransportationRental_ConsQ3?: number;
+        TransportationRental_ConsQ4?: number;
+        TransportationRental_NumbQ1?: number;
+        TransportationRental_NumbQ2?: number;
+        TransportationRental_NumbQ3?: number;
+        TransportationRental_NumbQ4?: number;
+        TransportationRental_FeesQ1?: number;
+        TransportationRental_FeesQ2?: number;
+        TransportationRental_FeesQ3?: number;
+        TransportationRental_FeesQ4?: number;
+        TransportationRental_TaxQ1?: number;
+        TransportationRental_TaxQ2?: number;
+        TransportationRental_TaxQ3?: number;
+        TransportationRental_TaxQ4?: number;
+        PersonalService_ConsQ1?: number;
+        PersonalService_ConsQ2?: number;
+        PersonalService_ConsQ3?: number;
+        PersonalService_ConsQ4?: number;
+        PersonalService_NumbQ1?: number;
+        PersonalService_NumbQ2?: number;
+        PersonalService_NumbQ3?: number;
+        PersonalService_NumbQ4?: number;
+        PersonalService_FeesQ1?: number;
+        PersonalService_FeesQ2?: number;
+        PersonalService_FeesQ3?: number;
+        PersonalService_FeesQ4?: number;
+        PersonalService_TaxQ1?: number;
+        PersonalService_TaxQ2?: number;
+        PersonalService_TaxQ3?: number;
+        PersonalService_TaxQ4?: number;
+        Parameters?: THanaV4ParamOData['entityTypes']['UKDataService.MyPartnersParameters']['record'] | null;
       };
     };
   };

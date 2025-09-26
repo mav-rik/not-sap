@@ -1,16 +1,17 @@
 import type { Metadata, OData, TOdataDummyInterface } from 'notsapodata';
 import { useProvideInject } from 'vunor/utils';
-import { computed, inject, ref, type ComputedRef, type Ref } from 'vue';
+import { computed, inject, ref, watch, type ComputedRef, type Ref } from 'vue';
 import type { EntitySet, EntitySetField, EntitySetFields } from 'notsapodata';
 
 export const useODataEntitySetPI = <
   MODEL extends OData<M>,
   K extends keyof M['entitySets'],
   M extends TOdataDummyInterface = MODEL extends OData<infer M> ? M : TOdataDummyInterface,
+  ES extends EntitySet<M, any> = EntitySet<M, K>,
 >() =>
   useProvideInject('not-sap-ui-entity-set', () => {
     const toInject = {} as {
-      entity: Ref<EntitySet<M, K> | undefined>;
+      entity: Ref<ES | undefined>;
       fields: ComputedRef<EntitySetFields<M['entityTypes'][M['entitySets'][K]]['fields']>>;
       metadataLoading: Ref<boolean | undefined>;
       metadataLoadingPromise: Ref<Promise<Metadata<M>>>;
@@ -19,17 +20,20 @@ export const useODataEntitySetPI = <
       fieldsMap: ComputedRef<Map<M['entityTypes'][M['entitySets'][K]]['fields'], EntitySetField>>;
       model: MODEL;
       appNamespace?: ComputedRef<string>;
-      entitySet: ComputedRef<K>;
+      entitySet: ComputedRef<K | undefined>;
     };
 
     return {
       _inject: () => toInject,
-      _provide: (props: { model: MODEL; entitySet: K }) => {
+      _provide: (props: {
+          model: MODEL;
+          entitySet: K | ES | undefined;
+        }) => {   
         const metadata = ref<Metadata<M>>();
         const metadataLoading = ref<boolean>(false);
         toInject.metadataLoadingError = ref();
-        toInject.entitySet = computed(() => props.entitySet);
-        const entity = ref<EntitySet<M, K>>();
+        toInject.entitySet = computed(() => typeof props.entitySet === 'object' ? props.entitySet.name as K : props.entitySet );
+        const entity = ref<ES | undefined>();
 
         const metadataPromise = props.model.getMetadata();
         const metadataLoadingPromise = ref(metadataPromise);
@@ -37,9 +41,7 @@ export const useODataEntitySetPI = <
           .then((m) => {
             metadata.value = m;
             if (props.entitySet) {
-              entity.value = m.getEntitySet(props.entitySet);
-            } else {
-              entity.value = undefined;
+              entity.value = (typeof props.entitySet === 'object' ? props.entitySet : metadata.value.getEntitySet(props.entitySet)) as ES
             }
             return m;
           })
@@ -50,6 +52,17 @@ export const useODataEntitySetPI = <
           .finally(() => {
             metadataLoading.value = false;
           });
+
+        // Make entity reactive to prop changes
+        watch([toInject.entitySet], () => {
+          if (!metadata.value) return;
+
+          if (props.entitySet) {
+            entity.value = (typeof props.entitySet === 'object' ? props.entitySet : metadata.value.getEntitySet(props.entitySet)) as ES
+          } else {
+            entity.value = undefined;
+          }
+        });
 
         toInject.appNamespace = inject('__not_sap_app_namespace__') as
           | ComputedRef<string>

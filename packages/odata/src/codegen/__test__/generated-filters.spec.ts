@@ -27,7 +27,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: { ProductID: { eq: '42' } }
@@ -41,7 +41,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: [
@@ -58,7 +58,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: {
@@ -77,7 +77,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: { ProductName: { contains: 'Chai' } }
@@ -90,7 +90,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: { ProductName: { starts: 'Ch' } }
@@ -103,7 +103,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: { ProductName: { ends: 'ea' } }
@@ -118,7 +118,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       // Less than
       let query = entitySet.prepareQuery({
@@ -161,7 +161,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: { UnitPrice: { bw: ['10', '50'] } }
@@ -176,7 +176,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: {
@@ -195,7 +195,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: {
@@ -214,7 +214,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: [
@@ -240,7 +240,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       const query = entitySet.prepareQuery({
         filter: {
@@ -275,7 +275,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       // Test empty
       let query = entitySet.prepareQuery({
@@ -294,7 +294,7 @@ describe('Filter generation', () => {
       const service = NorthwindV4.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-      const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+      const entitySet = await NorthwindV4.entitySet('Products')
 
       // Test notContains
       let query = entitySet.prepareQuery({
@@ -321,7 +321,7 @@ describe('Filter generation', () => {
       const service = NorthwindV2.getInstance()
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
 
-      const entitySet = await NorthwindV2.entitySet('ODataWeb.Northwind.Model.Orders')
+      const entitySet = await NorthwindV2.entitySet('Orders')
 
       const query = entitySet.prepareQuery({
         filter: {

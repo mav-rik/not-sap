@@ -28,10 +28,10 @@ export type TODataEntityCustomQuery<
   entity: EntitySet<M, K>,
   params: TODataParams,
   append: boolean,
-  records: Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]
+  records: M['entityTypes'][M['entitySets'][K]]['record'][]
 ) => Promise<{
   inlineCount?: number;
-  records: Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[];
+  records: M['entityTypes'][M['entitySets'][K]]['record'][];
   append?: boolean;
   nextTop?: number;
   nextSkip?: number;
@@ -49,7 +49,7 @@ export const useSmartTablePI = <
       model: MODEL;
       getODataFilters: () => TODataFilters;
       getFilterString: () => string | undefined;
-      results: ModelRef<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
+      results: ModelRef<M['entityTypes'][M['entitySets'][K]]['record'][]>;
       inlineCount: Ref<number | undefined>;
       query: (params?: TEntitySetQueryParams) => void;
       queryImmediate: (params?: TEntitySetQueryParams, append?: boolean) => Promise<void>;
@@ -60,7 +60,7 @@ export const useSmartTablePI = <
         }
       ) => {
         abort: () => void;
-        records: Ref<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
+        records: Ref<M['entityTypes'][M['entitySets'][K]]['record'][]>;
         count: Ref<number>;
         total: Ref<number>;
         done: Ref<boolean>;
@@ -144,7 +144,7 @@ export const useSmartTablePI = <
         fieldsFilters: Ref<TODataFieldsFilters>;
         columnsNames: Ref<M['entityTypes'][M['entitySets'][K]]['fields'][]>;
         sorters: ModelRef<TEntitySetSorter[]>;
-        results: ModelRef<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
+        results: ModelRef<M['entityTypes'][M['entitySets'][K]]['record'][]>;
         top: ComputedRef<number | undefined>;
         skip: ComputedRef<number | undefined>;
         searchTerm: ComputedRef<string | undefined>;
@@ -354,7 +354,7 @@ export const useSmartTablePI = <
             throw new Error('EntitySet not initialized');
           }
           const q = prepareQuery(params);
-          const records = ref([]) as Ref<Record<M['entityTypes'][M['entitySets'][K]]['fields'], string>[]>;
+          const records = ref([]) as Ref<M['entityTypes'][M['entitySets'][K]]['record'][]>;
           const count = ref(0);
           const total = ref(toInject.inlineCount.value || 0);
           const done = ref(false);

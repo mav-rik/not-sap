@@ -31,7 +31,7 @@ describe('Navigation properties', () => {
     // Mock the _fetch method to capture the URL
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: [] })
 
-    const entitySet = await HanaV4Param.entitySet('UKDataService.MyPartners')
+    const entitySet = await HanaV4Param.entitySet('MyPartners')
 
     const keyInput: Record<THanaV4Param['UKDataService']['MyPartnersParameters']['keys'], string> = {
       YEAR: '2023',
@@ -55,7 +55,7 @@ describe('Navigation properties', () => {
 
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: [] })
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Orders')
+    const entitySet = await NorthwindV4.entitySet('Orders')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Order']['keys'], string> = {
       OrderID: '10248',
@@ -78,7 +78,7 @@ describe('Navigation properties', () => {
 
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: [] })
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Orders')
+    const entitySet = await NorthwindV4.entitySet('Orders')
 
     const orderKey: Record<TNorthwindV4['NorthwindModel']['Order']['keys'], string> = {
       OrderID: '10248',
@@ -106,7 +106,7 @@ describe('Navigation properties', () => {
 
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: [] })
 
-    const entitySet = await NorthwindV2.entitySet('ODataWeb.Northwind.Model.Products')
+    const entitySet = await NorthwindV2.entitySet('Products')
 
     const keyInput: Record<TNorthwindV2['NorthwindModel']['Product']['keys'], string> = {
       ProductID: '1',
@@ -129,7 +129,7 @@ describe('Navigation properties', () => {
 
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: {} })
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+    const entitySet = await NorthwindV4.entitySet('Products')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Product']['keys'], string> = {
       ProductID: '3',
@@ -151,7 +151,7 @@ describe('Navigation properties', () => {
 
     const fetchSpy = vi.spyOn(service, '_fetch').mockResolvedValue({ value: [] })
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Categories')
+    const entitySet = await NorthwindV4.entitySet('Categories')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Category']['keys'], string> = {
       CategoryID: '2',

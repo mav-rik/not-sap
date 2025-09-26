@@ -23,11 +23,16 @@ export type ODataEdmType =
   | 'Edm.Decimal'
   | 'Edm.Boolean'
   | 'Edm.DateTime'
+  | 'Edm.DateTimeOffset'
   | 'Edm.Date'
+  | 'Edm.TimeOfDay'
+  | 'Edm.Time'
   | 'Edm.Guid'
   | 'Edm.Double'
   | 'Edm.Single'
-  | 'Edm.Time'
+  | 'Edm.Byte'
+  | 'Edm.SByte'
+  | 'Edm.Binary'
 
 /**
  * An object containing transformation functions for OData EDM types.
@@ -88,7 +93,25 @@ export const odataValueFormat = {
     'Edm.Time': (value): string => {
       return value
     },
-  } as Record<ODataEdmType, (v: string) => string | boolean | number | Date>,
+    'Edm.DateTimeOffset': (value): Date | undefined => {
+      if (!value) {
+        return undefined
+      }
+      return new Date(value)
+    },
+    'Edm.TimeOfDay': (value): string => {
+      return value
+    },
+    'Edm.Byte': (value): number => {
+      return parseInt(value, 10)
+    },
+    'Edm.SByte': (value): number => {
+      return parseInt(value, 10)
+    },
+    'Edm.Binary': (value): string => {
+      return value // Base64 encoded binary data
+    },
+  } as Record<ODataEdmType, (v: string) => string | boolean | number | Date | undefined>,
   toFilter: {
     'Edm.String': (value): string => {
       // Escape single quotes by replacing ' with ''
@@ -148,6 +171,27 @@ export const odataValueFormat = {
     },
     'Edm.Time': (value): string => {
       return `time'${value}'`
+    },
+    'Edm.DateTimeOffset': (value): string => {
+      if (value instanceof Date) {
+        return `datetimeoffset'${value.toISOString()}'`
+      }
+      if (typeof value === 'string') {
+        return value.startsWith('datetimeoffset') ? value : `datetimeoffset'${value}'`
+      }
+      return `datetimeoffset''`
+    },
+    'Edm.TimeOfDay': (value): string => {
+      return `${value}` // TimeOfDay values are typically in HH:MM:SS format
+    },
+    'Edm.Byte': (value): string => {
+      return `${value}`
+    },
+    'Edm.SByte': (value): string => {
+      return `${value}`
+    },
+    'Edm.Binary': (value): string => {
+      return `binary'${value}'` // Base64 encoded
     },
   } as Record<ODataEdmType, (v: TODataValueType) => string>,
   toDisplay: {
@@ -211,6 +255,24 @@ export const odataValueFormat = {
     },
     'Edm.Time': (value): string => {
       return value as string
+    },
+    'Edm.DateTimeOffset': (value): string => {
+      if (value instanceof Date) {
+        return value.toLocaleString()
+      }
+      return value as string
+    },
+    'Edm.TimeOfDay': (value): string => {
+      return value as string
+    },
+    'Edm.Byte': (value): string => {
+      return value.toLocaleString()
+    },
+    'Edm.SByte': (value): string => {
+      return value.toLocaleString()
+    },
+    'Edm.Binary': (value): string => {
+      return value as string // Show base64 encoded string
     },
   } as Record<ODataEdmType, (v: string | number | Date | boolean) => string>,
 }

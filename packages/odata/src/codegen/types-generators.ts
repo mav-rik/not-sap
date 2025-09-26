@@ -20,6 +20,7 @@ export interface TGenerateEntityTypeDefinition {
   measures: string
   navToMany: Record<string, string>
   navToOne: Record<string, string>
+  record: Record<string, unknown>
 }
 
 interface TEntityTypeConsts {
@@ -80,7 +81,7 @@ export function generateEntityTypeTypes(
   typeTypes.keys = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["keys"][number]`
   typeTypes.measures = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["measures"][number]`
 
-  d.getNavsMap()
+  
 
   const navToMany: TGenerateEntityTypeDefinition['navToMany'] = {}
   const navToOne: TGenerateEntityTypeDefinition['navToOne'] = {}
@@ -88,6 +89,66 @@ export function generateEntityTypeTypes(
   for (const nav of Array.from(d.getNavsMap().values())) {
     const target = nav.toMany ? navToMany : navToOne
     target[nav.$Name as string] = JSON.stringify(nav.$Type)
+  }
+
+  const record = {} as TGenerateEntityTypeDefinition['record']
+
+  for (const field of Array.from(d.fieldsMap.values())) {
+    // Determine the TypeScript type based on OData type
+    let fieldType: string
+    switch (field.$Type) {
+      case 'Edm.String':
+      case 'Edm.Guid':
+        fieldType = 'string'
+        break
+      case 'Edm.Boolean':
+        fieldType = 'boolean'
+        break
+      case 'Edm.Decimal':
+      case 'Edm.Int8':
+      case 'Edm.Int16':
+      case 'Edm.Int32':
+      case 'Edm.Int64':
+      case 'Edm.Single':
+      case 'Edm.Double':
+      case 'Edm.Byte':
+      case 'Edm.SByte':
+        fieldType = 'number'
+        break
+      case 'Edm.DateTime':
+      case 'Edm.DateTimeOffset':
+      case 'Edm.Date':
+        fieldType = 'Date' // These are converted to Date objects by toJson
+        break
+      case 'Edm.TimeOfDay':
+      case 'Edm.Time':
+        fieldType = 'string' // These remain as strings
+        break
+      case 'Edm.Binary':
+        fieldType = 'string' // Base64 encoded
+        break
+      default:
+        fieldType = 'any'
+    }
+
+    // Add field to record - use optional if field is nullable
+    const fieldName = field.$Nullable !== false ? `${String(field.$Name)}?` : String(field.$Name)
+    record[fieldName] = fieldType
+  }
+
+  // Add navigation properties as optional fields
+  for (const nav of Array.from(d.getNavsMap().values())) {
+    // Get the target entity type name
+    const targetEntityType = `T${capitalizedAlias}OData['entityTypes']['${nav.$Type}']['record']`
+    // Navigation properties are always optional
+    const navName = `${String(nav.$Name)}?`
+    if (nav.toMany) {
+      // For to-many relationships, it's an array of the target entity type
+      record[navName] = `Array<${targetEntityType}>`
+    } else {
+      // For to-one relationships, it's the target entity type or null
+      record[navName] = `${targetEntityType} | null`
+    }
   }
 
   return {
@@ -110,6 +171,7 @@ export function generateEntityTypeTypes(
       measures: measures.map(k => JSON.stringify(k)).join(' | '),
       navToMany,
       navToOne,
+      record,
     },
   }
 }
@@ -175,10 +237,25 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const modelConsts: TModelConsts = {}
   const modelTypes: TModelTypes = {}
 
-  for (const et of Array.from(entityTypesToGen)) {
-    const entityType = m.getEntityType(et)
-    entityType.navToMany?.forEach(n => entityTypesToGen.add(n.$Type))
-    entityType.navToOne?.forEach(n => entityTypesToGen.add(n.$Type))
+  // Recursively discover all entity types through navigation properties
+  const processedTypes = new Set<string>()
+  const toProcess = Array.from(entityTypesToGen)
+
+  while (toProcess.length > 0) {
+    const currentType = toProcess.pop()!
+    if (processedTypes.has(currentType)) continue
+
+    processedTypes.add(currentType)
+    const entityType = m.getEntityType(currentType)
+
+    // Add all navigation target types to be processed
+    Array.from(entityType.getNavsMap().values()).forEach(nav => {
+      const targetType = nav.$Type
+      if (!processedTypes.has(targetType) && !entityTypesToGen.has(targetType)) {
+        entityTypesToGen.add(targetType)
+        toProcess.push(targetType)
+      }
+    })
   }
 
   for (const et of Array.from(entityTypesToGen)) {
@@ -199,6 +276,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       measures: entity.measures,
       navToMany: entity.navToMany,
       navToOne: entity.navToOne,
+      record: entity.record,
     })
   }
 
@@ -243,6 +321,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       measures: entityType.measuresType,
       navToMany: entityType.navToMany,
       navToOne: entityType.navToOne,
+      record: entityType.record,
     }
   }
 

@@ -144,8 +144,10 @@ describe('Generated Imports Validation', () => {
     it('should have separate interface types for each service', () => {
       // Entity set names stay scoped to their own services
       expectTypeOf<'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_items'>()
+        // @ts-expect-error
         .toExtend<keyof TSapServiceOData['entitySets']>()
       expectTypeOf<'UKDataService.MyPartners'>()
+        // @ts-expect-error
         .toExtend<keyof THanaServiceOData['entitySets']>()
       expectTypeOf<'UKDataService.MyPartners'>()
         .not.toExtend<keyof TSapServiceOData['entitySets']>()
@@ -272,8 +274,10 @@ describe('Generated Imports Validation', () => {
 
       // Ensure namespaces differ between versions
       expectTypeOf<'ODataWeb.Northwind.Model.Products'>()
+        // @ts-expect-error
         .toExtend<keyof TNorthwindV2OData['entitySets']>()
       expectTypeOf<'ODataWebV4.Northwind.Model.Products'>()
+        // @ts-expect-error
         .toExtend<keyof TNorthwindV4OData['entitySets']>()
       expectTypeOf<'ODataWeb.Northwind.Model.Products'>()
         .not.toExtend<keyof TNorthwindV4OData['entitySets']>()

@@ -185,7 +185,7 @@ export const odataFilterFormat = {
     le: (f, v) => `${f} le ${v}`,
     gt: (f, v) => `${f} gt ${v}`,
     ge: (f, v) => `${f} ge ${v}`,
-    empty: f => `(${f} eq '' or ${f} eq null)`,
+    empty: f => `${f} eq null`,
     // not
     notSubstringof: (f, v) => `not substringof(${v},${f})`, // v2
     notContains: (f, v) => `not contains(${f},${v})`, // v4
@@ -197,7 +197,7 @@ export const odataFilterFormat = {
     notLe: (f, v) => `${f} gt ${v}`,
     notGt: (f, v) => `${f} le ${v}`,
     notGe: (f, v) => `${f} lt ${v}`,
-    notEmpty: f => `(${f} ne '' and ${f} ne null)`,
+    notEmpty: f => `${f} ne null`,
   } as Record<TODataFilterConditionType, (f: string, v?: string, v2?: string) => string>,
   toString: {
     value(v) {

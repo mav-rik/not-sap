@@ -289,19 +289,21 @@ export class EntityType<
         ...v4Attrs,
         $label: p.$label ?? v4Attrs.$label ?? p.$Name,
         ...refiner.refinedField(this._m.name || '', this.name as string, p.$Name),
-        isNumber: ['Edm.Decimal', 'Edm.Int8', 'Edm.Int16', 'Edm.Int32', 'Edm.Int64'].includes(p.$Type),
+        isNumber: ['Edm.Decimal', 'Edm.Int8', 'Edm.Int16', 'Edm.Int32', 'Edm.Int64', 'Edm.Single', 'Edm.Double', 'Edm.Byte', 'Edm.SByte'].includes(p.$Type),
         fromJson: {
           toFilter: odataValueFormat.toFilter[p.$Type],
           toDisplay: odataValueFormat.toDisplay[p.$Type],
         },
         fromRaw: {
           toJson: odataValueFormat.toJson[p.$Type],
-          toFilter: (v: string) =>
-            odataValueFormat.toFilter[p.$Type](odataValueFormat.toJson[p.$Type](v)),
-          toDisplay: ((v: string) =>
-            odataValueFormat.toDisplay[p.$Type](odataValueFormat.toJson[p.$Type](v))) as (
-            v: string
-          ) => string,
+          toFilter: (v: string) => {
+            const jsonValue = odataValueFormat.toJson[p.$Type](v)
+            return jsonValue === undefined ? '' : odataValueFormat.toFilter[p.$Type](jsonValue)
+          },
+          toDisplay: (v: string) => {
+            const jsonValue = odataValueFormat.toJson[p.$Type](v)
+            return jsonValue === undefined ? '' : odataValueFormat.toDisplay[p.$Type](jsonValue)
+          },
         },
         annotations,
       } as TEntityType<M['entityTypes'][T]['fields']>
@@ -494,7 +496,16 @@ export class EntityType<
           const v1 = Array.isArray(v) ? v[0] : v
           const v2 = Array.isArray(v) ? v[1] : v
           const meta = this.getField(field as M['entityTypes'][T]['fields'])
-          if (meta) {
+
+          // Special handling for empty/notEmpty on string fields
+          if ((type === 'empty' || type === 'notEmpty') && meta && meta.$Type === 'Edm.String') {
+            // For string fields, check both empty string and null
+            if (type === 'empty') {
+              fieldFilters.push(`(${field} eq '' or ${field} eq null)`)
+            } else { // notEmpty
+              fieldFilters.push(`(${field} ne '' and ${field} ne null)`)
+            }
+          } else if (meta) {
             fieldFilters.push(odataFilterFormat.toFilter[type](
               field,
               v1 === undefined ? v1 : meta.fromJson.toFilter(v1),

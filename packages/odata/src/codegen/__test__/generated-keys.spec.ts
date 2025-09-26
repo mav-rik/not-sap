@@ -24,7 +24,7 @@ describe('Entity key generation', () => {
     const service = NorthwindV4.getInstance()
     vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+    const entitySet = await NorthwindV4.entitySet('Products')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Product']['keys'], string> = {
       ProductID: '42',
@@ -39,7 +39,7 @@ describe('Entity key generation', () => {
     const service = NorthwindV4.getInstance()
     vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Order_Details')
+    const entitySet = await NorthwindV4.entitySet('Order_Details')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Order_Detail']['keys'], string> = {
       OrderID: '10248',
@@ -55,7 +55,7 @@ describe('Entity key generation', () => {
     const service = NorthwindV4.getInstance()
     vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    const entitySet = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Categories')
+    const entitySet = await NorthwindV4.entitySet('Categories')
 
     const keyInput: Record<TNorthwindV4['NorthwindModel']['Category']['keys'], string> = {
       CategoryID: "1",

@@ -48,7 +48,7 @@ export interface TSapService {
  */
 export interface TSapServiceOData extends TOdataDummyInterface {
   entitySets: {
-    'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_items': "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType";
+    'line_items': "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType";
   };
   entityTypes: {
     'com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001.line_itemsType': {
@@ -57,6 +57,50 @@ export interface TSapServiceOData extends TOdataDummyInterface {
       measures: TSapService["com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001"]["line_itemsType"]["measures"];
       navToMany: {};
       navToOne: {};
+      record: {
+        DocumentNo: string;
+        ItemNo: string;
+        SubItemNo: string;
+        Partner: string;
+        HotelGroupingKey: string;
+        ClearingStatus: string;
+        DocCurrency: string;
+        DocAmount: number;
+        LocalCurrency: string;
+        LocalAmount: number;
+        Currency: string;
+        Amount: number;
+        HotelId: string;
+        bukrs: string;
+        HotelName: string;
+        InvoiceNo: string;
+        ClearingDoc: string;
+        Ty: string;
+        DocDate?: Date;
+        PaymentMethod: string;
+        PaymentMethodDesc: string;
+        ConAccount: string;
+        NetPayDueDate?: Date;
+        ClearingDate?: Date;
+        LegalId: string;
+        PbbProduct: string;
+        country: string;
+        DunningBlockReason: string;
+        DunningBlockReasonDescription: string;
+        PaymentBlockReason: string;
+        PaymentBlockReasonDescription: string;
+        ExtranetHotelStatus: string;
+        FirstControllerid: string;
+        region: string;
+        clusterid: string;
+        DocumentTypeDesc: string;
+        ItemText: string;
+        Text: string;
+        PostingDate?: Date;
+        paymentlot: string;
+        CollectionStep: string;
+        BillableItemText: string;
+      };
     };
   };
   functions: {};
@@ -84,7 +128,7 @@ export class SapService extends OData<TSapServiceOData> {
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("sapService", {...opts, host: "http://localhost", path: "/odata/sap-v4"})
+    super("sapService", {...opts, path: "/odata/sap-v4"})
   }
 }
 
@@ -136,7 +180,7 @@ export interface THanaService {
  */
 export interface THanaServiceOData extends TOdataDummyInterface {
   entitySets: {
-    'UKDataService.MyPartners': "UKDataService.MyPartnersParameters";
+    'MyPartners': "UKDataService.MyPartnersParameters";
   };
   entityTypes: {
     'UKDataService.MyPartnersParameters': {
@@ -147,6 +191,10 @@ export interface THanaServiceOData extends TOdataDummyInterface {
         Set: "UKDataService.MyPartnersType";
       };
       navToOne: {};
+      record: {
+        YEAR: string;
+        Set?: Array<THanaServiceOData['entityTypes']['UKDataService.MyPartnersType']['record']>;
+      };
     };
     'UKDataService.MyPartnersType': {
       keys: THanaService["UKDataService"]["MyPartnersType"]["keys"];
@@ -155,6 +203,91 @@ export interface THanaServiceOData extends TOdataDummyInterface {
       navToMany: {};
       navToOne: {
         Parameters: "UKDataService.MyPartnersParameters";
+      };
+      record: {
+        Entity_IN: string;
+        Entity_IN_issuedBy: string;
+        Entity_IN_INType: string;
+        Entity_TIN: string;
+        Entity_VAT: string;
+        Entity_Name: string;
+        Entity_Address_CountryCode: string;
+        Entity_Address_Free: string;
+        Entity_Address_Street: string;
+        Entity_Address_BuildingIdentifier: string;
+        Entity_Address_SuiteIdentifier: string;
+        Entity_Address_FloorIdentifier: string;
+        Entity_Address_DistrictName: string;
+        Entity_Address_POB: string;
+        Entity_Address_PostCode: string;
+        Entity_Address_City: string;
+        Entity_Address_CountrySubentity: string;
+        Entity_FinancialIdentifier: string;
+        Entity_AccountNumberType: string;
+        Entity_AccountHolderName: string;
+        Entity_FinancialIdentifierOtherInfo: string;
+        Entity_PermanentEstablishment: string;
+        TransportationRental_ConsQ1_currCode: string;
+        TransportationRental_ConsQ2_currCode: string;
+        TransportationRental_ConsQ3_currCode: string;
+        TransportationRental_ConsQ4_currCode: string;
+        TransportationRental_FeesQ1_currCode: string;
+        TransportationRental_FeesQ2_currCode: string;
+        TransportationRental_FeesQ3_currCode: string;
+        TransportationRental_FeesQ4_currCode: string;
+        BTL_SOURCE: string;
+        TransportationRental_TaxQ1_currCode: string;
+        TransportationRental_TaxQ2_currCode: string;
+        TransportationRental_TaxQ3_currCode: string;
+        TransportationRental_TaxQ4_currCode: string;
+        PersonalService_ConsQ1_currCode: string;
+        PersonalService_ConsQ2_currCode: string;
+        PersonalService_ConsQ3_currCode: string;
+        PersonalService_ConsQ4_currCode: string;
+        PersonalService_FeesQ1_currCode: string;
+        PersonalService_FeesQ2_currCode: string;
+        PersonalService_FeesQ3_currCode: string;
+        PersonalService_FeesQ4_currCode: string;
+        PersonalService_TaxQ1_currCode: string;
+        PersonalService_TaxQ2_currCode: string;
+        PersonalService_TaxQ3_currCode: string;
+        PersonalService_TaxQ4_currCode: string;
+        Entity_Address_legalAddressType: string;
+        Entity_TIN_issuedBy: string;
+        Entity_ResCountryCode: string;
+        TransportationRental_ConsQ1?: number;
+        TransportationRental_ConsQ2?: number;
+        TransportationRental_ConsQ3?: number;
+        TransportationRental_ConsQ4?: number;
+        TransportationRental_NumbQ1?: number;
+        TransportationRental_NumbQ2?: number;
+        TransportationRental_NumbQ3?: number;
+        TransportationRental_NumbQ4?: number;
+        TransportationRental_FeesQ1?: number;
+        TransportationRental_FeesQ2?: number;
+        TransportationRental_FeesQ3?: number;
+        TransportationRental_FeesQ4?: number;
+        TransportationRental_TaxQ1?: number;
+        TransportationRental_TaxQ2?: number;
+        TransportationRental_TaxQ3?: number;
+        TransportationRental_TaxQ4?: number;
+        PersonalService_ConsQ1?: number;
+        PersonalService_ConsQ2?: number;
+        PersonalService_ConsQ3?: number;
+        PersonalService_ConsQ4?: number;
+        PersonalService_NumbQ1?: number;
+        PersonalService_NumbQ2?: number;
+        PersonalService_NumbQ3?: number;
+        PersonalService_NumbQ4?: number;
+        PersonalService_FeesQ1?: number;
+        PersonalService_FeesQ2?: number;
+        PersonalService_FeesQ3?: number;
+        PersonalService_FeesQ4?: number;
+        PersonalService_TaxQ1?: number;
+        PersonalService_TaxQ2?: number;
+        PersonalService_TaxQ3?: number;
+        PersonalService_TaxQ4?: number;
+        Parameters?: THanaServiceOData['entityTypes']['UKDataService.MyPartnersParameters']['record'] | null;
       };
     };
   };
@@ -183,7 +316,7 @@ export class HanaService extends OData<THanaServiceOData> {
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("hanaService", {...opts, host: "http://localhost", path: "/odata/hana-v4-param"})
+    super("hanaService", {...opts, path: "/odata/hana-v4-param"})
   }
 }
 
