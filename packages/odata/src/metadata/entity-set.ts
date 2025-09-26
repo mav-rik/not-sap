@@ -97,7 +97,14 @@ export class EntitySet<
   }
 
   override get name() {
-    return (typeof this._ref === 'object' ? this._ref.prefix : this._ref) as string
+    if (typeof this._ref === 'object') {
+      // This is a navigation path, return the full prefix as-is
+      return this._ref.prefix
+    } else {
+      // This is an entity set, return just the name without namespace
+      // e.g., "Products" from "ODataWebV4.Northwind.Model.Products"
+      return (this._ref as string).split('.').pop()!
+    }
   }
 
   /**
@@ -168,7 +175,7 @@ export class EntitySet<
       }
     }
 
-    const prefix = typeof this._ref === 'object' ? this._ref.prefix : this._ref
+    const prefix = this.name
     return {
       entitySet: prefix as T,
       params: {

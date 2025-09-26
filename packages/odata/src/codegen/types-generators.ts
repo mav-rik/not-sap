@@ -70,8 +70,8 @@ export function generateEntityTypeTypes(
   const typeTypes = {} as TModelTypes[string][string]
   const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
 
-  typeConsts.fields = typeConsts.fields = `[${fieldNames.map(name => JSON.stringify(name)).join(', ')}] as const`
-  typeConsts.keys = typeConsts.keys = `[${fieldNames.map(name => JSON.stringify(name)).join(', ')}] as const`
+  typeConsts.fields = `[${fieldNames.map(name => JSON.stringify(name)).join(', ')}] as const`
+  typeConsts.keys = `[${keys.map(name => JSON.stringify(name)).join(', ')}] as const`
   typeConsts.measures =  measures.length
       ? `[${measures.map(name => JSON.stringify(name)).join(', ')}] as const`
       : '[] as const',

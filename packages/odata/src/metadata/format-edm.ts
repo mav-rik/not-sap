@@ -44,6 +44,12 @@ export const odataValueFormat = {
     'Edm.String': (value): string => {
       return value
     },
+    'Edm.Int8': (value): number => {
+      return parseInt(value, 10)
+    },
+    'Edm.Int16': (value): number => {
+      return parseInt(value, 10)
+    },
     'Edm.Int32': (value): number => {
       return parseInt(value, 10)
     },
@@ -91,6 +97,12 @@ export const odataValueFormat = {
       }
       const escapedValue = (value as string).replace(/'/g, "''")
       return `'${escapedValue}'`
+    },
+    'Edm.Int8': (value): string => {
+      return `${value}`
+    },
+    'Edm.Int16': (value): string => {
+      return `${value}`
     },
     'Edm.Int32': (value): string => {
       return `${value}`

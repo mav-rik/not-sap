@@ -473,6 +473,7 @@ export class EntityType<
         if (f.$or) {
           return this.renderFilter(f.$or, 'or')
         }
+        const fieldFilters = []
         for (const [field, val] of Object.entries(
           f as TODataFilter<M['entityTypes'][T]['fields']>
         )) {
@@ -480,9 +481,9 @@ export class EntityType<
             typeof val === 'string'
               ? odataFilterFormat.fromString(val)
               : (val as TODataFilterValWithType)
-          if (!typed) return ''
+          if (!typed) continue
           const type = Object.keys(typed)[0] as TODataFilterConditionType
-          if (!odataFilterFormat.toFilter[type]) return ''
+          if (!odataFilterFormat.toFilter[type]) continue
           const v = typed[type as keyof typeof typed] as
             | string
             | number
@@ -494,19 +495,21 @@ export class EntityType<
           const v2 = Array.isArray(v) ? v[1] : v
           const meta = this.getField(field as M['entityTypes'][T]['fields'])
           if (meta) {
-            return odataFilterFormat.toFilter[type](
+            fieldFilters.push(odataFilterFormat.toFilter[type](
               field,
               v1 === undefined ? v1 : meta.fromJson.toFilter(v1),
               v2 === undefined ? v2 : meta.fromJson.toFilter(v2)
-            )
+            ))
           } else {
-            return odataFilterFormat.toFilter[type](
+            fieldFilters.push(odataFilterFormat.toFilter[type](
               field,
               v1 === undefined ? `'${v1}'` : String(v1),
               v2 === undefined ? `'${v2}'` : String(v2)
-            )
+            ))
           }
         }
+        const joined = fieldFilters.join(' and ')
+        return fieldFilters.length > 1 ? `(${joined})` : joined
       })
       .filter(Boolean)
       .join(` ${joinWith} `)

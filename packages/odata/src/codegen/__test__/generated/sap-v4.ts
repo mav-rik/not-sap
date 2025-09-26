@@ -20,7 +20,7 @@ export const sapV4Consts = {
   "com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001": {
     "line_itemsType": {
       fields: ["DocumentNo", "ItemNo", "SubItemNo", "Partner", "HotelGroupingKey", "ClearingStatus", "DocCurrency", "DocAmount", "LocalCurrency", "LocalAmount", "Currency", "Amount", "HotelId", "bukrs", "HotelName", "InvoiceNo", "ClearingDoc", "Ty", "DocDate", "PaymentMethod", "PaymentMethodDesc", "ConAccount", "NetPayDueDate", "ClearingDate", "LegalId", "PbbProduct", "country", "DunningBlockReason", "DunningBlockReasonDescription", "PaymentBlockReason", "PaymentBlockReasonDescription", "ExtranetHotelStatus", "FirstControllerid", "region", "clusterid", "DocumentTypeDesc", "ItemText", "Text", "PostingDate", "paymentlot", "CollectionStep", "BillableItemText"] as const,
-      keys: ["DocumentNo", "ItemNo", "SubItemNo", "Partner", "HotelGroupingKey", "ClearingStatus", "DocCurrency", "DocAmount", "LocalCurrency", "LocalAmount", "Currency", "Amount", "HotelId", "bukrs", "HotelName", "InvoiceNo", "ClearingDoc", "Ty", "DocDate", "PaymentMethod", "PaymentMethodDesc", "ConAccount", "NetPayDueDate", "ClearingDate", "LegalId", "PbbProduct", "country", "DunningBlockReason", "DunningBlockReasonDescription", "PaymentBlockReason", "PaymentBlockReasonDescription", "ExtranetHotelStatus", "FirstControllerid", "region", "clusterid", "DocumentTypeDesc", "ItemText", "Text", "PostingDate", "paymentlot", "CollectionStep", "BillableItemText"] as const,
+      keys: ["DocumentNo", "ItemNo", "SubItemNo"] as const,
       measures: ["LocalAmount"] as const,
     },
   },

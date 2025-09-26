@@ -20,22 +20,22 @@ export const northwindV4SelectedConsts = {
   "NorthwindModel": {
     "Product": {
       fields: ["ProductID", "ProductName", "SupplierID", "CategoryID", "QuantityPerUnit", "UnitPrice", "UnitsInStock", "UnitsOnOrder", "ReorderLevel", "Discontinued"] as const,
-      keys: ["ProductID", "ProductName", "SupplierID", "CategoryID", "QuantityPerUnit", "UnitPrice", "UnitsInStock", "UnitsOnOrder", "ReorderLevel", "Discontinued"] as const,
+      keys: ["ProductID"] as const,
       measures: [] as const,
     },
     "Supplier": {
       fields: ["SupplierID", "CompanyName", "ContactName", "ContactTitle", "Address", "City", "Region", "PostalCode", "Country", "Phone", "Fax", "HomePage"] as const,
-      keys: ["SupplierID", "CompanyName", "ContactName", "ContactTitle", "Address", "City", "Region", "PostalCode", "Country", "Phone", "Fax", "HomePage"] as const,
+      keys: ["SupplierID"] as const,
       measures: [] as const,
     },
     "Order_Detail": {
       fields: ["OrderID", "ProductID", "UnitPrice", "Quantity", "Discount"] as const,
-      keys: ["OrderID", "ProductID", "UnitPrice", "Quantity", "Discount"] as const,
+      keys: ["OrderID", "ProductID"] as const,
       measures: [] as const,
     },
     "Category": {
       fields: ["CategoryID", "CategoryName", "Description", "Picture"] as const,
-      keys: ["CategoryID", "CategoryName", "Description", "Picture"] as const,
+      keys: ["CategoryID"] as const,
       measures: [] as const,
     },
   },

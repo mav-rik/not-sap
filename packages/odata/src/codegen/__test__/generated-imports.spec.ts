@@ -12,12 +12,6 @@ import {
   HanaService, hanaServiceConsts, THanaService, THanaServiceOData
 } from './generated/combined-services'
 
-// const es = await HanaV4Param.entitySet('UKDataService.MyPartners')
-// es.withKey({ YEAR: '2024' }).toMany('Set')
-
-// const es2 = await NorthwindV2.entitySet('ODataWeb.Northwind.Model.Products')
-// es2.withKey({CategoryID: '1'}).toMany('Order_Details').withKey({OrderID: ''}).toOne('Order')
-
 describe('Generated Imports Validation', () => {
 
   describe('HanaV4Param - Navigation Property Entity Type Generation', () => {
@@ -173,6 +167,92 @@ describe('Generated Imports Validation', () => {
         .toContain('DocumentNo')
       expect(hanaServiceConsts.UKDataService.MyPartnersParameters.fields).toContain('YEAR')
       expect(hanaServiceConsts.UKDataService.MyPartnersType.fields).toContain('Entity_IN')
+    })
+  })
+
+  describe('Keys Generation Validation', () => {
+    it('should generate only actual key fields for entity types', () => {
+      // Product entity should only have ProductID as key
+      expect(northwindV4Consts.NorthwindModel.Product.keys).toEqual(['ProductID'])
+      expect(northwindV2Consts.NorthwindModel.Product.keys).toEqual(['ProductID'])
+
+      // Category entity should only have CategoryID as key
+      expect(northwindV4Consts.NorthwindModel.Category.keys).toEqual(['CategoryID'])
+      expect(northwindV2Consts.NorthwindModel.Category.keys).toEqual(['CategoryID'])
+
+      // Order entity should only have OrderID as key
+      expect(northwindV4Consts.NorthwindModel.Order.keys).toEqual(['OrderID'])
+      expect(northwindV2Consts.NorthwindModel.Order.keys).toEqual(['OrderID'])
+
+      // Order_Detail entity has composite key (OrderID, ProductID)
+      expect(northwindV4Consts.NorthwindModel.Order_Detail.keys).toEqual(['OrderID', 'ProductID'])
+      expect(northwindV2Consts.NorthwindModel.Order_Detail.keys).toEqual(['OrderID', 'ProductID'])
+
+      // Customer entity should only have CustomerID as key
+      expect(northwindV4Consts.NorthwindModel.Customer.keys).toEqual(['CustomerID'])
+      expect(northwindV2Consts.NorthwindModel.Customer.keys).toEqual(['CustomerID'])
+
+      // Supplier entity should only have SupplierID as key
+      expect(northwindV4Consts.NorthwindModel.Supplier.keys).toEqual(['SupplierID'])
+      expect(northwindV2Consts.NorthwindModel.Supplier.keys).toEqual(['SupplierID'])
+    })
+
+    it('should have keys as subset of fields for all entities', () => {
+      // Check V4 entities
+      for (const [entityName, entity] of Object.entries(northwindV4Consts.NorthwindModel)) {
+        const fields = entity.fields as readonly string[]
+        const keys = entity.keys as readonly string[]
+
+        // Keys should be a subset of fields
+        for (const key of keys) {
+          expect(fields).toContain(key)
+        }
+
+        // Keys should not equal all fields (except for special cases)
+        // Most entities should have fewer keys than fields
+        if (['Product', 'Category', 'Customer', 'Supplier', 'Order', 'Employee'].includes(entityName)) {
+          expect(keys.length).toBeLessThan(fields.length)
+        }
+      }
+
+      // Check V2 entities
+      for (const [entityName, entity] of Object.entries(northwindV2Consts.NorthwindModel)) {
+        const fields = entity.fields as readonly string[]
+        const keys = entity.keys as readonly string[]
+
+        // Keys should be a subset of fields
+        for (const key of keys) {
+          expect(fields).toContain(key)
+        }
+
+        // Keys should not equal all fields (except for special cases)
+        // Most entities should have fewer keys than fields
+        if (['Product', 'Category', 'Customer', 'Supplier', 'Order', 'Employee'].includes(entityName)) {
+          expect(keys.length).toBeLessThan(fields.length)
+        }
+      }
+    })
+
+    it('should generate correct keys for HanaV4Param entity types', () => {
+      // MyPartnersParameters should have YEAR as its key
+      expect(hanaV4ParamConsts.UKDataService.MyPartnersParameters.keys).toEqual(['YEAR'])
+
+      // Verify keys are subset of fields
+      expect(hanaV4ParamConsts.UKDataService.MyPartnersParameters.fields).toContain('YEAR')
+    })
+
+    it('should generate correct keys for SapV4 entity types', () => {
+      // Check that line_itemsType has proper keys (not all fields)
+      const lineItemsKeys = sapV4Consts['com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001'].line_itemsType.keys
+      const lineItemsFields = sapV4Consts['com.sap.gateway.srvd.zsd_mdg_bp_fp04_data.v0001'].line_itemsType.fields
+
+      // Keys should be a subset of fields
+      for (const key of lineItemsKeys) {
+        expect(lineItemsFields).toContain(key)
+      }
+
+      // Keys should be fewer than fields for this entity
+      expect(lineItemsKeys.length).toBeLessThan(lineItemsFields.length)
     })
   })
 
