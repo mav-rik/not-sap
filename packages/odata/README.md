@@ -10,13 +10,25 @@
 
 ## Overview
 
-`notsapodata` is a TypeScript-first toolkit for working with OData v2/v4 services—SAP, HANA, Microsoft, custom providers, or anything else that speaks OData. It combines:
+`notsapodata` is a **type-safe**, **developer-friendly** TypeScript toolkit for working with OData v2/v4 services—SAP, HANA, Microsoft, custom providers, or anything else that speaks OData.
 
-- a lightweight runtime `OData` client with CSRF handling, batching and metadata-aware helpers,
-- metadata utilities for value help discovery, filter rendering and Excel export,
-- a code generator (Vite plugin or programmatic API) that turns OData metadata into strongly typed models.
+### Why notsapodata?
 
-When the runtime is paired with generated models, every request becomes fully type-safe: entity set names, fields, navigation properties and function parameters are all validated at compile time. Everything in this README is derived from the current source code – every example maps to exports in `packages/odata/src`.
+- **🔒 Fully Type-Safe**: Every entity set, field, navigation property, and function parameter is validated at compile time
+- **🚀 Developer-Friendly**: Intuitive API with auto-completion for all OData operations
+- **📦 Zero Boilerplate**: Generated models handle all the type definitions—just import and use
+- **🎯 Smart Defaults**: Automatic CSRF handling, intelligent batching, and optimized queries
+- **🛠️ Production Ready**: Battle-tested with SAP/HANA OData services
+
+### What's Included
+
+- **Runtime Client**: Lightweight OData client with CSRF handling, batching, and metadata-aware helpers
+- **Code Generator**: Vite plugin or programmatic API that turns OData metadata into strongly typed models
+- **Metadata Utilities**: Value help discovery, filter rendering, Excel export, and more
+- **Deep Navigation**: Support for complex navigation paths with multiple levels
+- **Advanced Filtering**: Type-safe filter builder with support for all OData operators
+
+When the runtime is paired with generated models, every request becomes fully type-safe: entity set names, fields, navigation properties and function parameters are all validated at compile time.
 
 ## Installation
 
@@ -191,27 +203,28 @@ The generated class inherits all runtime helpers, including batching, metadata a
 
 ## Runtime Client
 
-### Creating or Reusing a Model
+### Getting Started
 
 ```typescript
-import { OData } from 'notsapodata'
-import { NorthwindV4, type TNorthwindV4OData } from '@/.odata.types'
+import { NorthwindV4 } from '@/.odata.types'
 
-// Preferred: reuse the generated singleton (fully typed)
+// Preferred: Use the static entitySet method (no metadata fetch needed)
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+
+// Or get the singleton instance for advanced operations
 const model = NorthwindV4.getInstance()
-
-// Manual client – still type-safe because we pass the generated interface
-const custom = new OData<TNorthwindV4OData>('NorthwindV4', {
-  host: 'https://services.odata.org',
-  path: '/V4/Northwind/Northwind.svc',
-})
+const orders = await model.entitySet('ODataWebV4.Northwind.Model.Orders')
 ```
+
+The `entitySet` method returns a fully typed `EntitySet` instance immediately—no need to fetch metadata first. The metadata is loaded automatically when needed.
 
 ### Reading Data
 
 ```typescript
-const products = await model.entitySet('ODataWebV4.Northwind.Model.Products')
+// Get the entity set using the static method
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
 
+// Query with full type safety
 const { data, count } = await products.query({
   top: 5,
   select: ['ProductID', 'ProductName', 'UnitPrice'],
@@ -256,7 +269,9 @@ await products.query({
 ### Working with Large Result Sets
 
 ```typescript
+const model = NorthwindV4.getInstance()
 const progress: number[] = []
+
 const query = model.readAllEntries('ODataWebV4.Northwind.Model.Products', {
   chunkSize: 500,
   progressCb: (loaded, total, done) => {
@@ -276,10 +291,13 @@ const rows = await query.promise
 ### Updating Data
 
 ```typescript
-const metadata = await model.getMetadata()
-const products = metadata.getEntitySet('ODataWebV4.Northwind.Model.Products')
+const model = NorthwindV4.getInstance()
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+
+// Prepare the key
 const key = products.prepareRecordKey({ ProductID: '1' })
 
+// Update the record
 await model.updateRecordByKey(key, {
   ProductName: 'Updated product name',
 })
@@ -323,22 +341,28 @@ All metadata helpers live under `notsapodata/metadata` and are also exported fro
 ### Accessing Entity Sets and Types
 
 ```typescript
-const metadata = await model.getMetadata()
-const products = metadata.getEntitySet('ODataWebV4.Northwind.Model.Products')
-const productType = metadata.getEntityType('NorthwindModel.Product')
+// Direct access without metadata fetch
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
 
 const { data } = await products.query({
   select: ['ProductID', 'ProductName', 'UnitPrice'],
   filter: { ProductID: { eq: '42' } },
 })
 // GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=ProductID eq 42&$select=ProductID,ProductName,UnitPrice
+
+// If you need metadata for advanced operations
+const model = NorthwindV4.getInstance()
+const metadata = await model.getMetadata()
+const productType = metadata.getEntityType('NorthwindModel.Product')
 ```
 
-Structured filters accept either single objects (`{ Field: { eq: 'Value' } }`), arrays to imply `and`, or `$or`/`$and` groups exactly like the examples in `generated-filters.spec.ts`.
+Structured filters accept either single objects (`{ Field: { eq: 'Value' } }`), arrays to imply `and`, or `$or`/`$and` groups.
 
 ### Refining Metadata
 
 ```typescript
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+
 products.refineField('ProductName', {
   $label: 'Product',
   $MaxLength: 100,
@@ -350,6 +374,9 @@ Refinements are cached per model. All future calls to `getField` reflect the ref
 ### Working with Navigation Properties
 
 ```typescript
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+
+// Single-level navigation
 const record = products.withKey({ ProductID: '1' })
 const orderDetailsSet = record.toMany('Order_Details')
 
@@ -358,11 +385,23 @@ const orderDetails = await orderDetailsSet.query({ top: 5 })
 
 const supplier = await record.toOne('Supplier').read()
 // GET https://services.odata.org/V4/Northwind/Northwind.svc/Products(ProductID=1)/Supplier
+
+// Deep navigation (2-3 levels)
+const orders = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Orders')
+const deepNav = orders
+  .withKey({ OrderID: '10248' })
+  .toOne('Customer')
+  .toMany('Orders')
+
+const customerOrders = await deepNav.query({ top: 10 })
+// GET https://services.odata.org/V4/Northwind/Northwind.svc/Orders(OrderID=10248)/Customer/Orders?$top=10
 ```
 
 ### Excel Export
 
 ```typescript
+const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+
 const { data } = await products.query({
   select: ['ProductID', 'ProductName', 'UnitPrice', 'CategoryID'],
 })
@@ -416,11 +455,12 @@ try {
 
 ## Best Practices
 
-- Always pair the runtime with generated types (`new OData<TModel>()` or `Service.getInstance()`) to keep entity sets, fields and functions type-safe.
-- Use generated models (`Service.getInstance()`) whenever possible – they carry service metadata, entity type mappings and helper statics.
-- Always request metadata once and reuse `EntitySet` instances; they cache field maps, annotations and value help lookups.
-- Use `EntitySet.query` with structured filter objects (`{ Field: { gt: '10' } }`, `{ $or: [...] }`, etc.) so OData expressions are generated for you.
-- When batching via `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size.
-- Handle `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI.
+- **Use the static `entitySet` method** (`Service.entitySet()`) for quick access—no need to fetch metadata first
+- **Leverage type safety**: The generated types ensure all entity sets, fields, and navigation properties are validated at compile time
+- **Use structured filters**: Let the query builder generate OData expressions for you (`{ Field: { gt: '10' } }`, `{ $or: [...] }`, etc.)
+- **Cache entity sets**: The `entitySet` instances cache field maps, annotations, and value help lookups
+- **Deep navigation**: Chain `toOne()` and `toMany()` methods for complex navigation paths
+- **Batch wisely**: When using `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size
+- **Handle errors properly**: Catch `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI
 
 This README reflects the current behaviour of `packages/odata`. Refer to the source files in `src/` for deeper detail or additional extension points.
