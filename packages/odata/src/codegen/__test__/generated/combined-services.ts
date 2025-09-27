@@ -76,12 +76,12 @@ export interface TSapServiceOData extends TOdataDummyInterface {
         InvoiceNo: string;
         ClearingDoc: string;
         Ty: string;
-        DocDate?: Date;
+        DocDate?: string;
         PaymentMethod: string;
         PaymentMethodDesc: string;
         ConAccount: string;
-        NetPayDueDate?: Date;
-        ClearingDate?: Date;
+        NetPayDueDate?: string;
+        ClearingDate?: string;
         LegalId: string;
         PbbProduct: string;
         country: string;
@@ -96,7 +96,7 @@ export interface TSapServiceOData extends TOdataDummyInterface {
         DocumentTypeDesc: string;
         ItemText: string;
         Text: string;
-        PostingDate?: Date;
+        PostingDate?: string;
         paymentlot: string;
         CollectionStep: string;
         BillableItemText: string;

@@ -175,7 +175,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         ReorderLevel?: number;
         Discontinued: boolean;
         Category?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Category']['record'] | null;
-        Order_Details?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order_Detail']['record']>;
+        Order_Details?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order_Detail']['record']> };
         Supplier?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Supplier']['record'] | null;
       };
     };
@@ -200,7 +200,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         Phone?: string;
         Fax?: string;
         HomePage?: string;
-        Products?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Product']['record']>;
+        Products?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Product']['record']> };
       };
     };
     'NorthwindModel.Category': {
@@ -216,7 +216,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         CategoryName: string;
         Description?: string;
         Picture?: string;
-        Products?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Product']['record']>;
+        Products?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Product']['record']> };
       };
     };
     'NorthwindModel.Order_Detail': {
@@ -254,9 +254,9 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         OrderID: number;
         CustomerID?: string;
         EmployeeID?: number;
-        OrderDate?: Date;
-        RequiredDate?: Date;
-        ShippedDate?: Date;
+        OrderDate?: string;
+        RequiredDate?: string;
+        ShippedDate?: string;
         ShipVia?: number;
         Freight?: number;
         ShipName?: string;
@@ -267,7 +267,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         ShipCountry?: string;
         Customer?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Customer']['record'] | null;
         Employee?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record'] | null;
-        Order_Details?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order_Detail']['record']>;
+        Order_Details?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order_Detail']['record']> };
         Shipper?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Shipper']['record'] | null;
       };
     };
@@ -292,8 +292,8 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         Country?: string;
         Phone?: string;
         Fax?: string;
-        Orders?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']>;
-        CustomerDemographics?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.CustomerDemographic']['record']>;
+        Orders?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']> };
+        CustomerDemographics?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.CustomerDemographic']['record']> };
       };
     };
     'NorthwindModel.Employee': {
@@ -314,8 +314,8 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         FirstName: string;
         Title?: string;
         TitleOfCourtesy?: string;
-        BirthDate?: Date;
-        HireDate?: Date;
+        BirthDate?: string;
+        HireDate?: string;
         Address?: string;
         City?: string;
         Region?: string;
@@ -327,10 +327,10 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         Notes?: string;
         ReportsTo?: number;
         PhotoPath?: string;
-        Employees1?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record']>;
+        Employees1?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record']> };
         Employee1?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record'] | null;
-        Orders?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']>;
-        Territories?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Territory']['record']>;
+        Orders?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']> };
+        Territories?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Territory']['record']> };
       };
     };
     'NorthwindModel.Shipper': {
@@ -345,7 +345,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         ShipperID: number;
         CompanyName: string;
         Phone?: string;
-        Orders?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']>;
+        Orders?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Order']['record']> };
       };
     };
     'NorthwindModel.Territory': {
@@ -363,7 +363,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
         TerritoryDescription: string;
         RegionID: number;
         Region?: TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Region']['record'] | null;
-        Employees?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record']>;
+        Employees?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Employee']['record']> };
       };
     };
     'NorthwindModel.Region': {
@@ -377,7 +377,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
       record: {
         RegionID: number;
         RegionDescription: string;
-        Territories?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Territory']['record']>;
+        Territories?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Territory']['record']> };
       };
     };
     'NorthwindModel.CustomerDemographic': {
@@ -391,7 +391,7 @@ export interface TNorthwindV2SelectedOData extends TOdataDummyInterface {
       record: {
         CustomerTypeID: string;
         CustomerDesc?: string;
-        Customers?: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Customer']['record']>;
+        Customers?: { results: Array<TNorthwindV2SelectedOData['entityTypes']['NorthwindModel.Customer']['record']> };
       };
     };
   };

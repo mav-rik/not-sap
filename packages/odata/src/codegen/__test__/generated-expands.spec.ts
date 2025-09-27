@@ -1,7 +1,9 @@
 import { describe, it, beforeAll, afterAll, beforeEach, expect, vi } from 'vitest'
-import { NorthwindV2, TNorthwindV2 } from './generated/northwind-v2'
+import { NorthwindV2 } from './generated/northwind-v2'
+import { NorthwindV4 } from './generated/northwind-v4'
 import {
   metadataV2Xml,
+  metadataXml,
   setupGlobalMocks,
   teardownGlobalMocks,
   resetServiceInstances,
@@ -20,69 +22,92 @@ describe('Generated expands', () => {
     resetServiceInstances()
   })
 
-  it('should create nested expand chain with composite keys', async () => {
-    const service = NorthwindV2.getInstance()
-    vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
+  describe('V2 expands', () => {
+    it('should create simple nested expand chain', async () => {
+      const service = NorthwindV2.getInstance()
+      vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
 
-    const entitySet = await NorthwindV2.entitySet('Products')
+      const entitySet = await NorthwindV2.entitySet('Products')
+      const expand = entitySet
+        .expand('Order_Details')
+        .expand('Order')
+        .expand('Employee')
 
-    const orderDetailKey: Record<TNorthwindV2['NorthwindModel']['Order_Detail']['keys'], number> = {
-      OrderID: 1,
-      ProductID: 2,
-    }
+      const expandString = expand.toString()
+      expect(expandString).toBe('Order_Details/Order/Employee')
+    })
 
-    const expandPath = entitySet
-      .expand('Order_Details')
-      .withKey(orderDetailKey)
-      .expand('Order')
-      .expand('Employee')
-      .toString()
+    it('should render filters with navigation path prefixes', async () => {
+      const service = NorthwindV2.getInstance()
+      vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
 
-    expect(expandPath).toBe('Order_Details(OrderID=1,ProductID=2)/Order/Employee')
+      const entitySet = await NorthwindV2.entitySet('Orders')
+      const expand = entitySet
+        .expand('Order_Details', { filter: { Quantity: { gt: 10 } } })
+        .expand('Product', { filter: { ProductName: { eq: 'Chai' } } })
+
+      const {expandString, filterV2} = expand.render()
+      expect(expandString).toBe('Order_Details/Product')
+      expect(filterV2).toBe("Order_Details/Quantity gt 10 and Order_Details/Product/ProductName eq 'Chai'")
+
+      // For V2, filters are rendered separately and would be applied at the root level
+      // The filterV2 property is available on the rendered object but not exposed via toString
+    })
   })
 
-  it('should support chaining expands across to-many and to-one relationships', async () => {
-    const service = NorthwindV2.getInstance()
-    vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
+  describe('V4 expands', () => {
+    it('should create nested expand with inline query options', async () => {
+      const service = NorthwindV4.getInstance()
+      vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    const entitySet = await NorthwindV2.entitySet('Orders')
+      const entitySet = await NorthwindV4.entitySet('Products')
+      const expand = entitySet
+        .expand('Order_Details', {
+          filter: { Quantity: { gt: 10 } },
+          select: ['OrderID', 'Quantity']
+        })
+        .expand('Order')
+        .expand('Employee', { top: 5 })
 
-    const detailKey: Record<TNorthwindV2['NorthwindModel']['Order_Detail']['keys'], number> = {
-      OrderID: 42,
-      ProductID: 7,
-    }
+      const expandString = expand.toString()
+      expect(expandString).toBe(
+        'Order_Details($filter=Quantity gt 10;$select=OrderID,Quantity;$expand=Order($expand=Employee($top=5)))'
+      )
+    })
 
-    const expandPath = entitySet
-      .expand('Order_Details')
-      .withKey(detailKey)
-      .expand('Product')
-      .expand('Category')
-      .toString()
+    it('should handle apply operations in V4', async () => {
+      const service = NorthwindV4.getInstance()
+      vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    expect(expandPath).toBe('Order_Details(OrderID=42,ProductID=7)/Product/Category')
-  })
+      const entitySet = await NorthwindV4.entitySet('Orders')
+      const expand = entitySet
+        .expand('Order_Details', {
+          apply: {
+            filters: { Quantity: { gt: 5 } }
+          }
+        })
 
-  it('should format string keys when expanding collections', async () => {
-    const service = NorthwindV2.getInstance()
-    vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
+      const expandString = expand.toString()
+      expect(expandString).toBe(
+        'Order_Details($apply=filter(Quantity gt 5))'
+      )
+    })
 
-    const entitySet = await NorthwindV2.entitySet('Customers')
+    it('should handle deeply nested expands with params', async () => {
+      const service = NorthwindV4.getInstance()
+      vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
-    const demographicKey: Record<TNorthwindV2['NorthwindModel']['CustomerDemographic']['keys'], string> = {
-      CustomerTypeID: 'Retail',
-    }
+      const entitySet = await NorthwindV4.entitySet('Customers')
+      const expand = entitySet
+        .expand('Orders', { top: 10 })
+        .expand('Order_Details', { skip: 5 })
+        .expand('Product')
+        .expand('Category', { select: ['CategoryName'] })
 
-    const customerKey: Record<TNorthwindV2['NorthwindModel']['Customer']['keys'], string> = {
-      CustomerID: 'ALFKI',
-    }
-
-    const expandPath = entitySet
-      .expand('CustomerDemographics')
-      .withKey(demographicKey)
-      .expand('Customers')
-      .withKey(customerKey)
-      .toString()
-
-    expect(expandPath).toBe("CustomerDemographics('Retail')/Customers('ALFKI')")
+      const expandString = expand.toString()
+      expect(expandString).toBe(
+        'Orders($top=10;$expand=Order_Details($skip=5;$expand=Product($expand=Category($select=CategoryName))))'
+      )
+    })
   })
 })

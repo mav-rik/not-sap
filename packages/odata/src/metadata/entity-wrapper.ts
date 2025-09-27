@@ -1,7 +1,8 @@
-import { TOdataDummyInterface } from "notsapodata/odata";
+import { TOdataDummyInterface, TODataParams } from "notsapodata/odata";
 import { Metadata } from "./metadata";
 import { EntityType } from "./entity-type";
 import { EntityExpand } from "./entity-expand";
+import { TEntitySetQueryParams } from "./entity-set";
 
 export class EntityWrapper<
   M extends TOdataDummyInterface = TOdataDummyInterface,
@@ -108,13 +109,25 @@ export class EntityWrapper<
     }
 
     expand<NT extends (keyof M['entityTypes'][T]['navToMany'] | keyof M['entityTypes'][T]['navToOne'])>(
-        navProp: NT
+        navProp: NT,
+        params?: TEntitySetQueryParams<M, NT extends keyof M['entityTypes'][T]['navToMany']
+      ? M['entityTypes'][T]['navToMany'][NT]
+      : M['entityTypes'][T]['navToOne'][NT]>,
     ) {
         type newType = NT extends keyof M['entityTypes'][T]['navToMany']
             ? M['entityTypes'][T]['navToMany'][NT]
             : M['entityTypes'][T]['navToOne'][NT]
   
-        return this._entityType.expand(navProp) as EntityExpand<M, newType>
+        return this._entityType.expand(navProp, params) as EntityExpand<M, newType>
+    }
+
+    prepareQuery(params: TEntitySetQueryParams<M, T>): {
+        entitySet: T
+        params: TODataParams
+    } {
+        const result = this._entityType.prepareQuery(params)
+        result.entitySet = this.name as T
+        return result
     }
 
 }

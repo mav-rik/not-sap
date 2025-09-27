@@ -3,11 +3,12 @@ import {
   type TODataFilters,
   type TODataValueType,
 } from './format-filters'
-import { TOdataReadResult, type TOdataDummyInterface, type TODataParams } from '../odata'
+import { TOdataReadResult, type TOdataDummyInterface } from '../odata'
 import { type TPropertyAnnotations } from './annotations'
 import { ExcelGenerator, type TExcelSubtotalConfig } from './excel'
 import { EntityRecord } from './entity-record'
 import { EntityWrapper } from './entity-wrapper'
+import { EntityExpand } from './entity-expand'
 
 export type NavProperties<T extends PropertyKey = string> = NavProperty<T>[]
 
@@ -147,67 +148,7 @@ export class EntitySet<
     return new EntityRecord(this._m, this._typeName, key)
   }
 
-  /**
-   * Prepares a query for an entity set based on the provided parameters.
-   *
-   * @param params - The query parameters for the entity set.
-   * @returns An object containing the entity set name and the prepared OData query parameters.
-   */
-  prepareQuery(params: TEntitySetQueryParams<M, T>): {
-    entitySet: T
-    params: TODataParams
-  } {
-    const isV4 = this._m.isV4
-    const select = [] as string[]
-    for (const item of params.select || ([] as string[])) {
-      const field = this.fieldsMap.get(item as M['entityTypes'][ET]['fields'])
-      if (field) {
-        select.push(field.$Name)
-        if (field.$unit) {
-          // for proper display of unit in UI
-          // must add sap-unit to select
-          select.push(field.$unit)
-        }
-      }
-    }
-    const apply = [] as string[]
-    if (params.apply) {
-      if (params.apply.filters) {
-        apply.push(`filter(${this.renderFilter(params.apply.filters)})`)
-      }
-      if (params.apply.group) {
-        apply.push(
-          `groupby((${params.apply.group.fields.join(
-            ','
-          )}),aggregate(${params.apply.group.aggregate.join(',')}))`
-        )
-      }
-    }
-
-    const prefix = this.name
-    return {
-      entitySet: prefix as T,
-      params: {
-        '$top': params.top ?? 1000,
-        '$skip': params.skip,
-        '$filter': params.filter ? this.renderFilter(params.filter) || undefined : undefined,
-        '$select': select.length ? Array.from(new Set(select)).join(',') : undefined,
-        'search-focus': params.searchFocus,
-        'search': this._m.isV4 ? undefined : params.search || undefined,
-        '$search': this._m.isV4 ? params.search || undefined : undefined,
-        '$orderby': params.sorters?.length
-          ? params.sorters
-              .map(s => (typeof s === 'string' ? s : `${s.name} ${s.desc ? 'desc' : 'asc'}`))
-              .join(',')
-          : undefined,
-        '$inlinecount': isV4 ? undefined : params.inlinecount,
-        '$count': isV4 && params.inlinecount ? 'true' : undefined,
-        '$apply': apply.length ? apply.join('/') : undefined,
-      },
-    }
-  }
-
-  async query(params: TEntitySetQueryParams<M, T>): Promise<TOdataReadResult<M['entityTypes'][ET]['record']>> {
+  async query(params: TEntitySetQueryParams<M, ET>): Promise<TOdataReadResult<M['entityTypes'][ET]['record']>> {
     const q = this.prepareQuery(params)
     return this.getModel().read(q.entitySet, q.params)
   }
@@ -241,27 +182,28 @@ export type TEntitySetSorter<T extends string = string> = { name: T; desc?: bool
  */
 export type TEntitySetQueryParams<
   M extends TOdataDummyInterface = TOdataDummyInterface,
-  T extends keyof M['entitySets'] = string,
+  T extends keyof M['entityTypes'] = string,
 > = {
   top?: number
   skip?: number
   filter?:
     | string
-    | TODataFilters<M['entityTypes'][M['entitySets'][T]]['fields']>[number]
-    | TODataFilters<M['entityTypes'][M['entitySets'][T]]['fields']>
-  select?: M['entityTypes'][M['entitySets'][T]]['fields'][]
-  searchFocus?: M['entityTypes'][M['entitySets'][T]]['fields']
+    | TODataFilters<M['entityTypes'][T]['fields']>[number]
+    | TODataFilters<M['entityTypes'][T]['fields']>
+  select?: M['entityTypes'][T]['fields'][]
+  searchFocus?: M['entityTypes'][T]['fields']
   search?: string
   sorters?: TEntitySetSorter[]
   inlinecount?: 'allpages'
+  expand?: string | EntityExpand<any, any> | EntityExpand<any, any>[]
   apply?: {
     filters?:
       | string
-      | TODataFilters<M['entityTypes'][M['entitySets'][T]]['fields']>[number]
-      | TODataFilters<M['entityTypes'][M['entitySets'][T]]['fields']>
+      | TODataFilters<M['entityTypes'][T]['fields']>[number]
+      | TODataFilters<M['entityTypes'][T]['fields']>
     group?: {
-      fields: M['entityTypes'][M['entitySets'][T]]['fields'][]
-      aggregate: M['entityTypes'][M['entitySets'][T]]['measures'][]
+      fields: M['entityTypes'][T]['fields'][]
+      aggregate: M['entityTypes'][T]['measures'][]
     }
   }
 }

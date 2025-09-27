@@ -56,7 +56,8 @@ export function generateEntityTypeTypes(
   opts: {
     modelAlias: string
     capitalizedAlias?: string
-  }
+  },
+  isV4: boolean
 ): {
   consts: TModelConsts
   types: TModelTypes
@@ -118,7 +119,8 @@ export function generateEntityTypeTypes(
       case 'Edm.DateTime':
       case 'Edm.DateTimeOffset':
       case 'Edm.Date':
-        fieldType = 'Date' // These are converted to Date objects by toJson
+        // fieldType = 'Date' // These would be converted to Date objects by toJson formatter
+        fieldType = 'string' // Raw OData returns these as strings ("/Date(timestamp)/" or ISO strings)
         break
       case 'Edm.TimeOfDay':
       case 'Edm.Time':
@@ -144,7 +146,7 @@ export function generateEntityTypeTypes(
     const navName = `${String(nav.$Name)}?`
     if (nav.toMany) {
       // For to-many relationships, it's an array of the target entity type
-      record[navName] = `Array<${targetEntityType}>`
+      record[navName] = isV4 ? `Array<${targetEntityType}>` : `{ results: Array<${targetEntityType}> }`
     } else {
       // For to-one relationships, it's the target entity type or null
       record[navName] = `${targetEntityType} | null`
@@ -263,7 +265,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     const { entity, consts, types } = generateEntityTypeTypes(entityType, {
       modelAlias,
       capitalizedAlias: cModelAlias
-    })
+    }, m.isV4)
     mergeDeep(modelConsts, consts)
     mergeDeep(modelTypes, types)
 

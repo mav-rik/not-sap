@@ -54,12 +54,12 @@ describe('EntityExpand', () => {
 
   describe('basic expand', () => {
     it('should create expand for a single navigation property', () => {
-      const expand = new EntityExpand(mockMetadata, 'ProductType', 'Orders')
+      const expand = new EntityExpand(mockMetadata, 'ProductType', { property: 'Orders'})
       expect(expand.toString()).toBe('Orders')
     })
 
     it('should handle multiple navigation properties', () => {
-      const expand = new EntityExpand(mockMetadata, 'ProductType', 'Orders')
+      const expand = new EntityExpand(mockMetadata, 'ProductType', { property: 'Orders'})
         .expand('OrderDetails')
 
       // Since expand returns a new instance with updated segments
@@ -72,27 +72,64 @@ describe('EntityExpand', () => {
       mockEntityType.getNavsMap = vi.fn(() => new Map())
 
       expect(() => {
-        new EntityExpand(mockMetadata, 'ProductType', 'Orders')
+        new EntityExpand(mockMetadata, 'ProductType', { property: 'Orders'})
           .expand('NonExistentNav')
       }).toThrow('ProductType does not have nav property "NonExistentNav"')
     })
   })
 
   describe('toString', () => {
-    it('should return empty string for no segments', () => {
-      const expand = new EntityExpand(mockMetadata, 'ProductType')
-      expect(expand.toString()).toBe('')
-    })
-
     it('should correctly format single segment', () => {
-      const expand = new EntityExpand(mockMetadata, 'ProductType', 'Orders')
+      const expand = new EntityExpand(mockMetadata, 'ProductType', { property: 'Orders'})
       expect(expand.toString()).toBe('Orders')
     })
 
     it('should correctly format multiple segments', () => {
-      const expand = new EntityExpand(mockMetadata, 'ProductType', 'Orders')
+      const expand = new EntityExpand(mockMetadata, 'ProductType', { property: 'Orders'})
         .expand('Supplier')
       expect(expand.toString()).toBe('Orders/Supplier')
+    })
+  })
+
+  describe('V2 rendering with select', () => {
+    beforeEach(() => {
+      mockMetadata.isV4 = false
+      mockEntityType.renderFilter = vi.fn((filter, operator, prefix) => {
+        const filterStr = 'ProductId eq 1'
+        return prefix ? `${prefix}/${filterStr}` : filterStr
+      })
+    })
+
+    it('should render selectV2 with prefixed fields', () => {
+      const expand = new EntityExpand(mockMetadata, 'ProductType', {
+        property: 'Orders',
+        params: { select: ['OrderId', 'OrderDate'] }
+      })
+
+      const rendered = expand.render()
+      expect(rendered.expandString).toBe('Orders')
+      expect(rendered.selectV2).toEqual(['Orders/OrderId', 'Orders/OrderDate'])
+    })
+
+    it('should handle nested expands with select', () => {
+      const expand = new EntityExpand(mockMetadata, 'ProductType', {
+        property: 'Orders',
+        params: { select: ['OrderId'] }
+      }).expand('Supplier', { select: ['Name', 'Country'] })
+
+      const rendered = expand.render()
+      expect(rendered.expandString).toBe('Orders/Supplier')
+      expect(rendered.selectV2).toEqual(['Orders/OrderId', 'Orders/Supplier/Name', 'Orders/Supplier/Country'])
+    })
+
+    it('should handle expand without select params', () => {
+      const expand = new EntityExpand(mockMetadata, 'ProductType', {
+        property: 'Orders'
+      })
+
+      const rendered = expand.render()
+      expect(rendered.expandString).toBe('Orders')
+      expect(rendered.selectV2).toBeUndefined()
     })
   })
 })

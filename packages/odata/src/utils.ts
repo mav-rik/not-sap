@@ -25,7 +25,7 @@ export function buildParams(params?: Record<string, string | number | undefined>
     if (val !== undefined) {
       parts.push(
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        val !== '' ? `${key}=${encodeURIComponent(val)}` : encodeURIComponent(key)
+        val !== '' ? `${key}=${key === '$expand' ? val : encodeURIComponent(val)}` : encodeURIComponent(key)
       )
     }
   }

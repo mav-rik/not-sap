@@ -399,8 +399,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         FirstName?: string;
         Title?: string;
         TitleOfCourtesy?: string;
-        BirthDate?: Date;
-        HireDate?: Date;
+        BirthDate?: string;
+        HireDate?: string;
         Address?: string;
         City?: string;
         Region?: string;
@@ -453,9 +453,9 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         OrderID: number;
         CustomerID?: string;
         EmployeeID?: number;
-        OrderDate?: Date;
-        RequiredDate?: Date;
-        ShippedDate?: Date;
+        OrderDate?: string;
+        RequiredDate?: string;
+        ShippedDate?: string;
         ShipVia?: number;
         Freight?: number;
         ShipName?: string;
@@ -645,9 +645,9 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Country?: string;
         Salesperson: string;
         OrderID: number;
-        OrderDate?: Date;
-        RequiredDate?: Date;
-        ShippedDate?: Date;
+        OrderDate?: string;
+        RequiredDate?: string;
+        ShippedDate?: string;
         ShipperName: string;
         ProductID: number;
         ProductName: string;
@@ -695,9 +695,9 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         OrderID: number;
         CustomerID?: string;
         EmployeeID?: number;
-        OrderDate?: Date;
-        RequiredDate?: Date;
-        ShippedDate?: Date;
+        OrderDate?: string;
+        RequiredDate?: string;
+        ShippedDate?: string;
         ShipVia?: number;
         Freight?: number;
         ShipName?: string;
@@ -774,7 +774,7 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         SaleAmount?: number;
         OrderID: number;
         CompanyName: string;
-        ShippedDate?: Date;
+        ShippedDate?: string;
       };
     };
     'NorthwindModel.Summary_of_Sales_by_Quarter': {
@@ -784,7 +784,7 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
       navToMany: {};
       navToOne: {};
       record: {
-        ShippedDate?: Date;
+        ShippedDate?: string;
         OrderID: number;
         Subtotal?: number;
       };
@@ -796,7 +796,7 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
       navToMany: {};
       navToOne: {};
       record: {
-        ShippedDate?: Date;
+        ShippedDate?: string;
         OrderID: number;
         Subtotal?: number;
       };
@@ -827,7 +827,7 @@ export class NorthwindV4 extends OData<TNorthwindV4OData> {
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("northwindV4", {...opts, path: "/odata/northwind-v4"})
+    super("northwindV4", {...opts, path: "/V4/Northwind/Northwind.svc"})
   }
 }
 

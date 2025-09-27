@@ -57,10 +57,15 @@ async function generateWithAllEntitySets(
 ) {
   console.log(`  • Generating ${serviceName}.ts (all entity sets)...`)
 
+  const paths = {
+    'northwind-v4': '/V4/Northwind/Northwind.svc',
+    'northwind-v2': '/V2/Northwind/Northwind.svc',
+  }
+
   const services: TODataServicesToParse = {
     [serviceName]: {
       metadata: xmlContent,
-      path: `/odata/${serviceName}`,
+      path: paths[serviceName as keyof typeof paths] ?? `/odata/path/${serviceName}`,
     }
   }
 

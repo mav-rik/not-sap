@@ -194,7 +194,7 @@ export class HanaV4Param extends OData<THanaV4ParamOData> {
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("hanaV4Param", {...opts, path: "/odata/hana-v4-param"})
+    super("hanaV4Param", {...opts, path: "/odata/path/hana-v4-param"})
   }
 }
 

@@ -254,9 +254,9 @@ export interface TNorthwindV4SelectedOData extends TOdataDummyInterface {
         OrderID: number;
         CustomerID?: string;
         EmployeeID?: number;
-        OrderDate?: Date;
-        RequiredDate?: Date;
-        ShippedDate?: Date;
+        OrderDate?: string;
+        RequiredDate?: string;
+        ShippedDate?: string;
         ShipVia?: number;
         Freight?: number;
         ShipName?: string;
@@ -314,8 +314,8 @@ export interface TNorthwindV4SelectedOData extends TOdataDummyInterface {
         FirstName?: string;
         Title?: string;
         TitleOfCourtesy?: string;
-        BirthDate?: Date;
-        HireDate?: Date;
+        BirthDate?: string;
+        HireDate?: string;
         Address?: string;
         City?: string;
         Region?: string;

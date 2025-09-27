@@ -10,10 +10,10 @@ import {
   type TODataFilterValWithType,
 } from './format-filters'
 import { getMetadataRefiner } from './refiner'
-import { useModel, type TOdataDummyInterface } from '../odata'
+import { TODataParams, useModel, type TOdataDummyInterface } from '../odata'
 import { convertAnnotations, type TPropertyAnnotations } from './annotations'
 import { joinPath } from '../utils'
-import { EntitySet } from './entity-set'
+import { EntitySet, TEntitySetQueryParams } from './entity-set'
 import { EntityExpand } from './entity-expand'
 
 export type NavProperties<T extends PropertyKey = string> = NavProperty<T>[]
@@ -445,6 +445,85 @@ export class EntityType<
     return cached
   }
 
+
+    /**
+     * Prepares a query for an entity set based on the provided parameters.
+     *
+     * @param params - The query parameters for the entity set.
+     * @returns An object containing the entity set name and the prepared OData query parameters.
+     */
+    prepareQuery(params: TEntitySetQueryParams<M, T>, expandPrefix?: string): {
+      entitySet: T
+      params: TODataParams
+    } {
+      const isV4 = this._m.isV4
+      const select = [] as string[]
+      for (const item of params.select || ([] as string[])) {
+        const field = this.fieldsMap.get(item as M['entityTypes'][T]['fields'])
+        if (field) {
+          select.push(field.$Name)
+          if (field.$unit) {
+            // for proper display of unit in UI
+            // must add sap-unit to select
+            select.push(field.$unit)
+          }
+        }
+      }
+      const apply = [] as string[]
+      if (params.apply) {
+        if (params.apply.filters) {
+          apply.push(`filter(${this.renderFilter(params.apply.filters)})`)
+        }
+        if (params.apply.group) {
+          apply.push(
+            `groupby((${params.apply.group.fields.join(
+              ','
+            )}),aggregate(${params.apply.group.aggregate.join(',')}))`
+          )
+        }
+      }
+
+      const _expand = params.expand ? (typeof params.expand === 'string' ? params.expand
+        : Array.isArray(params.expand) ? params.expand.map(e => e.render()) : [params.expand.render()]) : undefined
+      
+      const expand = typeof _expand === 'string' ? _expand : _expand ? _expand.map(e => e.expandString).join(',') : undefined
+      let filter = params.filter ? this.renderFilter(params.filter, undefined, expandPrefix) || undefined : undefined
+      const _select = select ?? [] as string[]
+
+      if (!isV4 && Array.isArray(_expand)) {
+        const filters = [
+          filter,
+          ..._expand.map(e => e.filterV2)
+        ]
+        filter = filters.filter(Boolean).map(f => `(${f})`).join(' and ')
+        const s = _expand.filter(e => !!e.selectV2).map(e => e.selectV2!).flat()
+        _select.push(...s)
+      }
+  
+      const prefix = this.name
+      return {
+        entitySet: prefix as T,
+        params: {
+          '$top': params.top ?? 1000,
+          '$skip': params.skip,
+          '$filter': filter ? filter : undefined,
+          '$select': _select.length ? Array.from(new Set(_select)).join(',') : undefined,
+          'search-focus': params.searchFocus,
+          'search': this._m.isV4 ? undefined : params.search || undefined,
+          '$search': this._m.isV4 ? params.search || undefined : undefined,
+          '$orderby': params.sorters?.length
+            ? params.sorters
+                .map(s => (typeof s === 'string' ? s : `${s.name} ${s.desc ? 'desc' : 'asc'}`))
+                .join(',')
+            : undefined,
+          '$inlinecount': isV4 ? undefined : params.inlinecount,
+          '$count': isV4 && params.inlinecount ? 'true' : undefined,
+          '$apply': apply.length ? apply.join('/') : undefined,
+          '$expand': expand,
+        },
+      }
+    }
+
   /**
    * Renders an OData filter string based on the provided filter object or string.
    *
@@ -453,7 +532,10 @@ export class EntityType<
    * @returns A string representing the rendered OData filter.
    */
   expand<NT extends (keyof M['entityTypes'][T]['navToMany'] | keyof M['entityTypes'][T]['navToOne'])>(
-    navProp: NT
+    navProp: NT,
+    params?: TEntitySetQueryParams<M, NT extends keyof M['entityTypes'][T]['navToMany']
+      ? M['entityTypes'][T]['navToMany'][NT]
+      : M['entityTypes'][T]['navToOne'][NT]>,
   ) {
     const newEntityType = this.getNavsMap().get(navProp)?.$Type
     if (!newEntityType) {
@@ -463,7 +545,7 @@ export class EntityType<
       ? M['entityTypes'][T]['navToMany'][NT]
       : M['entityTypes'][T]['navToOne'][NT]
 
-    return new EntityExpand<M, newType>(this._m, newEntityType as newType, navProp as string)
+    return new EntityExpand<M, newType>(this._m, newEntityType as newType, { property: navProp as string, params })
   }
 
   renderFilter(
@@ -471,7 +553,8 @@ export class EntityType<
       | string
       | TODataFilters<M['entityTypes'][T]['fields']>[number]
       | TODataFilters<M['entityTypes'][T]['fields']>,
-    joinWith: 'and' | 'or' = 'and'
+    joinWith: 'and' | 'or' = 'and',
+    expandPrefix?: string
   ): string {
     if (typeof filter === 'string') {
       return filter
@@ -485,10 +568,10 @@ export class EntityType<
           TODataFilterOr<M['entityTypes'][T]['fields']> &
           TODataFilter<M['entityTypes'][T]['fields']>
         if (f.$and) {
-          return this.renderFilter(f.$and, 'and')
+          return this.renderFilter(f.$and, 'and', expandPrefix)
         }
         if (f.$or) {
-          return this.renderFilter(f.$or, 'or')
+          return this.renderFilter(f.$or, 'or', expandPrefix)
         }
         const fieldFilters = []
         for (const [field, val] of Object.entries(
@@ -512,23 +595,26 @@ export class EntityType<
           const v2 = Array.isArray(v) ? v[1] : v
           const meta = this.getField(field as M['entityTypes'][T]['fields'])
 
+          // Add expandPrefix to field name if provided
+          const fieldPath = expandPrefix ? `${expandPrefix}/${field}` : field
+
           // Special handling for empty/notEmpty on string fields
           if ((type === 'empty' || type === 'notEmpty') && meta && meta.$Type === 'Edm.String') {
             // For string fields, check both empty string and null
             if (type === 'empty') {
-              fieldFilters.push(`(${field} eq '' or ${field} eq null)`)
+              fieldFilters.push(`(${fieldPath} eq '' or ${fieldPath} eq null)`)
             } else { // notEmpty
-              fieldFilters.push(`(${field} ne '' and ${field} ne null)`)
+              fieldFilters.push(`(${fieldPath} ne '' and ${fieldPath} ne null)`)
             }
           } else if (meta) {
             fieldFilters.push(odataFilterFormat.toFilter[type](
-              field,
+              fieldPath,
               v1 === undefined ? v1 : meta.fromJson.toFilter(v1),
               v2 === undefined ? v2 : meta.fromJson.toFilter(v2)
             ))
           } else {
             fieldFilters.push(odataFilterFormat.toFilter[type](
-              field,
+              fieldPath,
               v1 === undefined ? `'${v1}'` : String(v1),
               v2 === undefined ? `'${v2}'` : String(v2)
             ))

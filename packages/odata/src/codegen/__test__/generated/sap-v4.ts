@@ -76,12 +76,12 @@ export interface TSapV4OData extends TOdataDummyInterface {
         InvoiceNo: string;
         ClearingDoc: string;
         Ty: string;
-        DocDate?: Date;
+        DocDate?: string;
         PaymentMethod: string;
         PaymentMethodDesc: string;
         ConAccount: string;
-        NetPayDueDate?: Date;
-        ClearingDate?: Date;
+        NetPayDueDate?: string;
+        ClearingDate?: string;
         LegalId: string;
         PbbProduct: string;
         country: string;
@@ -96,7 +96,7 @@ export interface TSapV4OData extends TOdataDummyInterface {
         DocumentTypeDesc: string;
         ItemText: string;
         Text: string;
-        PostingDate?: Date;
+        PostingDate?: string;
         paymentlot: string;
         CollectionStep: string;
         BillableItemText: string;
@@ -128,7 +128,7 @@ export class SapV4 extends OData<TSapV4OData> {
     return instance.entitySet<T>(name)
   }
   private constructor(opts?: TODataOptions) {
-    super("sapV4", {...opts, path: "/odata/sap-v4"})
+    super("sapV4", {...opts, path: "/odata/path/sap-v4"})
   }
 }
 
