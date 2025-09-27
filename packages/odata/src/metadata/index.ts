@@ -1,5 +1,6 @@
 export * from './annotations'
 export * from './entity-set'
+export * from './entity-expand'
 export * from './excel'
 export * from './format-edm'
 export * from './format-filters'

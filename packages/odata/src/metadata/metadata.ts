@@ -176,12 +176,12 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     if (!this._sets.has(name) && !this._namespacedSets.has(name)) {
       throw new Error(`EntitySet "${name as string}" does not exist in metadata`)
     }
-    let cached = this._entitySetsMap.get(name)
+    let cached = this._entitySetsMap.get(name) as EntitySet<M, T, any>
     if (!cached) {
       cached = new EntitySet<M, T, M['entitySets'][T]>(this, name)
       this._entitySetsMap.set(name, cached)
     }
-    return cached as EntitySet<M, T, M['entitySets'][T]>
+    return cached! as unknown as EntitySet<M, T, M['entitySets'][T]>
   }
 
   getEntityType<T extends keyof M['entityTypes']>(name: T) {

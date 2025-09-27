@@ -1,6 +1,7 @@
 import { TOdataDummyInterface } from "notsapodata/odata";
 import { Metadata } from "./metadata";
 import { EntityType } from "./entity-type";
+import { EntityExpand } from "./entity-expand";
 
 export class EntityWrapper<
   M extends TOdataDummyInterface = TOdataDummyInterface,
@@ -21,7 +22,7 @@ export class EntityWrapper<
     }
 
     get name() {
-        return this._entityType.name
+        return this._typeName as string
     }
 
     getType() {
@@ -104,6 +105,16 @@ export class EntityWrapper<
 
     getModel() {
         return this._entityType.getModel()
+    }
+
+    expand<NT extends (keyof M['entityTypes'][T]['navToMany'] | keyof M['entityTypes'][T]['navToOne'])>(
+        navProp: NT
+    ) {
+        type newType = NT extends keyof M['entityTypes'][T]['navToMany']
+            ? M['entityTypes'][T]['navToMany'][NT]
+            : M['entityTypes'][T]['navToOne'][NT]
+  
+        return this._entityType.expand(navProp) as EntityExpand<M, newType>
     }
 
 }

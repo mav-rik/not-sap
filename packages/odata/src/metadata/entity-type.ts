@@ -14,6 +14,7 @@ import { useModel, type TOdataDummyInterface } from '../odata'
 import { convertAnnotations, type TPropertyAnnotations } from './annotations'
 import { joinPath } from '../utils'
 import { EntitySet } from './entity-set'
+import { EntityExpand } from './entity-expand'
 
 export type NavProperties<T extends PropertyKey = string> = NavProperty<T>[]
 
@@ -451,6 +452,20 @@ export class EntityType<
    * @param joinWith - The logical operator to join multiple filters. It can be 'and' or 'or'. Default is 'and'.
    * @returns A string representing the rendered OData filter.
    */
+  expand<NT extends (keyof M['entityTypes'][T]['navToMany'] | keyof M['entityTypes'][T]['navToOne'])>(
+    navProp: NT
+  ) {
+    const newEntityType = this.getNavsMap().get(navProp)?.$Type
+    if (!newEntityType) {
+      throw new Error(`${this.name} does not have nav property "${navProp as string}"`)
+    }
+    type newType = NT extends keyof M['entityTypes'][T]['navToMany']
+      ? M['entityTypes'][T]['navToMany'][NT]
+      : M['entityTypes'][T]['navToOne'][NT]
+
+    return new EntityExpand<M, newType>(this._m, newEntityType as newType, navProp as string)
+  }
+
   renderFilter(
     filter:
       | string

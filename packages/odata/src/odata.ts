@@ -98,6 +98,7 @@ export interface TODataParams {
   '$filter'?: string
   '$select'?: string
   '$orderby'?: string
+  '$expand'?: string
   'search-focus'?: string
   'search'?: string // v2 search
   '$search'?: string // v4 search
@@ -283,6 +284,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
           '$format': params?.['$format'],
           '$orderby': params?.['$orderby'],
           '$select': params?.['$select'],
+          '$expand': params?.['$expand'],
           'search': params?.search,
           'search-focus': params?.['search-focus'],
           '$top': chunkSize,
