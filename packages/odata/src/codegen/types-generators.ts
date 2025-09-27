@@ -51,11 +51,70 @@ const mergeDeep = <T extends Record<string, any>>(target: T, source: Record<stri
   return target
 }
 
+/**
+ * Maps an OData type to a TypeScript type
+ * @param odataType The OData type (e.g., 'Edm.String', 'Trippin.Location')
+ * @param opts Options including model alias and available complex types
+ * @returns The TypeScript type as a string
+ */
+function mapODataTypeToTypeScript(
+  odataType: string,
+  opts: {
+    modelAlias: string
+    capitalizedAlias?: string
+    complexTypesToGen?: Set<string>
+  }
+): string {
+  const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
+
+  switch (odataType) {
+    case 'Edm.String':
+    case 'Edm.Guid':
+      return 'string'
+    case 'Edm.Boolean':
+      return 'boolean'
+    case 'Edm.Decimal':
+    case 'Edm.Int8':
+    case 'Edm.Int16':
+    case 'Edm.Int32':
+    case 'Edm.Int64':
+    case 'Edm.Single':
+    case 'Edm.Double':
+    case 'Edm.Byte':
+    case 'Edm.SByte':
+      return 'number'
+    case 'Edm.DateTime':
+    case 'Edm.DateTimeOffset':
+    case 'Edm.Date':
+      // Raw OData returns these as strings ("/Date(timestamp)/" or ISO strings)
+      return 'string'
+    case 'Edm.TimeOfDay':
+    case 'Edm.Time':
+    case 'Edm.Duration':
+      return 'string'
+    case 'Edm.Binary':
+      return 'string' // Base64 encoded
+    case 'Edm.GeographyPoint':
+    case 'Edm.GeometryPoint':
+      return 'any' // Geographic/Geometric types
+    default:
+      // Check if it's a ComplexType
+      if (opts.complexTypesToGen?.has(odataType)) {
+        const modelType = `T${capitalizedAlias}OData`
+        return `${modelType}['complexTypes']['${odataType}']`
+      } else {
+        // It's an EnumType or unknown type
+        return 'any'
+      }
+  }
+}
+
 export function generateEntityTypeTypes(
   d: EntityType<any>,
   opts: {
     modelAlias: string
     capitalizedAlias?: string
+    complexTypesToGen?: Set<string>
   },
   isV4: boolean
 ): {
@@ -97,47 +156,7 @@ export function generateEntityTypeTypes(
   for (const field of Array.from(d.fieldsMap.values())) {
     // Determine the TypeScript type based on OData type
     // Note: field.$Type already has the actual type extracted (Collection wrapper removed)
-    let fieldType: string
-    switch (field.$Type) {
-      case 'Edm.String':
-      case 'Edm.Guid':
-        fieldType = 'string'
-        break
-      case 'Edm.Boolean':
-        fieldType = 'boolean'
-        break
-      case 'Edm.Decimal':
-      case 'Edm.Int8':
-      case 'Edm.Int16':
-      case 'Edm.Int32':
-      case 'Edm.Int64':
-      case 'Edm.Single':
-      case 'Edm.Double':
-      case 'Edm.Byte':
-      case 'Edm.SByte':
-        fieldType = 'number'
-        break
-      case 'Edm.DateTime':
-      case 'Edm.DateTimeOffset':
-      case 'Edm.Date':
-        // fieldType = 'Date' // These would be converted to Date objects by toJson formatter
-        fieldType = 'string' // Raw OData returns these as strings ("/Date(timestamp)/" or ISO strings)
-        break
-      case 'Edm.TimeOfDay':
-      case 'Edm.Time':
-      case 'Edm.Duration':
-        fieldType = 'string' // These remain as strings
-        break
-      case 'Edm.Binary':
-        fieldType = 'string' // Base64 encoded
-        break
-      case 'Edm.GeographyPoint':
-      case 'Edm.GeometryPoint':
-        fieldType = 'any' // Geographic/Geometric types
-        break
-      default:
-        fieldType = 'any'
-    }
+    let fieldType = mapODataTypeToTypeScript(field.$Type, opts)
 
     // Wrap in Array if it's a collection
     if (field.isCollection) {
@@ -234,6 +253,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const entityTypes: TGenerateEntityTypeDefinition[] = []
   const entitiesToGen = (opts.entitySets ?? m.getEntitySetsList()) as string[]
   const entityTypesToGen = new Set<string>()
+  const complexTypesToGen = new Set<string>()
 
   for (const entitySetName of entitiesToGen) {
     const entitySet = m.getEntitySet(entitySetName)
@@ -273,9 +293,27 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
 
   for (const et of Array.from(entityTypesToGen)) {
     const entityType = m.getEntityType(et)
+
+    // Discover ComplexTypes used by this entity type
+    for (const field of entityType.fields) {
+      // Check if the field type is not an Edm type (it's a ComplexType or EnumType)
+      if (!field.$Type.startsWith('Edm.') && !field.$Type.includes('.')) {
+        // Might be missing namespace, skip
+        continue
+      }
+      if (!field.$Type.startsWith('Edm.')) {
+        // Check if it's a ComplexType
+        const complexType = m.getRawComplexType(field.$Type)
+        if (complexType) {
+          complexTypesToGen.add(field.$Type)
+        }
+      }
+    }
+
     const { entity, consts, types } = generateEntityTypeTypes(entityType, {
       modelAlias,
-      capitalizedAlias: cModelAlias
+      capitalizedAlias: cModelAlias,
+      complexTypesToGen
     }, m.isV4)
     mergeDeep(modelConsts, consts)
     mergeDeep(modelTypes, types)
@@ -314,6 +352,68 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
 
   const modelType = `T${cModelAlias}OData`
 
+  // Recursively discover nested ComplexTypes
+  const processedComplexTypes = new Set<string>()
+  const complexTypesToProcess = Array.from(complexTypesToGen)
+
+  while (complexTypesToProcess.length > 0) {
+    const ctName = complexTypesToProcess.pop()!
+    if (processedComplexTypes.has(ctName)) continue
+
+    processedComplexTypes.add(ctName)
+    const complexType = m.getRawComplexType(ctName)
+    if (!complexType) continue
+
+    // Check for nested ComplexTypes
+    for (const property of complexType.Property || []) {
+      const actualType = property.$Type.startsWith('Collection(')
+        ? property.$Type.slice('Collection('.length, -1)
+        : property.$Type
+
+      if (!actualType.startsWith('Edm.') && actualType.includes('.')) {
+        const nestedCT = m.getRawComplexType(actualType)
+        if (nestedCT && !processedComplexTypes.has(actualType)) {
+          complexTypesToGen.add(actualType)
+          complexTypesToProcess.push(actualType)
+        }
+      }
+    }
+  }
+
+  // Process ComplexTypes to generate their interfaces
+  const complexTypes: Record<string, Record<string, unknown>> = {}
+  for (const ctName of Array.from(complexTypesToGen)) {
+    const complexType = m.getRawComplexType(ctName)
+    if (!complexType) continue
+
+    const ctRecord: Record<string, string> = {}
+    for (const property of complexType.Property || []) {
+      // Check if the property type is a collection
+      const isCollection = property.$Type.startsWith('Collection(')
+      const actualType = isCollection
+        ? property.$Type.slice('Collection('.length, -1)
+        : property.$Type
+
+      // Determine the TypeScript type using the helper function
+      let tsType = mapODataTypeToTypeScript(actualType, {
+        modelAlias,
+        capitalizedAlias: cModelAlias,
+        complexTypesToGen
+      })
+
+      // Wrap in Array if it's a collection
+      if (isCollection) {
+        tsType = `Array<${tsType}>`
+      }
+
+      // Add field to record - use optional if field is nullable
+      const fieldName = property.$Nullable !== false ? `${property.$Name}?` : property.$Name
+      ctRecord[fieldName] = tsType
+    }
+
+    complexTypes[`'${ctName}'`] = ctRecord
+  }
+
   const modelInterface: TCoGeInterfaceDeclaration = {
     type: 'interface',
     name: modelType,
@@ -322,6 +422,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     value: {
       entitySets: {},
       entityTypes: {},
+      complexTypes: complexTypes,
       functions: {},
     },
     jsDocs: ['Main OData Interface', '', `Model: ${modelAlias}`]

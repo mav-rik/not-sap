@@ -103,6 +103,7 @@ export interface TSapServiceOData extends TOdataDummyInterface {
       };
     };
   };
+  complexTypes: {};
   functions: {};
 }
 
@@ -291,6 +292,7 @@ export interface THanaServiceOData extends TOdataDummyInterface {
       };
     };
   };
+  complexTypes: {};
   functions: {};
 }
 

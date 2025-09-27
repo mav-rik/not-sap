@@ -112,8 +112,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         Gender: any;
         Age?: number;
         Emails?: Array<string>;
-        AddressInfo?: Array<any>;
-        HomeAddress?: any;
+        AddressInfo?: Array<TTripPinRESTierServiceOData['complexTypes']['Trippin.Location']>;
+        HomeAddress?: TTripPinRESTierServiceOData['complexTypes']['Trippin.Location'];
         FavoriteFeature: any;
         Features: Array<any>;
         Friends?: Array<TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record']>;
@@ -142,7 +142,7 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         Name?: string;
         IcaoCode: string;
         IataCode?: string;
-        Location?: any;
+        Location?: TTripPinRESTierServiceOData['complexTypes']['Trippin.AirportLocation'];
       };
     };
     'Trippin.Trip': {
@@ -178,6 +178,20 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         EndsAt: string;
         Duration: string;
       };
+    };
+  };
+  complexTypes: {
+    'Trippin.Location': {
+      Address?: string;
+      City?: TTripPinRESTierServiceOData['complexTypes']['Trippin.City'];
+    };
+    'Trippin.AirportLocation': {
+      Loc?: any;
+    };
+    'Trippin.City': {
+      Name?: string;
+      CountryRegion?: string;
+      Region?: string;
     };
   };
   functions: {

@@ -46,13 +46,29 @@ describe('TripPin Collection Types Generation', () => {
     expect(generatedCode).toContain('Tags?: Array<string>')
   })
 
-  it('should generate "any" type for ComplexType fields', () => {
-    // ComplexTypes should fallback to "any" since we don't support them yet
-    expect(generatedCode).toContain('HomeAddress?: any')
-    expect(generatedCode).toContain('AddressInfo?: Array<any>')
-    expect(generatedCode).toContain('Location?: any')
+  it('should generate ComplexType references for ComplexType fields', () => {
+    // ComplexTypes should now be properly referenced through the complexTypes interface
+    expect(generatedCode).toContain("HomeAddress?: TTripPinOData['complexTypes']['Trippin.Location']")
+    expect(generatedCode).toContain("AddressInfo?: Array<TTripPinOData['complexTypes']['Trippin.Location']>")
+    expect(generatedCode).toContain("Location?: TTripPinOData['complexTypes']['Trippin.AirportLocation']")
     // Note: OccursAt and BossOffice are in derived types (Event, Manager)
     // which are not directly exposed as EntitySets, so they won't be in the generated code
+  })
+
+  it('should generate ComplexTypes interface section', () => {
+    // Check that ComplexTypes are generated in the interface
+    expect(generatedCode).toContain("complexTypes: {")
+    expect(generatedCode).toContain("'Trippin.Location': {")
+    expect(generatedCode).toContain("Address?: string")
+    expect(generatedCode).toContain("City?: TTripPinOData['complexTypes']['Trippin.City']")
+
+    expect(generatedCode).toContain("'Trippin.City': {")
+    expect(generatedCode).toContain("Name?: string")
+    expect(generatedCode).toContain("CountryRegion?: string")
+    expect(generatedCode).toContain("Region?: string")
+
+    expect(generatedCode).toContain("'Trippin.AirportLocation': {")
+    expect(generatedCode).toContain("Loc?: any") // Edm.GeographyPoint becomes any
   })
 
   it('should handle non-collection primitive types correctly', () => {

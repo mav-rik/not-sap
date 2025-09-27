@@ -605,9 +605,3 @@ try {
 - **Deep navigation**: Chain `toOne()` and `toMany()` methods for complex navigation paths
 - **Batch wisely**: When using `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size
 - **Handle errors properly**: Catch `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI
-
-## Known Limitations
-
-- **Complex types are not supported**: OData complex types (non-entity structured types) are currently not supported by the library
-
-This README reflects the current behaviour of `packages/odata`. Refer to the source files in `src/` for deeper detail or additional extension points.

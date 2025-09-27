@@ -66,6 +66,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     string,
     TSchema['EntityType'][number]
   >()
+  protected _complexTypes = new Map<
+    string,
+    TSchema['ComplexType'][number]
+  >()
   protected _assoc = new Map<
     string,
     TSchema['Association'][number]
@@ -103,6 +107,9 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
       for (const node of schema.EntityType || []) {
         this._types.set(`${ns}.${node.$Name}`, node)
       }
+      for (const node of schema.ComplexType || []) {
+        this._complexTypes.set(`${ns}.${node.$Name}`, node)
+      }
       for (const node of schema.Association || []) {
         this._assoc.set(`${ns}.${node.$Name}`, node)
       }
@@ -137,11 +144,17 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   getRawEntityType(name: string) {
     return this._types.get(name)
   }
+  getRawComplexType(name: string) {
+    return this._complexTypes.get(name)
+  }
   getRawEntitySet(name: keyof M['entitySets']) {
     return this._sets.get(name) || this._namespacedSets.get(name)
   }
   getRawAnnotations(target: string) {
     return this._annot.get(target)
+  }
+  getComplexTypesList() {
+    return Array.from(this._complexTypes.keys())
   }
   getEntitySetsList(suppressNamespace = false) {
     return suppressNamespace ? Array.from(this._sets.keys()) : Array.from(this._namespacedSets.keys())

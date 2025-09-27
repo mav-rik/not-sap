@@ -103,6 +103,7 @@ export interface TSapV4OData extends TOdataDummyInterface {
       };
     };
   };
+  complexTypes: {};
   functions: {};
 }
 

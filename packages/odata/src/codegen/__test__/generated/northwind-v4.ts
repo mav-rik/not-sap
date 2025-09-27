@@ -802,6 +802,7 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
       };
     };
   };
+  complexTypes: {};
   functions: {};
 }
 
