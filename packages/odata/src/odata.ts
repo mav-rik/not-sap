@@ -55,7 +55,7 @@ export interface TOdataDummyInterface {
   functions: Record<
     string,
     {
-      params: string
+      params: string | void
     }
   >
 }
@@ -517,7 +517,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
   async callFunction<T extends keyof M['functions']>(
     name: T,
-    _params?: Record<M['functions'][T]['params'], string>,
+    _params?: M['functions'][T]['params'] extends string ? Record<M['functions'][T]['params'], string> : never,
     disableBatch?: boolean
   ) {
     const metadata = await this.getMetadata()

@@ -45,6 +45,28 @@ yarn add notsapodata
 
 The package ships with `notSapODataVitePlugin` (`import notSapODataVitePlugin from 'notsapodata/vite'`). The plugin fetches metadata (or uses a provided XML string), generates strongly-typed models and writes them to `src/.odata.types.ts` by default.
 
+#### Minimal Example - Fetching Metadata from Service
+
+```typescript
+import { defineConfig } from 'vite'
+import notSapODataVitePlugin from 'notsapodata/vite'
+
+export default defineConfig({
+  plugins: [
+    notSapODataVitePlugin({
+      services: {
+        NorthwindV4: {
+          host: 'https://services.odata.org',
+          path: '/V4/Northwind/Northwind.svc',
+        },
+      },
+    }),
+  ],
+})
+```
+
+#### With Authentication and Entity Selection
+
 ```typescript
 import { defineConfig } from 'vite'
 import notSapODataVitePlugin from 'notsapodata/vite'
@@ -74,16 +96,36 @@ export default defineConfig({
 })
 ```
 
-Environment variables read by `readODataEnv()`:
+#### Using Offline Metadata
+
+```typescript
+import { defineConfig } from 'vite'
+import notSapODataVitePlugin from 'notsapodata/vite'
+import { readFileSync } from 'node:fs'
+
+const metadataXml = readFileSync('./fixtures/northwind-v4.xml', 'utf-8')
+
+export default defineConfig({
+  plugins: [
+    notSapODataVitePlugin({
+      services: {
+        MockNorthwind: {
+          metadata: metadataXml,  // Provide XML directly, no network call
+          path: '/mock/Northwind',
+          alias: 'NorthwindMock',
+        },
+      },
+    }),
+  ],
+})
+```
+
+Environment variables (automatically read when using the plugin):
 
 - `ODATA_HOST` – default host when `service.host` is not provided.
 - `ODATA_COOKIE_NAME` and `ODATA_COOKIE_VALUE` – combined into a `cookie` header when present.
 
-> **Type safety** – the generated `*.odata.types.ts` file provides literal types for entity sets, fields, keys and functions. Passing those types to the runtime (`OData<TModel>`) means every CRUD call, filter and navigation path is validated by TypeScript.
-
-### Service Options
-
-Each service entry matches `TGenerateModelOpts`:
+### Service Configuration Options
 
 | Option | Type | Description |
 | --- | --- | --- |
@@ -92,178 +134,239 @@ Each service entry matches `TGenerateModelOpts`:
 | `headers?` | `Record<string,string>` | Extra headers (cookies, language, etc.). |
 | `alias?` | `string` | Overrides the generated class/interface base name. |
 | `entitySets?` | `string[]` | Restrict generation to specific entity sets (fully-qualified names). Omit to include everything. |
-| `metadata?` | `string \| (odata, opts) => string \| Promise<string>` | Provide inline metadata or a custom loader (no network call). |
+| `metadata?` | `string` | Provide inline metadata XML (no network call). |
 
 ### Programmatic Generation
-
-The generator can be used without Vite:
 
 ```typescript
 import { generate } from 'notsapodata/codegen'
 import { writeFileSync } from 'node:fs'
 
+// Generate types without Vite
 const content = await generate({
   NorthwindV4: {
     host: 'https://services.odata.org',
     path: '/V4/Northwind/Northwind.svc',
-    entitySets: [
-      'ODataWebV4.Northwind.Model.Products',
-      'ODataWebV4.Northwind.Model.Orders',
-    ],
   },
 })
 
 writeFileSync('src/.odata.types.ts', content)
 ```
 
-### Using Local Metadata (no network)
 
-Both the plugin and the `generate` function accept inline metadata. This is handy for mocking services in tests or working offline:
+### Generated Output Structure
 
-```typescript
-import { readFileSync } from 'node:fs'
-import { generate } from 'notsapodata/codegen'
+For a service named `MyModel`, the generator creates four exports:
 
-const metadataXml = readFileSync('./fixtures/northwind-v4.xml', 'utf-8')
-
-const content = await generate({
-  MockNorthwind: {
-    metadata: metadataXml,
-    path: '/mock/Northwind',
-  },
-})
-```
-
-The same `metadata` property can be passed to the Vite plugin (`metadata: readFileSync('metadata.xml', 'utf-8')`) to skip live service calls during development.
-
-### Generated Output Shape
-
-The generator creates four exports per service:
+1. **Constants**: `myModelConsts` - Contains arrays of fields, keys, and measures for each entity type
+2. **Types Interface**: `TMyModel` - TypeScript types derived from the constants
+3. **OData Interface**: `TMyModelOData` - Main interface with entity sets, types, and functions mapping
+4. **Service Class**: `MyModel` - Main interaction point extending `OData<TMyModelOData>`
 
 ```typescript
-export const northwindV4Consts = {
-  "NorthwindModel": {
-    "Product": {
-      fields: [/* ... */] as const,
-      keys: [/* ... */] as const,
-      measures: [/* ... */] as const,
-    },
-  },
-}
-
-export interface TNorthwindV4 {
-  "NorthwindModel": {
-    "Product": {
-      fields: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["fields"][number]
-      keys: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["keys"][number]
-      measures: (typeof northwindV4Consts)["NorthwindModel"]["Product"]["measures"][number]
+// Constants with field/key/measure lists
+export const myModelConsts = {
+  "Namespace": {
+    "EntityType": {
+      fields: ['Field1', 'Field2'] as const,
+      keys: ['Field1'] as const,
+      measures: [] as const,
     }
   }
 }
 
-export interface TNorthwindV4OData extends TOdataDummyInterface {
-  entitySets: {
-    'ODataWebV4.Northwind.Model.Products': "NorthwindModel.Product"
-  }
-  entityTypes: {
-    'NorthwindModel.Product': {
-      keys: TNorthwindV4["NorthwindModel"]["Product"]["keys"]
-      fields: TNorthwindV4["NorthwindModel"]["Product"]["fields"]
-      measures: TNorthwindV4["NorthwindModel"]["Product"]["measures"]
-      navToMany: Record<string, string>
-      navToOne: Record<string, string>
-    }
-  }
-  functions: Record<string, { params: string }>
-}
-
-export class NorthwindV4 extends OData<TNorthwindV4OData> {
-  public static readonly serviceName = 'NorthwindV4' as const
-  private static instance?: NorthwindV4
-
-  public static getInstance() {
-    if (!NorthwindV4.instance) {
-      NorthwindV4.instance = new NorthwindV4()
-    }
-    return NorthwindV4.instance
-  }
-
-  public static async entitySet<T extends keyof TNorthwindV4OData['entitySets']>(name: T) {
-    const instance = NorthwindV4.getInstance()
-    return instance.entitySet<T>(name)
-  }
-
-  private constructor(opts?: TODataOptions) {
-    super('NorthwindV4', { ...opts, path: '/V4/Northwind/Northwind.svc' })
-  }
+// Service class with static helpers
+export class MyModel extends OData<TMyModelOData> {
+  public static getInstance() { /* singleton */ }
+  public static async entitySet(name) { /* direct entity access */ }
 }
 ```
 
-The generated class inherits all runtime helpers, including batching, metadata access and typed queries.
+## Simple OData Requests
 
-## Runtime Client
-
-### Getting Started
+### Getting an Entity Set
 
 ```typescript
 import { NorthwindV4 } from '@/.odata.types'
 
-// Preferred: Use the static entitySet method (no metadata fetch needed)
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+// Get entity set using the static method (recommended)
+const products = await NorthwindV4.entitySet('Products')
 
-// Or get the singleton instance for advanced operations
-const model = NorthwindV4.getInstance()
-const orders = await model.entitySet('ODataWebV4.Northwind.Model.Orders')
+// Simple query with top 10 records
+const result = await products.query({ top: 10 })
+// GET: .../Products?$top=10
 ```
 
-The `entitySet` method returns a fully typed `EntitySet` instance immediately—no need to fetch metadata first. The metadata is loaded automatically when needed.
-
-### Reading Data
+### Reading a Single Record
 
 ```typescript
-// Get the entity set using the static method
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+const products = await NorthwindV4.entitySet('Products')
 
-// Query with full type safety
-const { data, count } = await products.query({
-  top: 5,
+// Read a single record by key
+const product = await products.readRecord({ ProductID: 42 })
+// GET: .../Products(ProductID=42)
+```
+
+## Complex Queries
+
+### All Query Parameters
+
+```typescript
+const products = await NorthwindV4.entitySet('Products')
+const orders = await NorthwindV4.entitySet('Orders')
+
+// Example with all supported parameters
+const result = await products.query({
+  top: 10,
+  skip: 20,
   select: ['ProductID', 'ProductName', 'UnitPrice'],
-  sorters: [{ name: 'ProductName' }],
-  inlinecount: 'allpages',
-  filter: [
-    { ProductName: { contains: 'Chai' } },
-    { UnitPrice: { bw: ['10', '50'] } },
-  ],
+  filter: { UnitPrice: { gt: 50 } },
+  sorters: [{ name: 'ProductName', desc: false }],
+  expand: products.expand('Category'),
+  inlinecount: 'allpages',  // V2: returns count
+  // count: true,            // V4: use this instead
+  apply: 'filter(CategoryID eq 1)',  // V4 only
 })
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(contains(ProductName,'Chai') and (UnitPrice ge 10 and UnitPrice le 50))&$orderby=ProductName&$top=5&$count=true&$select=ProductID,ProductName,UnitPrice
 ```
 
-The result is still `TOdataReadResult<TFields>` coming from the generated metadata, so `data` is strongly typed and `count` is populated when `$count` is requested.
+### Filter Parameter
 
-More filter shapes are supported – the query builder mirrors the scenarios covered in the tests from `generated-filters.spec.ts`:
+Filters support type-safe operators and logical combinations:
+
+#### Basic Operators
+```typescript
+// Equality and comparison
+filter: {
+  ProductID: { eq: 42 },          // ProductID eq 42
+  UnitPrice: { gt: 50 },           // UnitPrice gt 50
+  UnitsInStock: { le: 100 },       // UnitsInStock le 100
+}
+
+// String operations
+filter: {
+  ProductName: { contains: 'Chai' },    // contains(ProductName,'Chai')
+  ProductName: { starts: 'A' },         // startswith(ProductName,'A')
+  ProductName: { ends: 'tea' },         // endswith(ProductName,'tea')
+}
+
+// Range (between)
+filter: {
+  UnitPrice: { bw: ['10', '50'] }       // (UnitPrice ge 10 and UnitPrice le 50)
+}
+
+// Null/empty checks
+filter: {
+  Discontinued: { empty: true },        // Discontinued eq null
+  ProductName: { notEmpty: true }       // ProductName ne null
+}
+```
+
+#### Logical Operators
+```typescript
+// AND (implicit with array or object)
+filter: [
+  { ProductName: { contains: 'Chai' } },
+  { UnitPrice: { bw: ['10', '50'] } },
+]
+// Result: (contains(ProductName,'Chai') and (UnitPrice ge 10 and UnitPrice le 50))
+
+// OR expression
+filter: {
+  $or: [
+    { ProductID: { eq: 1 } },
+    { ProductID: { eq: 2 } },
+    { ProductID: { eq: 3 } },
+  ],
+}
+// Result: (ProductID eq 1 or ProductID eq 2 or ProductID eq 3)
+
+// Complex nesting
+filter: {
+  $or: [
+    {
+      $and: [
+        { CategoryID: { eq: 1 } },
+        { UnitPrice: { gt: 10 } }
+      ]
+    },
+    { Discontinued: { eq: true } }
+  ]
+}
+```
+
+### Select Parameter
 
 ```typescript
-// OR expression using $or
-await products.query({
-  top: 3,
-  filter: {
-    $or: [
-      { ProductID: { eq: '1' } },
-      { ProductID: { eq: '2' } },
-      { ProductID: { eq: '3' } },
-    ],
-  },
-})
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(ProductID eq 1 or ProductID eq 2 or ProductID eq 3)&$top=3
+// Select specific fields (type-safe)
+select: ['ProductID', 'ProductName', 'UnitPrice']
+// Result: $select=ProductID,ProductName,UnitPrice
+```
 
-// Comparison helpers map to OData operators automatically
-await products.query({
-  filter: {
-    UnitPrice: { gt: '50' },
-    UnitsInStock: { le: '100' },
-  },
+### Sorters Parameter
+
+```typescript
+// Multiple sort criteria
+sorters: [
+  { name: 'UnitPrice', desc: true },   // Descending
+  'ProductName'                        // Ascending (shorthand)
+]
+// Result: $orderby=UnitPrice desc,ProductName
+```
+
+### Apply Parameter (V4 only)
+
+```typescript
+// OData V4 aggregations and transformations
+apply: 'filter(CategoryID eq 1)/aggregate(UnitPrice with sum as TotalPrice)'
+```
+
+### Type-Safe Expands
+
+One of the key features is type-safe expand building with full IntelliSense support.
+
+#### OData V4 Expands
+
+V4 supports inline query options within expand:
+
+```typescript
+const orders = await NorthwindV4.entitySet('Orders')
+
+// Build type-safe expands with nested options
+const customerExpand = orders.expand('Customer', {
+  select: ['CustomerID', 'CompanyName', 'Country']
 })
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=(UnitPrice gt 50 and UnitsInStock le 100)
+
+const orderDetailsExpand = orders
+  .expand('Order_Details', {
+    filter: { Quantity: { gt: 5 } },
+    select: ['ProductID', 'Quantity', 'UnitPrice'],
+    top: 10
+  })
+  .expand('Product', {  // Nested expand
+    select: ['ProductName', 'CategoryID']
+  })
+  .expand('Category')  // Further nesting
+
+const result = await orders.query({
+  top: 2,
+  expand: [customerExpand, orderDetailsExpand]
+})
+// Result: $expand=Customer($select=CustomerID,CompanyName,Country),Order_Details($filter=Quantity gt 5;$select=ProductID,Quantity,UnitPrice;$top=10;$expand=Product($select=ProductName,CategoryID;$expand=Category))
+```
+
+#### OData V2 Expands
+
+V2 uses simpler path-based expansion. Filters and selects are applied at the root level with navigation prefixes:
+
+```typescript
+// V2: Simple expansion paths
+expand: 'Order_Details/Product'
+
+// V2: Filters use navigation prefix at root
+filter: {
+  'Order_Details/Quantity': { gt: 10 },  // Applied at root with path prefix
+}
+select: ['OrderID', 'Order_Details/ProductID', 'Order_Details/Product/ProductName']
 ```
 
 ### Working with Large Result Sets
@@ -272,7 +375,7 @@ await products.query({
 const model = NorthwindV4.getInstance()
 const progress: number[] = []
 
-const query = model.readAllEntries('ODataWebV4.Northwind.Model.Products', {
+const query = model.readAllEntries('Products', {
   chunkSize: 500,
   progressCb: (loaded, total, done) => {
     progress.push(loaded)
@@ -288,14 +391,106 @@ const rows = await query.promise
 
 `readAllEntries` performs chunked reads (defaults to 100 records) and reuses the batching engine under the hood.
 
+## Navigation
+
+Navigation allows you to traverse relationships between entities:
+
+```typescript
+const orders = await NorthwindV4.entitySet('Orders')
+
+// Single-level navigation: Orders -> Customer
+const customer = await orders
+  .withKey({ OrderID: 10248 })
+  .toOne('Customer')
+  .read()
+// GET: .../Orders(OrderID=10248)/Customer
+
+// Multi-level navigation: Orders -> Customer -> Orders
+const customerOrders = orders
+  .withKey({ OrderID: 10248 })
+  .toOne('Customer')
+  .toMany('Orders')
+
+const result = await customerOrders.query({ top: 5 })
+// GET: .../Orders(OrderID=10248)/Customer/Orders?$top=5
+
+// Complex 3+ level navigation
+const deepNav = orders
+  .withKey({ OrderID: 10249 })
+  .toMany('Order_Details')
+  .withKey({ OrderID: 10249, ProductID: 11 })
+  .toOne('Product')
+  .toOne('Category')
+
+const category = await deepNav.read()
+// GET: .../Orders(OrderID=10249)/Order_Details(OrderID=10249,ProductID=11)/Product/Category
+```
+
+### How Navigation Works
+
+- `withKey()` - Specifies which record to start from
+- `toOne()` - Navigate to a single related entity (1:1 or N:1)
+- `toMany()` - Navigate to a collection of related entities (1:N)
+- Chain methods to build deep navigation paths
+- End with `.query()` or `.read()` to execute the request
+
+## Useful Utilities
+
+### Filter Rendering
+
+```typescript
+import { renderFilter } from 'notsapodata'
+
+// Render filter string for manual use
+const filterString = renderFilter({
+  ProductName: { contains: 'Tea' },
+  UnitPrice: { gt: 10 }
+})
+// Result: "(contains(ProductName,'Tea') and UnitPrice gt 10)"
+```
+
+### Key Preparation
+
+```typescript
+const products = await NorthwindV4.entitySet('Products')
+
+// Single key
+const key = products.prepareRecordKey({ ProductID: 42 })
+// Result: 'Products(ProductID=42)'
+
+// Composite key
+const orderDetails = await NorthwindV4.entitySet('Order_Details')
+const compositeKey = orderDetails.prepareRecordKey({
+  OrderID: 10248,
+  ProductID: 11
+})
+// Result: 'Order_Details(OrderID=10248,ProductID=11)'
+```
+
+### Expand String Rendering
+
+```typescript
+const products = await NorthwindV4.entitySet('Products')
+
+// Build and render expand string
+const expandBuilder = products
+  .expand('Category')
+  .expand('Order_Details', { top: 5 })
+
+const expandString = expandBuilder.toString()
+// Result: 'Category,Order_Details($top=5)'
+```
+
+## Additional Features
+
 ### Updating Data
 
 ```typescript
 const model = NorthwindV4.getInstance()
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+const products = await NorthwindV4.entitySet('Products')
 
 // Prepare the key
-const key = products.prepareRecordKey({ ProductID: '1' })
+const key = products.prepareRecordKey({ ProductID: 1 })
 
 // Update the record
 await model.updateRecordByKey(key, {
@@ -306,12 +501,12 @@ await model.updateRecordByKey(key, {
 ### Calling Function Imports
 
 ```typescript
+const model = NorthwindV4.getInstance()
+
 await model.callFunction('SapService.CalculateTotals', {
   FiscalYear: '2024',
 })
 ```
-
-Replace `'SapService.CalculateTotals'` with the exact function import name defined in your metadata. The helper validates the name before sending the request and throws when the function is missing. Arguments are typed as `Record<M['functions'][T]['params'], string>`, so only declared parameters are accepted.
 
 ### Batch Execution
 
@@ -321,9 +516,11 @@ There are two batching modes:
 2. **Manual control** – create a dedicated batch instance.
 
 ```typescript
+const model = NorthwindV4.getInstance()
 const batch = model.createBatch()
-const productsPromise = batch.read('ODataWebV4.Northwind.Model.Products', { $top: 10 })
-const ordersPromise = batch.read('ODataWebV4.Northwind.Model.Orders', { $top: 10 })
+
+const productsPromise = batch.read('Products', { $top: 10 })
+const ordersPromise = batch.read('Orders', { $top: 10 })
 
 const { promise } = batch.execute({ maxBatchLength: 10, maxConcurrentBatches: 2 })
 await promise
@@ -332,36 +529,21 @@ const products = await productsPromise
 const orders = await ordersPromise
 ```
 
-`execute` also provides `abort()` to cancel outstanding work.
-
 ## Metadata Helpers
 
-All metadata helpers live under `notsapodata/metadata` and are also exported from the package root.
-
-### Accessing Entity Sets and Types
+### Accessing Metadata
 
 ```typescript
-// Direct access without metadata fetch
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
-
-const { data } = await products.query({
-  select: ['ProductID', 'ProductName', 'UnitPrice'],
-  filter: { ProductID: { eq: '42' } },
-})
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products?$filter=ProductID eq 42&$select=ProductID,ProductName,UnitPrice
-
 // If you need metadata for advanced operations
 const model = NorthwindV4.getInstance()
 const metadata = await model.getMetadata()
 const productType = metadata.getEntityType('NorthwindModel.Product')
 ```
 
-Structured filters accept either single objects (`{ Field: { eq: 'Value' } }`), arrays to imply `and`, or `$or`/`$and` groups.
-
 ### Refining Metadata
 
 ```typescript
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+const products = await NorthwindV4.entitySet('Products')
 
 products.refineField('ProductName', {
   $label: 'Product',
@@ -369,38 +551,10 @@ products.refineField('ProductName', {
 })
 ```
 
-Refinements are cached per model. All future calls to `getField` reflect the refinements.
-
-### Working with Navigation Properties
-
-```typescript
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
-
-// Single-level navigation
-const record = products.withKey({ ProductID: '1' })
-const orderDetailsSet = record.toMany('Order_Details')
-
-const orderDetails = await orderDetailsSet.query({ top: 5 })
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products(ProductID=1)/Order_Details?$top=5
-
-const supplier = await record.toOne('Supplier').read()
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Products(ProductID=1)/Supplier
-
-// Deep navigation (2-3 levels)
-const orders = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Orders')
-const deepNav = orders
-  .withKey({ OrderID: '10248' })
-  .toOne('Customer')
-  .toMany('Orders')
-
-const customerOrders = await deepNav.query({ top: 10 })
-// GET https://services.odata.org/V4/Northwind/Northwind.svc/Orders(OrderID=10248)/Customer/Orders?$top=10
-```
-
 ### Excel Export
 
 ```typescript
-const products = await NorthwindV4.entitySet('ODataWebV4.Northwind.Model.Products')
+const products = await NorthwindV4.entitySet('Products')
 
 const { data } = await products.query({
   select: ['ProductID', 'ProductName', 'UnitPrice', 'CategoryID'],
@@ -418,19 +572,8 @@ const buffer = await products.generateExcel(
     ],
   }
 )
-
 // buffer is a Node.js Buffer (Excel workbook)
 ```
-
-`generateExcel` automatically pulls currency metadata via `SAP__CodeList.CurrencyCodes` annotations when present.
-
-### Value Help Discovery
-
-`EntityType.getValueHelpEntitySet(field)` inspects value-list annotations (both V2 and V4) and returns an `EntitySet` instance if the service exposes a value help collection.
-
-### Currency Metadata
-
-`EntityType.readCurrencies()` loads the referenced currency collection once and caches it for `ExcelGenerator` and custom code.
 
 ## Errors and Fetch
 
@@ -462,5 +605,9 @@ try {
 - **Deep navigation**: Chain `toOne()` and `toMany()` methods for complex navigation paths
 - **Batch wisely**: When using `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size
 - **Handle errors properly**: Catch `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI
+
+## Known Limitations
+
+- **Complex types are not supported**: OData complex types (non-entity structured types) are currently not supported by the library
 
 This README reflects the current behaviour of `packages/odata`. Refer to the source files in `src/` for deeper detail or additional extension points.

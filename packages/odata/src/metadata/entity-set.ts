@@ -35,6 +35,10 @@ export type EntitySetField<T extends PropertyKey = string> = RawMetadataProperty
    */
   isNumber: boolean
   /**
+   * has Collection() type wrapper
+   */
+  isCollection: boolean
+  /**
    * has v4 SAP__aggregation.CustomAggregate
    */
   isMeasure: boolean

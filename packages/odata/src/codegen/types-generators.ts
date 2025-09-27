@@ -96,6 +96,7 @@ export function generateEntityTypeTypes(
 
   for (const field of Array.from(d.fieldsMap.values())) {
     // Determine the TypeScript type based on OData type
+    // Note: field.$Type already has the actual type extracted (Collection wrapper removed)
     let fieldType: string
     switch (field.$Type) {
       case 'Edm.String':
@@ -124,13 +125,23 @@ export function generateEntityTypeTypes(
         break
       case 'Edm.TimeOfDay':
       case 'Edm.Time':
+      case 'Edm.Duration':
         fieldType = 'string' // These remain as strings
         break
       case 'Edm.Binary':
         fieldType = 'string' // Base64 encoded
         break
+      case 'Edm.GeographyPoint':
+      case 'Edm.GeometryPoint':
+        fieldType = 'any' // Geographic/Geometric types
+        break
       default:
         fieldType = 'any'
+    }
+
+    // Wrap in Array if it's a collection
+    if (field.isCollection) {
+      fieldType = `Array<${fieldType}>`
     }
 
     // Add field to record - use optional if field is nullable
@@ -334,10 +345,11 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   for (const fName of m.getFunctionsList()) {
     const rawFunction = m.getRawFunction(fName)!
     const params =
-      rawFunction.Parameter.filter(p => p.$Mode === 'In')
+      (rawFunction.Parameter || []).filter(p => p.$Mode === 'In')
         .map(p => JSON.stringify(p.$Name))
         .join(' | ') || 'void'
-    modelInterface.value['functions'][fName] = { params }
+    // Quote the function name to handle dots and other special characters
+    modelInterface.value['functions'][`'${fName}'`] = { params }
   }
 
   elements.push(modelInterface)

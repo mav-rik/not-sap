@@ -56,9 +56,16 @@ describe('Northwind fixture replays', () => {
   describe('Northwind V4 scenarios', () => {
     const scenarios = ['products-filtered', 'orders-expanded', 'customer-orders-navigation'] as const
     let responseMap: Map<string, unknown>
+    let expectedUrls: string[]
 
     beforeEach(() => {
       responseMap = buildResponseMap('northwind-v4', scenarios)
+      expectedUrls = []
+      // Extract expected URLs from fixtures
+      for (const scenario of scenarios) {
+        const fixture = loadFixture('northwind-v4', scenario)
+        expectedUrls.push(...fixture.requests.map(r => r.url))
+      }
     })
 
     it('replays captured queries', async () => {
@@ -66,8 +73,10 @@ describe('Northwind fixture replays', () => {
       service.options.host = SERVICE_HOST
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataXml)
 
+      const calledUrls: string[] = []
       const fetchMock = vi.spyOn(service, '_fetch').mockImplementation(
         async (url: string) => {
+          calledUrls.push(url)
           const response = responseMap.get(url)
           if (!response) {
             throw new Error(`Missing fixture for url ${url}`)
@@ -129,15 +138,28 @@ describe('Northwind fixture replays', () => {
       expect(navigationResult.data[0].ShipCountry).toBeDefined()
 
       expect(fetchMock).toHaveBeenCalledTimes(3)
+
+      // Validate that all called URLs match the expected URLs from fixtures
+      expect(calledUrls).toHaveLength(expectedUrls.length)
+      for (let i = 0; i < calledUrls.length; i++) {
+        expect(calledUrls[i]).toBe(expectedUrls[i])
+      }
     })
   })
 
   describe('Northwind V2 scenarios', () => {
     const scenarios = ['products-filtered', 'orders-expanded', 'category-products-navigation'] as const
     let responseMap: Map<string, unknown>
+    let expectedUrls: string[]
 
     beforeEach(() => {
       responseMap = buildResponseMap('northwind-v2', scenarios)
+      expectedUrls = []
+      // Extract expected URLs from fixtures
+      for (const scenario of scenarios) {
+        const fixture = loadFixture('northwind-v2', scenario)
+        expectedUrls.push(...fixture.requests.map(r => r.url))
+      }
     })
 
     it('replays captured queries', async () => {
@@ -145,8 +167,10 @@ describe('Northwind fixture replays', () => {
       service.options.host = SERVICE_HOST
       vi.spyOn(service, 'readMetadata').mockResolvedValue(metadataV2Xml)
 
+      const calledUrls: string[] = []
       const fetchMock = vi.spyOn(service, '_fetch').mockImplementation(
         async (url: string) => {
+          calledUrls.push(url)
           const response = responseMap.get(url)
           if (!response) {
             throw new Error(`Missing fixture for url ${url}`)
@@ -186,6 +210,12 @@ describe('Northwind fixture replays', () => {
       expect(navigationResult.data[0].CategoryID).toBe(1)
 
       expect(fetchMock).toHaveBeenCalledTimes(3)
+
+      // Validate that all called URLs match the expected URLs from fixtures
+      expect(calledUrls).toHaveLength(expectedUrls.length)
+      for (let i = 0; i < calledUrls.length; i++) {
+        expect(calledUrls[i]).toBe(expectedUrls[i])
+      }
     })
   })
 })

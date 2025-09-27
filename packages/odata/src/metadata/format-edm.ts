@@ -33,6 +33,9 @@ export type ODataEdmType =
   | 'Edm.Byte'
   | 'Edm.SByte'
   | 'Edm.Binary'
+  | 'Edm.Duration'
+  | 'Edm.GeographyPoint'
+  | 'Edm.GeometryPoint'
 
 /**
  * An object containing transformation functions for OData EDM types.
@@ -110,6 +113,15 @@ export const odataValueFormat = {
     },
     'Edm.Binary': (value): string => {
       return value // Base64 encoded binary data
+    },
+    'Edm.Duration': (value): string => {
+      return value // ISO 8601 duration format (e.g., "P1DT2H3M4S")
+    },
+    'Edm.GeographyPoint': (value): any => {
+      return value // Complex geographic data, returned as-is
+    },
+    'Edm.GeometryPoint': (value): any => {
+      return value // Complex geometric data, returned as-is
     },
   } as Record<ODataEdmType, (v: string) => string | boolean | number | Date | undefined>,
   toFilter: {
@@ -193,6 +205,15 @@ export const odataValueFormat = {
     'Edm.Binary': (value): string => {
       return `binary'${value}'` // Base64 encoded
     },
+    'Edm.Duration': (value): string => {
+      return `duration'${value}'` // ISO 8601 duration format
+    },
+    'Edm.GeographyPoint': (value): string => {
+      return `${value}` // Complex geographic data
+    },
+    'Edm.GeometryPoint': (value): string => {
+      return `${value}` // Complex geometric data
+    },
   } as Record<ODataEdmType, (v: TODataValueType) => string>,
   toDisplay: {
     'Edm.String': (value): string => {
@@ -273,6 +294,15 @@ export const odataValueFormat = {
     },
     'Edm.Binary': (value): string => {
       return value as string // Show base64 encoded string
+    },
+    'Edm.Duration': (value): string => {
+      return value as string // ISO 8601 duration format
+    },
+    'Edm.GeographyPoint': (value): string => {
+      return value as string // Complex geographic data
+    },
+    'Edm.GeometryPoint': (value): string => {
+      return value as string // Complex geometric data
     },
   } as Record<ODataEdmType, (v: string | number | Date | boolean) => string>,
 }

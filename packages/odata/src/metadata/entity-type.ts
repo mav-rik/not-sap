@@ -40,6 +40,10 @@ export type TEntityType<T extends PropertyKey = string> = RawMetadataProperty<T>
    */
   isNumber: boolean
   /**
+   * has Collection() type wrapper
+   */
+  isCollection: boolean
+  /**
    * has v4 SAP__aggregation.CustomAggregate
    */
   isMeasure: boolean
@@ -285,25 +289,33 @@ export class EntityType<
           : undefined
         v4Attrs['isMeasure'] = !!annotations?.['SAP__aggregation.CustomAggregate']
       }
+      // Check if the type is a Collection
+      const isCollection = p.$Type.startsWith('Collection(')
+      const actualType = isCollection
+        ? p.$Type.slice('Collection('.length, -1) as ODataEdmType
+        : p.$Type
+
       return {
         ...p,
         ...v4Attrs,
+        $Type: actualType, // Store the actual type without Collection wrapper
         $label: p.$label ?? v4Attrs.$label ?? p.$Name,
         ...refiner.refinedField(this._m.name || '', this.name as string, p.$Name),
-        isNumber: ['Edm.Decimal', 'Edm.Int8', 'Edm.Int16', 'Edm.Int32', 'Edm.Int64', 'Edm.Single', 'Edm.Double', 'Edm.Byte', 'Edm.SByte'].includes(p.$Type),
+        isNumber: ['Edm.Decimal', 'Edm.Int8', 'Edm.Int16', 'Edm.Int32', 'Edm.Int64', 'Edm.Single', 'Edm.Double', 'Edm.Byte', 'Edm.SByte'].includes(actualType),
+        isCollection,
         fromJson: {
-          toFilter: odataValueFormat.toFilter[p.$Type],
-          toDisplay: odataValueFormat.toDisplay[p.$Type],
+          toFilter: odataValueFormat.toFilter[actualType],
+          toDisplay: odataValueFormat.toDisplay[actualType],
         },
         fromRaw: {
-          toJson: odataValueFormat.toJson[p.$Type],
+          toJson: odataValueFormat.toJson[actualType],
           toFilter: (v: string) => {
-            const jsonValue = odataValueFormat.toJson[p.$Type](v)
-            return jsonValue === undefined ? '' : odataValueFormat.toFilter[p.$Type](jsonValue)
+            const jsonValue = odataValueFormat.toJson[actualType](v)
+            return jsonValue === undefined ? '' : odataValueFormat.toFilter[actualType](jsonValue)
           },
           toDisplay: (v: string) => {
-            const jsonValue = odataValueFormat.toJson[p.$Type](v)
-            return jsonValue === undefined ? '' : odataValueFormat.toDisplay[p.$Type](jsonValue)
+            const jsonValue = odataValueFormat.toJson[actualType](v)
+            return jsonValue === undefined ? '' : odataValueFormat.toDisplay[actualType](jsonValue)
           },
         },
         annotations,
