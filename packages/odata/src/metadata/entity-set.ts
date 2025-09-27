@@ -6,8 +6,8 @@ import {
 import { TOdataReadResult, type TOdataDummyInterface, type TODataParams } from '../odata'
 import { type TPropertyAnnotations } from './annotations'
 import { ExcelGenerator, type TExcelSubtotalConfig } from './excel'
-import { EntityType } from './entity-type'
 import { EntityRecord } from './entity-record'
+import { EntityWrapper } from './entity-wrapper'
 
 export type NavProperties<T extends PropertyKey = string> = NavProperty<T>[]
 
@@ -67,7 +67,7 @@ export class EntitySet<
   M extends TOdataDummyInterface = TOdataDummyInterface,
   T extends keyof M['entitySets'] = string,
   ET extends keyof TOdataDummyInterface['entityTypes'] = M['entitySets'][T]
-> extends EntityType<M, ET> {
+> extends EntityWrapper<M, ET> {
   public readonly typeName: string
   public readonly entitySetNS: string
   readonly recordId: (record: Record<M['entityTypes'][ET]['fields'], string | undefined>) => string
@@ -144,7 +144,7 @@ export class EntitySet<
 
   withKey(keys: KeysWithTypes<M, ET>) {
     const key = this.prepareRecordKey(keys)
-    return new EntityRecord(this._m, this._entityType, key)
+    return new EntityRecord(this._m, this._typeName, key)
   }
 
   /**

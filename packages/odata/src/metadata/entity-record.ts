@@ -1,12 +1,12 @@
 import { TOdataDummyInterface } from "notsapodata/odata";
 import { Metadata } from "./metadata";
-import { EntityType } from "./entity-type";
 import { EntitySet } from "./entity-set";
+import { EntityWrapper } from "./entity-wrapper";
 
 export class EntityRecord<
   M extends TOdataDummyInterface = TOdataDummyInterface,
   T extends keyof M['entityTypes'] = string,
-> extends EntityType<M, T> {
+> extends EntityWrapper<M, T> {
     constructor(
         m: Metadata<M>,
         entityType: T,

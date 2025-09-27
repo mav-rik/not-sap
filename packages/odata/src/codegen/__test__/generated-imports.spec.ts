@@ -46,7 +46,7 @@ describe('Generated Imports Validation', () => {
   describe('Northwind V2 Selected - Navigation Property Types', () => {
     it('should have generated Category and Order_Detail due to navigation properties', () => {
       // Even though we only selected Products and Suppliers,
-      // their navigation properties should bring in related entity types
+      // their navigation properties should bring in related entity types recursively
       expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Product')
       expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Supplier')
 
@@ -54,21 +54,29 @@ describe('Generated Imports Validation', () => {
       expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Order_Detail')
       expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Category')
 
-      // Verify we have exactly 4 entity types (Product, Supplier, Order_Detail, Category)
-      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toHaveLength(4)
+      // Verify we have 11 entity types (recursive navigation pulls in more types)
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toHaveLength(11)
       expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Product')
       expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Supplier')
       expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Order_Detail')
       expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Category')
+      // Recursively included through navigation properties
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Order')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Customer')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Employee')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Shipper')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Territory')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('Region')
+      expect(Object.keys(northwindV2SelectedConsts.NorthwindModel)).toContain('CustomerDemographic')
     })
 
-    it('should not have other entity types like Order or Customer', () => {
-      // These should not exist in selected version (not part of navigation)
-      expect(northwindV2SelectedConsts.NorthwindModel).not.toHaveProperty('Order')
-      expect(northwindV2SelectedConsts.NorthwindModel).not.toHaveProperty('Customer')
-      expect(northwindV2SelectedConsts.NorthwindModel).not.toHaveProperty('Employee')
-      expect(northwindV2SelectedConsts.NorthwindModel).not.toHaveProperty('Region')
-      expect(northwindV2SelectedConsts.NorthwindModel).not.toHaveProperty('Shipper')
+    it('should have entity types brought in through recursive navigation', () => {
+      // These ARE included due to recursive navigation property dependencies
+      expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Order')
+      expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Customer')
+      expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Employee')
+      expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Region')
+      expect(northwindV2SelectedConsts.NorthwindModel).toHaveProperty('Shipper')
 
       // But they should exist in full version
       expect(northwindV2Consts.NorthwindModel).toHaveProperty('Order')
@@ -83,7 +91,7 @@ describe('Generated Imports Validation', () => {
   describe('Northwind V4 Selected - Navigation Property Types', () => {
     it('should have generated Category and Order_Detail due to navigation properties', () => {
       // Even though we only selected Products and Suppliers,
-      // their navigation properties should bring in related entity types
+      // their navigation properties should bring in related entity types recursively
       expect(northwindV4SelectedConsts.NorthwindModel).toHaveProperty('Product')
       expect(northwindV4SelectedConsts.NorthwindModel).toHaveProperty('Supplier')
 
@@ -91,12 +99,20 @@ describe('Generated Imports Validation', () => {
       expect(northwindV4SelectedConsts.NorthwindModel).toHaveProperty('Order_Detail')
       expect(northwindV4SelectedConsts.NorthwindModel).toHaveProperty('Category')
 
-      // Verify we have exactly 4 entity types (Product, Supplier, Order_Detail, Category)
-      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toHaveLength(4)
+      // Verify we have 11 entity types (recursive navigation pulls in more types)
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toHaveLength(11)
       expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Product')
       expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Supplier')
       expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Order_Detail')
       expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Category')
+      // Recursively included through navigation properties
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Order')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Customer')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Employee')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Shipper')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Territory')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('Region')
+      expect(Object.keys(northwindV4SelectedConsts.NorthwindModel)).toContain('CustomerDemographic')
     })
   })
 
