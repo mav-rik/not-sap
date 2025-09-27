@@ -64,6 +64,7 @@ function mapODataTypeToTypeScript(
     capitalizedAlias?: string
     complexTypesToGen?: Set<string>
     entityTypesToGen?: Set<string>
+    metadata?: Metadata<any>
   }
 ): string {
   const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
@@ -99,7 +100,36 @@ function mapODataTypeToTypeScript(
     case 'Edm.GeometryPoint':
       return 'any' // Geographic/Geometric types
     default:
-      // Check if it's a ComplexType
+      // Non-Edm type - could be ComplexType, EntityType or EnumType
+      if (!odataType.includes('.')) {
+        // Missing namespace, can't resolve
+        return 'any'
+      }
+
+      // Try to identify what kind of type this is using metadata if available
+      if (opts.metadata) {
+        const complexType = opts.metadata.getRawComplexType(odataType)
+        if (complexType) {
+          // It's a ComplexType - add it to generation set
+          opts.complexTypesToGen?.add(odataType)
+          const modelType = `T${capitalizedAlias}OData`
+          return `${modelType}['complexTypes']['${odataType}']`
+        }
+
+        try {
+          const entityType = opts.metadata.getEntityType(odataType as any)
+          if (entityType) {
+            // It's an EntityType - add it to generation set
+            opts.entityTypesToGen?.add(odataType)
+            const modelType = `T${capitalizedAlias}OData`
+            return `${modelType}['entityTypes']['${odataType}']['record']`
+          }
+        } catch {
+          // Not an entity type
+        }
+      }
+
+      // Fallback: check if already in sets
       if (opts.complexTypesToGen?.has(odataType)) {
         const modelType = `T${capitalizedAlias}OData`
         return `${modelType}['complexTypes']['${odataType}']`
@@ -277,7 +307,105 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const modelConsts: TModelConsts = {}
   const modelTypes: TModelTypes = {}
 
-  // Recursively discover all entity types through navigation properties
+  // Discovery phase 1: Process functions to find all referenced types FIRST
+  for (const fName of m.getFunctionsList()) {
+    const rawFunction = m.getRawFunction(fName)!
+
+    // Discover types from parameters
+    if (m.isV4) {
+      const allParams = rawFunction.Parameter || []
+      const isBoound = (rawFunction as any).$IsBound
+      const relevantParams = isBoound && allParams.length > 0 ? allParams.slice(1) : allParams
+
+      for (const p of relevantParams) {
+        const paramType = (p as any).$Type
+        if (paramType && !paramType.startsWith('Edm.') && paramType.includes('.')) {
+          // Check if it's a ComplexType or EntityType
+          const complexType = m.getRawComplexType(paramType)
+          if (complexType) {
+            complexTypesToGen.add(paramType)
+          } else {
+            try {
+              m.getEntityType(paramType as any)
+              entityTypesToGen.add(paramType)
+            } catch {
+              // Not an entity type
+            }
+          }
+        }
+      }
+
+      // Discover types from return type
+      const returnTypeInfo = (rawFunction as any).ReturnType
+      if (returnTypeInfo) {
+        const typeStr = returnTypeInfo.$Type || returnTypeInfo.Type
+        if (typeStr) {
+          const actualType = typeStr.startsWith('Collection(')
+            ? typeStr.slice('Collection('.length, -1)
+            : typeStr
+
+          if (actualType && !actualType.startsWith('Edm.') && actualType.includes('.')) {
+            const complexType = m.getRawComplexType(actualType)
+            if (complexType) {
+              complexTypesToGen.add(actualType)
+            } else {
+              try {
+                m.getEntityType(actualType as any)
+                entityTypesToGen.add(actualType)
+              } catch {
+                // Not an entity type
+              }
+            }
+          }
+        }
+      }
+    } else {
+      // V2/V3
+      const allParams = rawFunction.Parameter || []
+      const inParams = allParams.filter((p: any) => !p.$Mode || p.$Mode === 'In')
+
+      for (const p of inParams) {
+        const paramType = (p as any).$Type
+        if (paramType && !paramType.startsWith('Edm.') && paramType.includes('.')) {
+          const complexType = m.getRawComplexType(paramType)
+          if (complexType) {
+            complexTypesToGen.add(paramType)
+          } else {
+            try {
+              m.getEntityType(paramType as any)
+              entityTypesToGen.add(paramType)
+            } catch {
+              // Not an entity type
+            }
+          }
+        }
+      }
+
+      // Discover types from return type
+      const returnTypeStr = (rawFunction as any).$ReturnType || (rawFunction as any).ReturnType
+      if (returnTypeStr) {
+        const actualType = returnTypeStr.startsWith('Collection(')
+          ? returnTypeStr.slice('Collection('.length, -1)
+          : returnTypeStr
+
+        if (actualType && !actualType.startsWith('Edm.') && actualType.includes('.')) {
+          const complexType = m.getRawComplexType(actualType)
+          if (complexType) {
+            complexTypesToGen.add(actualType)
+          } else {
+            try {
+              m.getEntityType(actualType as any)
+              entityTypesToGen.add(actualType)
+            } catch {
+              // Not an entity type
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Discovery phase 2: Recursively discover all entity types through navigation properties
   const processedTypes = new Set<string>()
   const toProcess = Array.from(entityTypesToGen)
 
@@ -407,7 +535,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         modelAlias,
         capitalizedAlias: cModelAlias,
         complexTypesToGen,
-        entityTypesToGen
+        entityTypesToGen,
+        metadata: m
       })
 
       // Wrap in Array if it's a collection
@@ -472,7 +601,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             modelAlias,
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
-            entityTypesToGen
+            entityTypesToGen,
+            metadata: m
           })
           const nullable = (p as any).$Nullable !== 'false'
           paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
@@ -496,7 +626,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             modelAlias,
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
-            entityTypesToGen
+            entityTypesToGen,
+            metadata: m
           })
 
           returnType = isCollection ? `Array<${mappedType}>` : mappedType
@@ -509,8 +640,11 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         }
       }
     } else {
-      // V2/V3: Filter by $Mode === 'In'
-      const inParams = (rawFunction.Parameter || []).filter((p: any) => p.$Mode === 'In')
+      // V2/V3: Parameters may or may not have $Mode
+      // If $Mode exists, filter by 'In', otherwise include all parameters
+      const allParams = rawFunction.Parameter || []
+      const inParams = allParams.filter((p: any) => !p.$Mode || p.$Mode === 'In')
+
       if (inParams.length > 0) {
         const paramObj: Record<string, string> = {}
         for (const p of inParams) {
@@ -518,7 +652,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             modelAlias,
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
-            entityTypesToGen
+            entityTypesToGen,
+            metadata: m
           })
           const nullable = (p as any).$Nullable !== 'false'
           paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
@@ -526,15 +661,25 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         params = paramObj
       }
 
-      // V2/V3 functions typically have ReturnType on FunctionImport
-      if ((rawFunction as any).ReturnType) {
-        const typeStr = (rawFunction as any).ReturnType
-        returnType = mapODataTypeToTypeScript(typeStr, {
+      // V2/V3 functions have $ReturnType on FunctionImport (with $ prefix)
+      const returnTypeStr = (rawFunction as any).$ReturnType || (rawFunction as any).ReturnType
+      if (returnTypeStr) {
+        // Check if it's a collection
+        const isCollection = returnTypeStr.startsWith('Collection(')
+        const actualType = isCollection
+          ? returnTypeStr.slice('Collection('.length, -1)
+          : returnTypeStr
+
+        const mappedType = mapODataTypeToTypeScript(actualType, {
           modelAlias,
           capitalizedAlias: cModelAlias,
           complexTypesToGen,
           entityTypesToGen
         })
+
+        returnType = isCollection ? `Array<${mappedType}>` : mappedType
+
+        // V2 return types don't typically have nullable info, so we don't add | null
       }
     }
 

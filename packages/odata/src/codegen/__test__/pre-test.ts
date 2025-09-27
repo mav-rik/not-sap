@@ -61,6 +61,7 @@ async function generateWithAllEntitySets(
     'northwind-v4': '/V4/Northwind/Northwind.svc',
     'northwind-v2': '/V2/Northwind/Northwind.svc',
     'TripPinRESTierService': '/TripPinRESTierService',
+    'odata-v2': '/V2/odata/odata.svc',
   }
 
   const services: TODataServicesToParse = {

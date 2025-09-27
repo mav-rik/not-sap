@@ -42,6 +42,8 @@ const parser = new XMLParser({
       'EntitySet',
       'AssociationSet',
       'FunctionImport',
+      'Function',
+      'Action',
       'End',
       'FunctionImport',
       'PropertyValue',
