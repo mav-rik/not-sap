@@ -70,6 +70,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     string,
     TSchema['ComplexType'][number]
   >()
+  protected _functionDefinitions = new Map<
+    string,
+    any // We'll define proper type later
+  >()
   protected _assoc = new Map<
     string,
     TSchema['Association'][number]
@@ -110,6 +114,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
       for (const node of schema.ComplexType || []) {
         this._complexTypes.set(`${ns}.${node.$Name}`, node)
       }
+      // Parse V4 Function definitions
+      for (const node of (schema as any).Function || []) {
+        this._functionDefinitions.set(`${ns}.${node.$Name}`, node)
+      }
       for (const node of schema.Association || []) {
         this._assoc.set(`${ns}.${node.$Name}`, node)
       }
@@ -121,7 +129,8 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
         this._assocSets.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.EntityContainer?.FunctionImport || []) {
-        this._functions.set(`${ns}.${node.$Name}`, node)
+        // Use just the FunctionImport name, not namespaced
+        this._functions.set(node.$Name, node)
       }
       for (const node of schema.Annotations || []) {
         const target =
@@ -163,7 +172,39 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     return Array.from(this._functions.keys())
   }
   getRawFunction(name: string) {
-    return this._functions.get(name)
+    // First try to find by FunctionImport name (new approach)
+    let functionImport = this._functions.get(name)
+
+    // For backward compatibility, if not found and it looks like a fully qualified name,
+    // try to find the FunctionImport that references this Function
+    if (!functionImport && name.includes('.')) {
+      // Search for a FunctionImport that references this Function name
+      for (const [, importDef] of this._functions) {
+        if ((importDef as any).$Function === name) {
+          functionImport = importDef
+          break
+        }
+      }
+    }
+
+    if (!functionImport) return undefined
+
+    // For V4, get the actual Function definition which has the parameters
+    if (this.isV4 && (functionImport as any).$Function) {
+      const functionName = (functionImport as any).$Function
+      const functionDef = this._functionDefinitions.get(functionName)
+      if (functionDef) {
+        // Return a combined object with both FunctionImport and Function info
+        return {
+          ...functionImport,
+          Parameter: functionDef.Parameter || [],
+          ReturnType: functionDef.ReturnType
+        }
+      }
+    }
+
+    // For V2/V3 or if no Function definition found, return the FunctionImport
+    return functionImport
   }
 
   getRawAssociation(name: string) {

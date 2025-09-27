@@ -1,0 +1,129 @@
+{
+  "description": "People with complex properties and to-many expansions",
+  "requests": [
+    {
+      "url": "https://services.odata.org/TripPinRESTierService/People?$top=1&$filter=UserName%20eq%20'russellwhyte'&$select=UserName%2CFirstName%2CLastName%2CAddressInfo%2CEmails%2CFeatures&$expand=Friends($select=UserName,FirstName,LastName),Trips($select=TripId,Name,Budget,StartsAt,EndsAt;$expand=PlanItems($select=PlanItemId,ConfirmationCode,StartsAt,EndsAt,Duration))",
+      "response": {
+        "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(qimva233fzfzlsr0uph1jzf1))/$metadata#People(UserName,FirstName,LastName,AddressInfo,Emails,Features,Friends(UserName,FirstName,LastName),Trips(TripId,Name,Budget,StartsAt,EndsAt,PlanItems(PlanItemId,ConfirmationCode,StartsAt,EndsAt,Duration)))",
+        "value": [
+          {
+            "UserName": "russellwhyte",
+            "FirstName": "Russell",
+            "LastName": "Whyte",
+            "Emails": [
+              "Russell@example.com",
+              "Russell@contoso.com"
+            ],
+            "Features": [
+              "Feature1",
+              "Feature2"
+            ],
+            "AddressInfo": [
+              {
+                "Address": "187 Suffolk Ln.",
+                "City": {
+                  "Name": "Boise",
+                  "CountryRegion": "United States",
+                  "Region": "ID"
+                }
+              }
+            ],
+            "Friends": [
+              {
+                "UserName": "scottketchum",
+                "FirstName": "Scott",
+                "LastName": "Ketchum"
+              },
+              {
+                "UserName": "ronaldmundy",
+                "FirstName": "Ronald",
+                "LastName": "Mundy"
+              },
+              {
+                "UserName": "javieralfred",
+                "FirstName": "Javier",
+                "LastName": "Alfred"
+              }
+            ],
+            "Trips": [
+              {
+                "TripId": 0,
+                "Name": "Trip in US",
+                "Budget": 3000,
+                "StartsAt": "2014-01-01T00:00:00Z",
+                "EndsAt": "2014-01-04T00:00:00Z",
+                "PlanItems": [
+                  {
+                    "@odata.type": "#Trippin.Flight",
+                    "PlanItemId": 11,
+                    "ConfirmationCode": "JH58493",
+                    "StartsAt": "2014-01-01T08:00:00Z",
+                    "EndsAt": "2014-01-01T09:20:00Z",
+                    "Duration": "PT0S"
+                  },
+                  {
+                    "@odata.type": "#Trippin.Event",
+                    "PlanItemId": 12,
+                    "ConfirmationCode": "4372899DD",
+                    "StartsAt": "2014-01-02T13:00:00Z",
+                    "EndsAt": "2014-01-06T13:00:00Z",
+                    "Duration": "PT3H"
+                  },
+                  {
+                    "@odata.type": "#Trippin.Flight",
+                    "PlanItemId": 13,
+                    "ConfirmationCode": "JH58493",
+                    "StartsAt": "2014-01-04T13:00:00Z",
+                    "EndsAt": "2014-01-04T14:20:00Z",
+                    "Duration": "PT0S"
+                  }
+                ]
+              },
+              {
+                "TripId": 1,
+                "Name": "Trip in Beijing",
+                "Budget": 2000,
+                "StartsAt": "2014-02-01T00:00:00Z",
+                "EndsAt": "2014-02-04T00:00:00Z",
+                "PlanItems": [
+                  {
+                    "@odata.type": "#Trippin.Flight",
+                    "PlanItemId": 14,
+                    "ConfirmationCode": "JH58494",
+                    "StartsAt": "2014-02-01T08:00:00Z",
+                    "EndsAt": "2014-02-01T09:20:00Z",
+                    "Duration": "PT0S"
+                  },
+                  {
+                    "@odata.type": "#Trippin.Flight",
+                    "PlanItemId": 15,
+                    "ConfirmationCode": "JH58495",
+                    "StartsAt": "2014-02-10T15:30:00Z",
+                    "EndsAt": "2014-02-10T16:30:00Z",
+                    "Duration": "PT0S"
+                  },
+                  {
+                    "@odata.type": "#Trippin.Event",
+                    "PlanItemId": 16,
+                    "ConfirmationCode": null,
+                    "StartsAt": "2014-02-02T18:00:00Z",
+                    "EndsAt": "2014-02-02T21:00:00Z",
+                    "Duration": "PT3H"
+                  }
+                ]
+              },
+              {
+                "TripId": 2,
+                "Name": "Honeymoon",
+                "Budget": 2650,
+                "StartsAt": "2014-02-01T00:00:00Z",
+                "EndsAt": "2014-02-04T00:00:00Z",
+                "PlanItems": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "description": "Function import returning the person with most friends",
+  "requests": [
+    {
+      "url": "https://services.odata.org/TripPinRESTierService/GetPersonWithMostFriends()",
+      "response": {
+        "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(muprbxf0wssw3xr2tlf442u1))/$metadata#People/$entity",
+        "UserName": "russellwhyte",
+        "FirstName": "Russell",
+        "LastName": "Whyte",
+        "MiddleName": null,
+        "Gender": "Male",
+        "Age": null,
+        "Emails": [
+          "Russell@example.com",
+          "Russell@contoso.com"
+        ],
+        "FavoriteFeature": "Feature1",
+        "Features": [
+          "Feature1",
+          "Feature2"
+        ],
+        "AddressInfo": [
+          {
+            "Address": "187 Suffolk Ln.",
+            "City": {
+              "Name": "Boise",
+              "CountryRegion": "United States",
+              "Region": "ID"
+            }
+          }
+        ],
+        "HomeAddress": null
+      }
+    }
+  ]
+}

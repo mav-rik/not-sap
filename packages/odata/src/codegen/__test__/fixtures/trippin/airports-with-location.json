@@ -1,0 +1,39 @@
+{
+  "description": "Airports highlighting complex Location type",
+  "requests": [
+    {
+      "url": "https://services.odata.org/TripPinRESTierService/Airports?$top=3&$filter=startswith(Name%2C'San')&$select=IcaoCode%2CIataCode%2CName%2CLocation&$orderby=Name",
+      "response": {
+        "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(uf3raawc3hclkc4qjrxbpyos))/$metadata#Airports(IcaoCode,IataCode,Name,Location)",
+        "value": [
+          {
+            "Name": "San Francisco International Airport",
+            "IcaoCode": "KSFO",
+            "IataCode": "SFO",
+            "Location": {
+              "Address": "South McDonnell Road, San Francisco, CA 94128",
+              "Loc": {
+                "type": "Point",
+                "coordinates": [
+                  -122.374722222222,
+                  37.6188888888889
+                ],
+                "crs": {
+                  "type": "name",
+                  "properties": {
+                    "name": "EPSG:4326"
+                  }
+                }
+              },
+              "City": {
+                "Name": "San Francisco",
+                "CountryRegion": "United States",
+                "Region": "California"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

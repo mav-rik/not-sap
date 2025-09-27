@@ -195,11 +195,16 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
     };
   };
   functions: {
-    'Trippin.GetPersonWithMostFriends': {
-      params: void;
+    'GetPersonWithMostFriends': {
+      params: never;
+      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record'] | null;
     };
-    'Trippin.GetNearestAirport': {
-      params: void;
+    'GetNearestAirport': {
+      params: {
+        lat: number | null;
+        lon: number | null;
+      };
+      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Airport']['record'] | null;
     };
   };
 }

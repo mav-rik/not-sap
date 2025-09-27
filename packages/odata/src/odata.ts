@@ -55,9 +55,11 @@ export interface TOdataDummyInterface {
   functions: Record<
     string,
     {
-      params: string | void
+      params: Record<string, any> | never
+      returnType: any
     }
   >
+  complexTypes: Record<string, Record<string, any>>
 }
 
 export type TWrapODataRecord<T = Record<string, unknown>> = {
@@ -517,9 +519,9 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
   async callFunction<T extends keyof M['functions']>(
     name: T,
-    _params?: M['functions'][T]['params'] extends string ? Record<M['functions'][T]['params'], string> : never,
+    _params?: M['functions'][T]['params'],
     disableBatch?: boolean
-  ) {
+  ): Promise<M['functions'][T]['returnType']> {
     const metadata = await this.getMetadata()
     const functionMeta = metadata.getRawFunction(name as string)
     if (!functionMeta) {
@@ -527,16 +529,45 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     }
     const params = {} as Record<string, string>
     if (_params) {
-      for (const param of functionMeta.Parameter) {
-        if (param.$Name in _params) {
+      for (const param of functionMeta.Parameter ?? []) {
+        const paramName = param.$Name
+        if (paramName in (_params as Record<string, any>)) {
+          const value = (_params as Record<string, any>)[paramName]
           params[param.$Name] = odataValueFormat.toFilter[param.$Type as 'Edm.String'](
-            _params[param.$Name as M['functions'][T]['params']] as string
+            value as string
           )
         }
       }
+      if (!Object.keys(params).length) {
+        for (const [key, value] of Object.entries(_params as Record<string, unknown>)) {
+          if (value === undefined || value === null) continue
+          if (typeof value === 'number' || typeof value === 'boolean') {
+            params[key] = String(value)
+          } else {
+            params[key] = `'${String(value)}'`
+          }
+        }
+      }
     }
+
+    const isV4 = metadata.isV4
+    const fnName = functionMeta.$Name
+    const requestPath = (() => {
+      if (!isV4) {
+        return name as string
+      }
+      const entries = Object.entries(params)
+      if (!entries.length) {
+        return `${fnName}()`
+      }
+      const args = entries.map(([key, value]) => `${key}=${value}`).join(',')
+      return `${fnName}(${args})`
+    })()
+
+    const requestParams = isV4 ? undefined : (params as Record<string, string>)
+
     const data = await this._fetch(
-      this.genRequestUrl(name as string, params as Record<string, string>),
+      this.genRequestUrl(requestPath, requestParams),
       {
         method: functionMeta.$HttpMethod,
         headers: {

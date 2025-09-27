@@ -105,6 +105,20 @@ describe('TripPin Collection Types Generation', () => {
     expect(generatedCode).toContain('Duration: string') // Edm.Duration (if present)
   })
 
+  it('should generate function parameters and return types correctly', () => {
+    // Check that functions with parameters are correctly generated (using FunctionImport names)
+    expect(generatedCode).toContain("'GetNearestAirport': {")
+    expect(generatedCode).toContain('lat:')
+    expect(generatedCode).toContain('lon:')
+    expect(generatedCode).toContain('number')
+    expect(generatedCode).toContain("returnType: TTripPinOData['entityTypes']['Trippin.Airport']['record']")
+
+    // Check that functions without parameters show never
+    expect(generatedCode).toContain("'GetPersonWithMostFriends': {")
+    expect(generatedCode).toContain('params: never')
+    expect(generatedCode).toContain("returnType: TTripPinOData['entityTypes']['Trippin.Person']['record']")
+  })
+
   it('should properly parse metadata without errors for ComplexTypes', () => {
     // The metadata should be parsed without throwing errors
     expect(() => metadata.getEntitySetsList()).not.toThrow()

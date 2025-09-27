@@ -1,0 +1,35 @@
+{
+  "description": "Function import returning nearest airport by coordinates",
+  "requests": [
+    {
+      "url": "https://services.odata.org/TripPinRESTierService/GetNearestAirport(lat=33.63,lon=-84.42)",
+      "response": {
+        "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(c5u1see5vckpglvtmdd0i5p0))/$metadata#Airports/$entity",
+        "Name": "John F. Kennedy International Airport",
+        "IcaoCode": "KJFK",
+        "IataCode": "JFK",
+        "Location": {
+          "Address": "Jamaica, New York, NY 11430",
+          "Loc": {
+            "type": "Point",
+            "coordinates": [
+              -73.7788888888889,
+              40.6397222222222
+            ],
+            "crs": {
+              "type": "name",
+              "properties": {
+                "name": "EPSG:4326"
+              }
+            }
+          },
+          "City": {
+            "Name": "New York City",
+            "CountryRegion": "United States",
+            "Region": "New York"
+          }
+        }
+      }
+    }
+  ]
+}

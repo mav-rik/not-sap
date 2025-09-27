@@ -63,6 +63,7 @@ function mapODataTypeToTypeScript(
     modelAlias: string
     capitalizedAlias?: string
     complexTypesToGen?: Set<string>
+    entityTypesToGen?: Set<string>
   }
 ): string {
   const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
@@ -102,6 +103,11 @@ function mapODataTypeToTypeScript(
       if (opts.complexTypesToGen?.has(odataType)) {
         const modelType = `T${capitalizedAlias}OData`
         return `${modelType}['complexTypes']['${odataType}']`
+      }
+      // Check if it's an EntityType
+      else if (opts.entityTypesToGen?.has(odataType)) {
+        const modelType = `T${capitalizedAlias}OData`
+        return `${modelType}['entityTypes']['${odataType}']['record']`
       } else {
         // It's an EnumType or unknown type
         return 'any'
@@ -115,6 +121,7 @@ export function generateEntityTypeTypes(
     modelAlias: string
     capitalizedAlias?: string
     complexTypesToGen?: Set<string>
+    entityTypesToGen?: Set<string>
   },
   isV4: boolean
 ): {
@@ -313,7 +320,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     const { entity, consts, types } = generateEntityTypeTypes(entityType, {
       modelAlias,
       capitalizedAlias: cModelAlias,
-      complexTypesToGen
+      complexTypesToGen,
+      entityTypesToGen
     }, m.isV4)
     mergeDeep(modelConsts, consts)
     mergeDeep(modelTypes, types)
@@ -398,7 +406,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       let tsType = mapODataTypeToTypeScript(actualType, {
         modelAlias,
         capitalizedAlias: cModelAlias,
-        complexTypesToGen
+        complexTypesToGen,
+        entityTypesToGen
       })
 
       // Wrap in Array if it's a collection
@@ -445,12 +454,92 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
 
   for (const fName of m.getFunctionsList()) {
     const rawFunction = m.getRawFunction(fName)!
-    const params =
-      (rawFunction.Parameter || []).filter(p => p.$Mode === 'In')
-        .map(p => JSON.stringify(p.$Name))
-        .join(' | ') || 'void'
+    let params: string | Record<string, string> = 'never'
+    let returnType: string = 'void'
+
+    if (m.isV4) {
+      // V4: Parameters don't have $Mode
+      // For bound functions, skip the first parameter (binding parameter)
+      const allParams = rawFunction.Parameter || []
+      const isBoound = (rawFunction as any).$IsBound
+      const relevantParams = isBoound && allParams.length > 0 ? allParams.slice(1) : allParams
+
+      if (relevantParams.length > 0) {
+        // Generate object type with parameter names and types
+        const paramObj: Record<string, string> = {}
+        for (const p of relevantParams) {
+          const paramType = mapODataTypeToTypeScript((p as any).$Type || 'Edm.String', {
+            modelAlias,
+            capitalizedAlias: cModelAlias,
+            complexTypesToGen,
+            entityTypesToGen
+          })
+          const nullable = (p as any).$Nullable !== 'false'
+          paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
+        }
+        params = paramObj
+      }
+
+      // Handle return type for V4
+      if ((rawFunction as any).ReturnType) {
+        const returnTypeInfo = (rawFunction as any).ReturnType
+        const typeStr = returnTypeInfo.$Type || returnTypeInfo.Type
+
+        if (typeStr) {
+          // Check if it's a collection
+          const isCollection = typeStr.startsWith('Collection(')
+          const actualType = isCollection
+            ? typeStr.slice('Collection('.length, -1)
+            : typeStr
+
+          const mappedType = mapODataTypeToTypeScript(actualType, {
+            modelAlias,
+            capitalizedAlias: cModelAlias,
+            complexTypesToGen,
+            entityTypesToGen
+          })
+
+          returnType = isCollection ? `Array<${mappedType}>` : mappedType
+
+          // Check for nullable
+          const nullable = returnTypeInfo.$Nullable !== 'false'
+          if (nullable && returnType !== 'string' && !isCollection) {
+            returnType = `${returnType} | null`
+          }
+        }
+      }
+    } else {
+      // V2/V3: Filter by $Mode === 'In'
+      const inParams = (rawFunction.Parameter || []).filter((p: any) => p.$Mode === 'In')
+      if (inParams.length > 0) {
+        const paramObj: Record<string, string> = {}
+        for (const p of inParams) {
+          const paramType = mapODataTypeToTypeScript((p as any).$Type || 'Edm.String', {
+            modelAlias,
+            capitalizedAlias: cModelAlias,
+            complexTypesToGen,
+            entityTypesToGen
+          })
+          const nullable = (p as any).$Nullable !== 'false'
+          paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
+        }
+        params = paramObj
+      }
+
+      // V2/V3 functions typically have ReturnType on FunctionImport
+      if ((rawFunction as any).ReturnType) {
+        const typeStr = (rawFunction as any).ReturnType
+        returnType = mapODataTypeToTypeScript(typeStr, {
+          modelAlias,
+          capitalizedAlias: cModelAlias,
+          complexTypesToGen,
+          entityTypesToGen
+        })
+      }
+    }
+
     // Quote the function name to handle dots and other special characters
-    modelInterface.value['functions'][`'${fName}'`] = { params }
+    modelInterface.value['functions'][`'${fName}'`] = { params, returnType }
   }
 
   elements.push(modelInterface)
