@@ -1,0 +1,69 @@
+{
+  "description": "Products filtered by availability with select and sorters",
+  "requests": [
+    {
+      "url": "https://services.odata.org/V2/Northwind/Northwind.svc/Products?$top=5&$filter=Discontinued%20eq%20false&$select=ProductID%2CProductName%2CUnitsInStock%2CSupplierID&$orderby=UnitsInStock%20desc",
+      "response": {
+        "d": {
+          "results": [
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(75)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(75)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 75,
+              "ProductName": "Rhönbräu Klosterbier",
+              "SupplierID": 12,
+              "UnitsInStock": 125
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(40)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(40)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 40,
+              "ProductName": "Boston Crab Meat",
+              "SupplierID": 19,
+              "UnitsInStock": 123
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(6)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(6)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 6,
+              "ProductName": "Grandma's Boysenberry Spread",
+              "SupplierID": 3,
+              "UnitsInStock": 120
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(55)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(55)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 55,
+              "ProductName": "Pâté chinois",
+              "SupplierID": 25,
+              "UnitsInStock": 115
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(61)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(61)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 61,
+              "ProductName": "Sirop d'érable",
+              "SupplierID": 29,
+              "UnitsInStock": 113
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

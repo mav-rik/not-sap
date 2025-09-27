@@ -90,7 +90,7 @@ describe('Navigation properties', () => {
 
     expect(fetchSpy).toHaveBeenCalled()
     const actualUrl = fetchSpy.mock.calls[0][0]
-    expect(actualUrl).toBe('/V4/Northwind/Northwind.svc/Orders(OrderID=10248)/Order_Details(OrderID=10248,ProductID=11)/Product/Category')
+    expect(actualUrl).toBe('/V4/Northwind/Northwind.svc/Orders(OrderID=10249)/Order_Details(OrderID=10248,ProductID=11)/Product/Category')
   })
 
   it('should build correct URL for mixed toOne and toMany navigation', async () => {

@@ -1,0 +1,48 @@
+{
+  "description": "Products filtered by price with select and sorters",
+  "requests": [
+    {
+      "url": "https://services.odata.org/V4/Northwind/Northwind.svc/Products?$top=5&$filter=UnitPrice%20gt%2050&$select=ProductID%2CProductName%2CUnitPrice%2CDiscontinued&$orderby=UnitPrice%20desc%2CProductName",
+      "response": {
+        "@odata.context": "https://services.odata.org/V4/Northwind/Northwind.svc/$metadata#Products(ProductID,ProductName,UnitPrice,Discontinued)",
+        "value": [
+          {
+            "@odata.etag": "W/\"18,1\"",
+            "ProductID": 38,
+            "ProductName": "Côte de Blaye",
+            "UnitPrice": 263.5,
+            "Discontinued": false
+          },
+          {
+            "@odata.etag": "W/\"12,6\"",
+            "ProductID": 29,
+            "ProductName": "Thüringer Rostbratwurst",
+            "UnitPrice": 123.79,
+            "Discontinued": true
+          },
+          {
+            "@odata.etag": "W/\"4,6\"",
+            "ProductID": 9,
+            "ProductName": "Mishi Kobe Niku",
+            "UnitPrice": 97,
+            "Discontinued": true
+          },
+          {
+            "@odata.etag": "W/\"8,3\"",
+            "ProductID": 20,
+            "ProductName": "Sir Rodney's Marmalade",
+            "UnitPrice": 81,
+            "Discontinued": false
+          },
+          {
+            "@odata.etag": "W/\"7,8\"",
+            "ProductID": 18,
+            "ProductName": "Carnarvon Tigers",
+            "UnitPrice": 62.5,
+            "Discontinued": false
+          }
+        ]
+      }
+    }
+  ]
+}

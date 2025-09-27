@@ -1,0 +1,25 @@
+{
+  "description": "Deep navigation: Orders -> Customer -> Orders",
+  "requests": [
+    {
+      "url": "https://services.odata.org/V4/Northwind/Northwind.svc/Orders(OrderID=10248)/Customer/Orders?$top=2&$select=OrderID%2CShipName%2CShipCountry&$orderby=OrderDate%20desc",
+      "response": {
+        "@odata.context": "https://services.odata.org/V4/Northwind/Northwind.svc/$metadata#Orders(OrderID,ShipName,ShipCountry)",
+        "value": [
+          {
+            "@odata.etag": "W/\"'VINET',3,3\"",
+            "OrderID": 10739,
+            "ShipName": "Vins et alcools Chevalier",
+            "ShipCountry": "France"
+          },
+          {
+            "@odata.etag": "W/\"'VINET',2,2\"",
+            "OrderID": 10737,
+            "ShipName": "Vins et alcools Chevalier",
+            "ShipCountry": "France"
+          }
+        ]
+      }
+    }
+  ]
+}

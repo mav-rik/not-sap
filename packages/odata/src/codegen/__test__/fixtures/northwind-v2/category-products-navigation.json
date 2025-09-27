@@ -1,0 +1,34 @@
+{
+  "description": "Deep navigation: Products -> Category -> Products",
+  "requests": [
+    {
+      "url": "https://services.odata.org/V2/Northwind/Northwind.svc/Products(ProductID=1)/Category/Products?$top=2&$select=ProductID%2CProductName%2CCategoryID&$orderby=ProductName",
+      "response": {
+        "d": {
+          "results": [
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(1)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(1)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 1,
+              "ProductName": "Chai",
+              "CategoryID": 1
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Products(2)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Products(2)",
+                "type": "NorthwindModel.Product"
+              },
+              "ProductID": 2,
+              "ProductName": "Chang",
+              "CategoryID": 1
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

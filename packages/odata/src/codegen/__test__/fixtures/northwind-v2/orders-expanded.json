@@ -1,0 +1,34 @@
+{
+  "description": "Orders expanded with Customer and Order_Details/Product",
+  "requests": [
+    {
+      "url": "https://services.odata.org/V2/Northwind/Northwind.svc/Orders?$top=2&$filter=(ShipCountry%20eq%20'USA')&$select=OrderID%2CShipName%2CShipCountry&$orderby=OrderDate%20desc&$expand=Customer,Order_Details/Product",
+      "response": {
+        "d": {
+          "results": [
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Orders(11077)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Orders(11077)",
+                "type": "NorthwindModel.Order"
+              },
+              "OrderID": 11077,
+              "ShipName": "Rattlesnake Canyon Grocery",
+              "ShipCountry": "USA"
+            },
+            {
+              "__metadata": {
+                "id": "https://services.odata.org/V2/northwind/Northwind.svc/Orders(11064)",
+                "uri": "https://services.odata.org/V2/northwind/Northwind.svc/Orders(11064)",
+                "type": "NorthwindModel.Order"
+              },
+              "OrderID": 11064,
+              "ShipName": "Save-a-lot Markets",
+              "ShipCountry": "USA"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
