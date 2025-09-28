@@ -143,6 +143,7 @@ export interface TOdataV2OData extends TOdataDummyInterface {
       returnType: Array<TOdataV2OData['entityTypes']['ODataDemo.Product']['record']>;
     };
   };
+  actions: {};
 }
 
 /**

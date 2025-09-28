@@ -1,5 +1,5 @@
 import { EntityType } from '../metadata/entity-type'
-import type { Metadata } from '../metadata/metadata'
+import type { Metadata, TSchema } from '../metadata/metadata'
 import {
   codeGen,
   type TCoGeClassDeclaration,
@@ -51,6 +51,18 @@ const mergeDeep = <T extends Record<string, any>>(target: T, source: Record<stri
   return target
 }
 
+const typeKindMap = {
+  complex: 'complexTypes',
+  entity: 'entityTypes',
+  enum: 'enumTypes',
+}
+
+const typeKindMapEnd = {
+  complex: '',
+  entity: '[\'record\']',
+  enum: '',
+}
+
 /**
  * Maps an OData type to a TypeScript type
  * @param odataType The OData type (e.g., 'Edm.String', 'Trippin.Location')
@@ -62,10 +74,7 @@ function mapODataTypeToTypeScript(
   opts: {
     modelAlias: string
     capitalizedAlias?: string
-    complexTypesToGen?: Set<string>
-    entityTypesToGen?: Set<string>
-    enumTypesToGen?: Set<string>
-    metadata?: Metadata<any>
+    metadata: Metadata<any>
   }
 ): string {
   const capitalizedAlias = opts.capitalizedAlias || capitalize(opts.modelAlias)
@@ -107,50 +116,14 @@ function mapODataTypeToTypeScript(
         return 'any'
       }
 
-      // Try to identify what kind of type this is using metadata if available
-      if (opts.metadata) {
-        const complexType = opts.metadata.getRawComplexType(odataType)
-        if (complexType) {
-          // It's a ComplexType - add it to generation set
-          opts.complexTypesToGen?.add(odataType)
-          const modelType = `T${capitalizedAlias}OData`
-          return `${modelType}['complexTypes']['${odataType}']`
-        }
+      const modelType = `T${capitalizedAlias}OData`
 
-        const enumType = opts.metadata.getRawEnumType(odataType)
-        if (enumType) {
-          // It's an EnumType - add it to generation set
-          opts.enumTypesToGen?.add(odataType)
-          const modelType = `T${capitalizedAlias}OData`
-          return `${modelType}['enumTypes']['${odataType}']`
-        }
-
-        try {
-          const entityType = opts.metadata.getEntityType(odataType as any)
-          if (entityType) {
-            // It's an EntityType - add it to generation set
-            opts.entityTypesToGen?.add(odataType)
-            const modelType = `T${capitalizedAlias}OData`
-            return `${modelType}['entityTypes']['${odataType}']['record']`
-          }
-        } catch {
-          // Not an entity type
-        }
+      const typeInfo = opts.metadata.getType(odataType)
+      if (typeInfo) {
+        return `${modelType}['${typeKindMap[typeInfo.kind]}']['${odataType}']${typeKindMapEnd[typeInfo.kind]}`
       }
 
-      // Fallback: check if already in sets
-      if (opts.complexTypesToGen?.has(odataType)) {
-        const modelType = `T${capitalizedAlias}OData`
-        return `${modelType}['complexTypes']['${odataType}']`
-      }
-      // Check if it's an EntityType
-      else if (opts.entityTypesToGen?.has(odataType)) {
-        const modelType = `T${capitalizedAlias}OData`
-        return `${modelType}['entityTypes']['${odataType}']['record']`
-      } else {
-        // It's an EnumType or unknown type
-        return 'any'
-      }
+      return 'any'
   }
 }
 
@@ -159,12 +132,9 @@ export function generateEntityTypeTypes(
   opts: {
     modelAlias: string
     capitalizedAlias?: string
-    complexTypesToGen?: Set<string>
-    entityTypesToGen?: Set<string>
-    enumTypesToGen?: Set<string>
-    metadata?: Metadata<any>
-  },
-  isV4: boolean
+    typesToGen: Set<string>
+    metadata: Metadata<any>
+  }
 ): {
   consts: TModelConsts
   types: TModelTypes
@@ -188,8 +158,6 @@ export function generateEntityTypeTypes(
   typeTypes.fields = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["fields"][number]`
   typeTypes.keys = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["keys"][number]`
   typeTypes.measures = `(typeof ${opts.modelAlias}Consts)[${JSON.stringify(ns)}][${JSON.stringify(typeName)}]["measures"][number]`
-
-  
 
   const navToMany: TGenerateEntityTypeDefinition['navToMany'] = {}
   const navToOne: TGenerateEntityTypeDefinition['navToOne'] = {}
@@ -224,7 +192,7 @@ export function generateEntityTypeTypes(
     const navName = `${String(nav.$Name)}?`
     if (nav.toMany) {
       // For to-many relationships, it's an array of the target entity type
-      record[navName] = isV4 ? `Array<${targetEntityType}>` : `{ results: Array<${targetEntityType}> }`
+      record[navName] = opts.metadata.isV4 ? `Array<${targetEntityType}>` : `{ results: Array<${targetEntityType}> }`
     } else {
       // For to-one relationships, it's the target entity type or null
       record[navName] = `${targetEntityType} | null`
@@ -288,27 +256,17 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const modelAlias =  toSafeVariableName(opts.alias || serviceName)
   const cModelAlias = capitalize(modelAlias)
   const elements: TCoGeCodeElement[] = []
-
-  // Exported constant for the model name
-  // elements.push({
-  //   type: 'const',
-  //   name: `${modelAlias}Name`,
-  //   value: JSON.stringify(m.name),
-  //   exported: true,
-  // })
-
   const entitySets: TGenerateEntitySetDefinition[] = []
-  const entityTypes: TGenerateEntityTypeDefinition[] = []
   const entitiesToGen = (opts.entitySets ?? m.getEntitySetsList()) as string[]
-  const entityTypesToGen = new Set<string>()
-  const complexTypesToGen = new Set<string>()
-  const enumTypesToGen = new Set<string>()
+  const typesToGen = new Set<string>()
+  const processedTypes = new Set<string>()
 
+  // add types mentioned in entity sets
   for (const entitySetName of entitiesToGen) {
     const entitySet = m.getEntitySet(entitySetName)
     if (entitySet) {
       const entityTypeName = entitySet.typeName
-      entityTypesToGen.add(entityTypeName)
+      typesToGen.add(entityTypeName)
       entitySets.push({
         name: entitySet.name,
         type: entityTypeName,
@@ -319,194 +277,75 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const modelConsts: TModelConsts = {}
   const modelTypes: TModelTypes = {}
 
-  // Discovery phase 1: Process functions to find all referenced types FIRST
+  // add types mentioned in functions
   for (const fName of m.getFunctionsList()) {
-    const rawFunction = m.getRawFunction(fName)!
+    const fn = m.getFunction(fName)!
 
-    // Discover types from parameters
-    if (m.isV4) {
-      const allParams = rawFunction.Parameter || []
-      const isBoound = (rawFunction as any).$IsBound
-      const relevantParams = isBoound && allParams.length > 0 ? allParams.slice(1) : allParams
-
-      for (const p of relevantParams) {
-        const paramType = (p as any).$Type
-        if (paramType && !paramType.startsWith('Edm.') && paramType.includes('.')) {
-          // Check if it's a ComplexType, EnumType or EntityType
-          const complexType = m.getRawComplexType(paramType)
-          if (complexType) {
-            complexTypesToGen.add(paramType)
-          } else {
-            const enumType = m.getRawEnumType(paramType)
-            if (enumType) {
-              enumTypesToGen.add(paramType)
-            } else {
-              try {
-                m.getEntityType(paramType as any)
-                entityTypesToGen.add(paramType)
-              } catch {
-                // Not an entity type
-              }
-            }
-          }
-        }
-      }
-
-      // Discover types from return type
-      const returnTypeInfo = (rawFunction as any).ReturnType
-      if (returnTypeInfo) {
-        const typeStr = returnTypeInfo.$Type || returnTypeInfo.Type
-        if (typeStr) {
-          const actualType = typeStr.startsWith('Collection(')
-            ? typeStr.slice('Collection('.length, -1)
-            : typeStr
-
-          if (actualType && !actualType.startsWith('Edm.') && actualType.includes('.')) {
-            const complexType = m.getRawComplexType(actualType)
-            if (complexType) {
-              complexTypesToGen.add(actualType)
-            } else {
-              const enumType = m.getRawEnumType(actualType)
-              if (enumType) {
-                enumTypesToGen.add(actualType)
-              } else {
-                try {
-                  m.getEntityType(actualType as any)
-                  entityTypesToGen.add(actualType)
-                } catch {
-                  // Not an entity type
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      // V2/V3
-      const allParams = rawFunction.Parameter || []
-      const inParams = allParams.filter((p: any) => !p.$Mode || p.$Mode === 'In')
-
-      for (const p of inParams) {
-        const paramType = (p as any).$Type
-        if (paramType && !paramType.startsWith('Edm.') && paramType.includes('.')) {
-          const complexType = m.getRawComplexType(paramType)
-          if (complexType) {
-            complexTypesToGen.add(paramType)
-          } else {
-            const enumType = m.getRawEnumType(paramType)
-            if (enumType) {
-              enumTypesToGen.add(paramType)
-            } else {
-              try {
-                m.getEntityType(paramType as any)
-                entityTypesToGen.add(paramType)
-              } catch {
-                // Not an entity type
-              }
-            }
-          }
-        }
-      }
-
-      // Discover types from return type
-      const returnTypeStr = (rawFunction as any).$ReturnType || (rawFunction as any).ReturnType
-      if (returnTypeStr) {
-        const actualType = returnTypeStr.startsWith('Collection(')
-          ? returnTypeStr.slice('Collection('.length, -1)
-          : returnTypeStr
-
-        if (actualType && !actualType.startsWith('Edm.') && actualType.includes('.')) {
-          const complexType = m.getRawComplexType(actualType)
-          if (complexType) {
-            complexTypesToGen.add(actualType)
-          } else {
-            const enumType = m.getRawEnumType(actualType)
-            if (enumType) {
-              enumTypesToGen.add(actualType)
-            } else {
-              try {
-                m.getEntityType(actualType as any)
-                entityTypesToGen.add(actualType)
-              } catch {
-                // Not an entity type
-              }
-            }
-          }
+    const discoverType = (typeName?: string) => {
+      if (!typeName) return
+      const { actualType, isEdm } = parseType(typeName)
+      if (!isEdm) {
+        const typeInfo = m.getType(actualType)
+        if (typeInfo) {
+          typesToGen.add(actualType)
         }
       }
     }
+
+    fn.params.forEach(p => discoverType(p.$Type))
+    discoverType(fn.returnType.type)
   }
 
-  // Discovery phase 2: Recursively discover all entity types through navigation properties
-  const processedTypes = new Set<string>()
-  const toProcess = Array.from(entityTypesToGen)
+  const toProcess = Array.from(typesToGen)
 
+  // add types mentioned in added types
   while (toProcess.length > 0) {
     const currentType = toProcess.pop()!
     if (processedTypes.has(currentType)) continue
+    const typeDef = m.getType(currentType)
+    if (!typeDef) continue
 
     processedTypes.add(currentType)
-    const entityType = m.getEntityType(currentType)
+    if (typeDef.kind === 'entity') {
+      const entityType = m.getEntityType(currentType)
+      // Add all navigation target types to be processed
+      Array.from(entityType.getNavsMap().values()).forEach(nav => {
+        const targetType = nav.$Type
+        if (!processedTypes.has(targetType) && !typesToGen.has(targetType)) {
+          typesToGen.add(targetType)
+          toProcess.push(targetType)
+        }
+      })
 
-    // Add all navigation target types to be processed
-    Array.from(entityType.getNavsMap().values()).forEach(nav => {
-      const targetType = nav.$Type
-      if (!processedTypes.has(targetType) && !entityTypesToGen.has(targetType)) {
-        entityTypesToGen.add(targetType)
-        toProcess.push(targetType)
-      }
-    })
-  }
-
-  for (const et of Array.from(entityTypesToGen)) {
-    const entityType = m.getEntityType(et)
-
-    // Discover ComplexTypes used by this entity type
-    for (const field of entityType.fields) {
-      // Check if the field type is not an Edm type (it's a ComplexType or EnumType)
-      if (!field.$Type.startsWith('Edm.') && !field.$Type.includes('.')) {
-        // Might be missing namespace, skip
-        continue
-      }
-      if (!field.$Type.startsWith('Edm.')) {
-        // Check if it's a ComplexType
-        const complexType = m.getRawComplexType(field.$Type)
-        if (complexType) {
-          complexTypesToGen.add(field.$Type)
-        } else {
-          // Check if it's an EnumType
-          const enumType = m.getRawEnumType(field.$Type)
-          if (enumType) {
-            enumTypesToGen.add(field.$Type)
+      // Discover types used by this entity type
+      for (const field of entityType.fields) {
+        // Check if the field type is not an Edm type
+        if (!field.$Type.startsWith('Edm.') && field.$Type.includes('.')) {
+          const typeInfo = m.getType(field.$Type)
+          if (typeInfo && !processedTypes.has(field.$Type) && !typesToGen.has(field.$Type)) {
+            typesToGen.add(field.$Type)
+            toProcess.push(field.$Type)
           }
         }
       }
     }
+    if (typeDef.kind === 'complex') {
+      const d = typeDef.definition as TSchema['ComplexType'][number]
+      for (const prop of d.Property || []) {
+        const { actualType, isEdm } = parseType(prop.$Type)
 
-    const { entity, consts, types } = generateEntityTypeTypes(entityType, {
-      modelAlias,
-      capitalizedAlias: cModelAlias,
-      complexTypesToGen,
-      entityTypesToGen,
-      enumTypesToGen,
-      metadata: m
-    }, m.isV4)
-    mergeDeep(modelConsts, consts)
-    mergeDeep(modelTypes, types)
-
-    entityTypes.push({
-      type: entity.type,
-      keysType: entity.keysType,
-      measuresType: entity.measuresType,
-      name: entity.name,
-      keys: entity.keys,
-      measures: entity.measures,
-      navToMany: entity.navToMany,
-      navToOne: entity.navToOne,
-      record: entity.record,
-    })
+        if (!isEdm && actualType.includes('.')) {
+          const nestedTypeInfo = m.getType(actualType)
+          if (nestedTypeInfo && !processedTypes.has(actualType)) {
+            typesToGen.add(actualType)
+            toProcess.push(actualType)
+          }
+        }
+      }
+    }
   }
 
+  // Prepare const
   elements.push({
     type: 'const',
     name: modelAlias + "Consts",
@@ -518,6 +357,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     jsDocs: ['Fields and Keys as Constants', '', `Model: ${modelAlias}`]
   })
 
+  // Prepare interface
   elements.push({
     type: 'interface',
     name: 'T' + cModelAlias,
@@ -526,89 +366,77 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     jsDocs: ['Types for Keys and Fields', '', `Model: ${modelAlias}`]
   })
 
-  const modelType = `T${cModelAlias}OData`
-
-  // Recursively discover nested ComplexTypes
-  const processedComplexTypes = new Set<string>()
-  const complexTypesToProcess = Array.from(complexTypesToGen)
-
-  while (complexTypesToProcess.length > 0) {
-    const ctName = complexTypesToProcess.pop()!
-    if (processedComplexTypes.has(ctName)) continue
-
-    processedComplexTypes.add(ctName)
-    const complexType = m.getRawComplexType(ctName)
-    if (!complexType) continue
-
-    // Check for nested ComplexTypes
-    for (const property of complexType.Property || []) {
-      const actualType = property.$Type.startsWith('Collection(')
-        ? property.$Type.slice('Collection('.length, -1)
-        : property.$Type
-
-      if (!actualType.startsWith('Edm.') && actualType.includes('.')) {
-        const nestedCT = m.getRawComplexType(actualType)
-        if (nestedCT && !processedComplexTypes.has(actualType)) {
-          complexTypesToGen.add(actualType)
-          complexTypesToProcess.push(actualType)
-        } else {
-          // Check if it's an EnumType
-          const enumType = m.getRawEnumType(actualType)
-          if (enumType) {
-            enumTypesToGen.add(actualType)
-          }
-        }
-      }
-    }
-  }
-
-  // Process EnumTypes to generate their types
-  const enumTypes: Record<string, string> = {}
-  for (const etName of Array.from(enumTypesToGen)) {
-    const enumType = m.getRawEnumType(etName)
-    if (!enumType) continue
-
-    // Generate a union type of string literals for the enum
-    const members = (enumType.Member || []).map(member => `'${member.$Name}'`)
-    enumTypes[`'${etName}'`] = members.join(' | ') || 'never'
-  }
-
-  // Process ComplexTypes to generate their interfaces
+  const entityTypes: TGenerateEntityTypeDefinition[] = []
   const complexTypes: Record<string, Record<string, unknown>> = {}
-  for (const ctName of Array.from(complexTypesToGen)) {
-    const complexType = m.getRawComplexType(ctName)
-    if (!complexType) continue
+  const enumTypes: Record<string, string> = {}
 
-    const ctRecord: Record<string, string> = {}
-    for (const property of complexType.Property || []) {
-      // Check if the property type is a collection
-      const isCollection = property.$Type.startsWith('Collection(')
-      const actualType = isCollection
-        ? property.$Type.slice('Collection('.length, -1)
-        : property.$Type
+  // generate types
+  for (const currentType of Array.from(typesToGen)) {
+    const {kind, definition} = m.getType(currentType) || {}
+    if (!definition || !kind) continue
 
-      // Determine the TypeScript type using the helper function
-      let tsType = mapODataTypeToTypeScript(actualType, {
+    // generate entity type
+    if (kind === 'entity') {
+      const entityType = m.getEntityType(currentType)
+      const { entity, consts, types } = generateEntityTypeTypes(entityType, {
         modelAlias,
         capitalizedAlias: cModelAlias,
-        complexTypesToGen,
-        entityTypesToGen,
-        enumTypesToGen,
+        typesToGen,
         metadata: m
       })
+      mergeDeep(modelConsts, consts)
+      mergeDeep(modelTypes, types)
 
-      // Wrap in Array if it's a collection
-      if (isCollection) {
-        tsType = `Array<${tsType}>`
-      }
-
-      // Add field to record - use optional if field is nullable
-      const fieldName = property.$Nullable !== false ? `${property.$Name}?` : property.$Name
-      ctRecord[fieldName] = tsType
+      entityTypes.push({
+        type: entity.type,
+        keysType: entity.keysType,
+        measuresType: entity.measuresType,
+        name: entity.name,
+        keys: entity.keys,
+        measures: entity.measures,
+        navToMany: entity.navToMany,
+        navToOne: entity.navToOne,
+        record: entity.record,
+      })
     }
 
-    complexTypes[`'${ctName}'`] = ctRecord
+    // generate complex type
+    if (kind === 'complex') {
+      const complexType = definition as TSchema['ComplexType'][number]
+      const ctRecord: Record<string, string> = {}
+      for (const property of complexType.Property || []) {
+        const { isCollection, actualType } = parseType(property.$Type)
+
+        // Determine the TypeScript type using the helper function
+        let tsType = mapODataTypeToTypeScript(actualType, {
+          modelAlias,
+          capitalizedAlias: cModelAlias,
+          metadata: m
+        })
+
+        // Wrap in Array if it's a collection
+        if (isCollection) {
+          tsType = `Array<${tsType}>`
+        }
+
+        // Add field to record - use optional if field is nullable
+        const fieldName = property.$Nullable !== false ? `${property.$Name}?` : property.$Name
+        ctRecord[fieldName] = tsType
+      }
+
+      complexTypes[`'${currentType}'`] = ctRecord
+    }
+
+    // generate enum type
+    if (kind === 'enum') {
+      const enumType = definition as TSchema['EnumType'][number]
+      // Generate a union type of string literals for the enum
+      const members = (enumType.Member || []).map(member => `'${member.$Name}'`)
+      enumTypes[`'${currentType}'`] = members.join(' | ') || 'never'
+    }
   }
+
+  const modelType = `T${cModelAlias}OData`
 
   const modelInterface: TCoGeInterfaceDeclaration = {
     type: 'interface',
@@ -621,6 +449,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       complexTypes: complexTypes,
       enumTypes: enumTypes,
       functions: {},
+      actions: {},
     },
     jsDocs: ['Main OData Interface', '', `Model: ${modelAlias}`]
   }
@@ -640,113 +469,43 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
     modelInterface.value['entitySets'][`'${entitySet.name}'`] = JSON.stringify(entitySet.type)
   }
 
+  // generate functions
   for (const fName of m.getFunctionsList()) {
-    const rawFunction = m.getRawFunction(fName)!
+    const fn = m.getFunction(fName)!
     let params: string | Record<string, string> = 'never'
     let returnType: string = 'void'
 
-    if (m.isV4) {
-      // V4: Parameters don't have $Mode
-      // For bound functions, skip the first parameter (binding parameter)
-      const allParams = rawFunction.Parameter || []
-      const isBoound = (rawFunction as any).$IsBound
-      const relevantParams = isBoound && allParams.length > 0 ? allParams.slice(1) : allParams
-
-      if (relevantParams.length > 0) {
-        // Generate object type with parameter names and types
-        const paramObj: Record<string, string> = {}
-        for (const p of relevantParams) {
-          const paramType = mapODataTypeToTypeScript((p as any).$Type || 'Edm.String', {
-            modelAlias,
-            capitalizedAlias: cModelAlias,
-            complexTypesToGen,
-            entityTypesToGen,
-            enumTypesToGen,
-            metadata: m
-          })
-          const nullable = (p as any).$Nullable !== 'false'
-          paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
-        }
-        params = paramObj
-      }
-
-      // Handle return type for V4
-      if ((rawFunction as any).ReturnType) {
-        const returnTypeInfo = (rawFunction as any).ReturnType
-        const typeStr = returnTypeInfo.$Type || returnTypeInfo.Type
-
-        if (typeStr) {
-          // Check if it's a collection
-          const isCollection = typeStr.startsWith('Collection(')
-          const actualType = isCollection
-            ? typeStr.slice('Collection('.length, -1)
-            : typeStr
-
-          const mappedType = mapODataTypeToTypeScript(actualType, {
-            modelAlias,
-            capitalizedAlias: cModelAlias,
-            complexTypesToGen,
-            entityTypesToGen,
-            enumTypesToGen,
-            metadata: m
-          })
-
-          returnType = isCollection ? `Array<${mappedType}>` : mappedType
-
-          // Check for nullable
-          const nullable = returnTypeInfo.$Nullable !== 'false'
-          if (nullable && returnType !== 'string' && !isCollection) {
-            returnType = `${returnType} | null`
-          }
-        }
-      }
-    } else {
-      // V2/V3: Parameters may or may not have $Mode
-      // If $Mode exists, filter by 'In', otherwise include all parameters
-      const allParams = rawFunction.Parameter || []
-      const inParams = allParams.filter((p: any) => !p.$Mode || p.$Mode === 'In')
-
-      if (inParams.length > 0) {
-        const paramObj: Record<string, string> = {}
-        for (const p of inParams) {
-          const paramType = mapODataTypeToTypeScript((p as any).$Type || 'Edm.String', {
-            modelAlias,
-            capitalizedAlias: cModelAlias,
-            complexTypesToGen,
-            entityTypesToGen,
-            enumTypesToGen,
-            metadata: m
-          })
-          const nullable = (p as any).$Nullable !== 'false'
-          paramObj[(p as any).$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
-        }
-        params = paramObj
-      }
-
-      // V2/V3 functions have $ReturnType on FunctionImport (with $ prefix)
-      const returnTypeStr = (rawFunction as any).$ReturnType || (rawFunction as any).ReturnType
-      if (returnTypeStr) {
-        // Check if it's a collection
-        const isCollection = returnTypeStr.startsWith('Collection(')
-        const actualType = isCollection
-          ? returnTypeStr.slice('Collection('.length, -1)
-          : returnTypeStr
-
-        const mappedType = mapODataTypeToTypeScript(actualType, {
+    if (fn.params.length) {
+      params = {}
+      for (const p of fn.params) {
+        const nullable = p.$Nullable !== false
+        const paramType = mapODataTypeToTypeScript(p.$Type || 'Edm.String', {
           modelAlias,
           capitalizedAlias: cModelAlias,
-          complexTypesToGen,
-          entityTypesToGen
-        })
+          metadata: m
+        })        
+        params[p.$Name] = nullable && paramType !== 'string' ? `${paramType} | null` : paramType
+      }
+    }
+    if (fn.returnType.type) {
+      const { actualType, isCollection } = parseType(fn.returnType.type)
+      const mappedType = mapODataTypeToTypeScript(actualType, {
+        modelAlias,
+        capitalizedAlias: cModelAlias,
+        metadata: m
+      })
 
-        returnType = isCollection ? `Array<${mappedType}>` : mappedType
+      returnType = isCollection ? `Array<${mappedType}>` : mappedType
 
-        // V2 return types don't typically have nullable info, so we don't add | null
+      // Check for nullable
+      const nullable = fn.returnType.nullable !== false
+      if (nullable && returnType !== 'string' && !isCollection) {
+        returnType = `${returnType} | null`
       }
     }
 
     // Quote the function name to handle dots and other special characters
-    modelInterface.value['functions'][`'${fName}'`] = { params, returnType }
+    modelInterface.value[fn.kind === 'Function' ? 'functions' : 'actions'][`'${fName}'`] = { params, returnType }
   }
 
   elements.push(modelInterface)
@@ -783,11 +542,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           `}`,
           `return ${cModelAlias}.instance`,
         ],
-      },
-  // public static async entitySet<T extends keyof THanaV4ParamOData['entitySets']>(name: T) {
-  //   const instance = await HanaV4Param.getInstance()
-  //   return instance.entitySet<T>(name)
-  // }      
+      }, 
       {
         name: `async entitySet<T extends keyof T${cModelAlias}OData['entitySets']>`,
         visibility: 'public',
@@ -818,8 +573,6 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const code = codeGen(elements)
   return code
 }
-
-
 
 /**
  * Transforms a service name to be safe for TypeScript variable names.
@@ -860,4 +613,14 @@ export function toSafeVariableName(name: string): string {
 function capitalize(str: string): string {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function parseType(type: string) {
+  const isCollection = type.startsWith('Collection(')
+  const actualType = isCollection ? type.slice(11, -1) : type
+  return {
+    isCollection,
+    actualType,
+    isEdm: actualType.startsWith('Edm.')
+  }
 }

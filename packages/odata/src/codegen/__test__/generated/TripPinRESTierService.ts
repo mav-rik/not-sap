@@ -181,12 +181,12 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
     };
   };
   complexTypes: {
+    'Trippin.AirportLocation': {
+      Loc?: any;
+    };
     'Trippin.Location': {
       Address?: string;
       City?: TTripPinRESTierServiceOData['complexTypes']['Trippin.City'];
-    };
-    'Trippin.AirportLocation': {
-      Loc?: any;
     };
     'Trippin.City': {
       Name?: string;
@@ -205,10 +205,16 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
     };
     'GetNearestAirport': {
       params: {
-        lat: number | null;
-        lon: number | null;
+        lat: number;
+        lon: number;
       };
       returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Airport']['record'] | null;
+    };
+  };
+  actions: {
+    'ResetDataSource': {
+      params: never;
+      returnType: void;
     };
   };
 }

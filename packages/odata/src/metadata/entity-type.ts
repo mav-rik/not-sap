@@ -85,7 +85,12 @@ export class EntityType<
     protected _m: Metadata<M>,
     protected _entityType: T
   ) {
-    this._type = _m.getRawEntityType(_entityType as string)!
+    const {kind, definition} = _m.getType(_entityType as string)!
+    if (kind === 'entity') {
+      this._type = definition as TSchema['EntityType'][number]
+    } else {
+      throw new Error(`"${_entityType as string}" does not exist in metadata of the service "${_m.name}".`)
+    }
     this.entityTypeNS = (_entityType as string).split('.').slice(0, -1).join('.')
   }
 

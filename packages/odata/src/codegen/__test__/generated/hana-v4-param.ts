@@ -172,6 +172,7 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
   complexTypes: {};
   enumTypes: {};
   functions: {};
+  actions: {};
 }
 
 /**

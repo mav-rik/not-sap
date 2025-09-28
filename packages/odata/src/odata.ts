@@ -59,6 +59,13 @@ export interface TOdataDummyInterface {
       returnType: any
     }
   >
+  actions: Record<
+    string,
+    {
+      params: Record<string, any> | never
+      returnType: any
+    }
+  >
   complexTypes: Record<string, Record<string, any>>
 }
 
@@ -522,14 +529,31 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     _params?: M['functions'][T]['params'],
     disableBatch?: boolean
   ): Promise<M['functions'][T]['returnType']> {
+    return this._callFunction(name as string, _params, disableBatch, 'GET')
+  }
+
+  async callAction<T extends keyof M['actions']>(
+    name: T,
+    _params?: M['functions'][T]['params'],
+    disableBatch?: boolean
+  ): Promise<M['actions'][T]['returnType']> {
+    return this._callFunction(name as string, _params, disableBatch, 'POST')
+  }
+
+  protected async _callFunction(
+    name: string,
+    _params?: unknown,
+    disableBatch?: boolean,
+    method: 'GET' | 'POST' = 'GET',
+  ): Promise<unknown> {
     const metadata = await this.getMetadata()
-    const functionMeta = metadata.getRawFunction(name as string)
-    if (!functionMeta) {
+    const fnMeta = metadata.getFunction(name as string)
+    if (!fnMeta) {
       throw new Error(`Function "${name as string}" not found in metadata of "${this.service}"`)
     }
     const params = {} as Record<string, string>
     if (_params) {
-      for (const param of functionMeta.Parameter ?? []) {
+      for (const param of fnMeta.params ?? []) {
         const paramName = param.$Name
         if (paramName in (_params as Record<string, any>)) {
           const value = (_params as Record<string, any>)[paramName]
@@ -551,7 +575,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     }
 
     const isV4 = metadata.isV4
-    const fnName = functionMeta.$Name
+    const fnName = fnMeta.name
     const requestPath = (() => {
       if (!isV4) {
         return name as string
@@ -569,7 +593,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     const data = await this._fetch(
       this.genRequestUrl(requestPath, requestParams),
       {
-        method: functionMeta.$HttpMethod,
+        method,
         headers: {
           ...this.options.headers,
           accept: 'application/json',

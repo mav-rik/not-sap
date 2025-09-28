@@ -58,7 +58,8 @@ export async function generate(services: TODataServicesToParse) {
       console.error(
         `[odata-codegen] "${
           (error as Error).message || 'Unknown error'
-        }" while fetching metadata for service ${serviceName}`
+        }" while fetching metadata for service ${serviceName}`,
+        error
       );
     }
   }

@@ -106,6 +106,7 @@ export interface TSapServiceOData extends TOdataDummyInterface {
   complexTypes: {};
   enumTypes: {};
   functions: {};
+  actions: {};
 }
 
 /**
@@ -296,6 +297,7 @@ export interface THanaServiceOData extends TOdataDummyInterface {
   complexTypes: {};
   enumTypes: {};
   functions: {};
+  actions: {};
 }
 
 /**

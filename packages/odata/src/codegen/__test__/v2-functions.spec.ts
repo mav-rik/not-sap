@@ -13,13 +13,13 @@ describe('V2 Functions Generation', () => {
   const metadata = new Metadata<any>(metadataXml, {} as any, 'ODataDemo')
 
   it('should parse V2 FunctionImport correctly', () => {
-    const rawFunction = metadata.getRawFunction('GetProductsByRating')
+    const rawFunction = metadata.getFunction('GetProductsByRating')
 
     expect(rawFunction).toBeDefined()
-    expect(rawFunction?.Parameter).toBeDefined()
+    expect(rawFunction?.params).toBeDefined()
     // V2 uses $ReturnType with $ prefix
-    expect(rawFunction?.$ReturnType).toBeDefined()
-    expect(rawFunction?.$ReturnType).toBe('Collection(ODataDemo.Product)')
+    expect(rawFunction?.returnType.type).toBeDefined()
+    expect(rawFunction?.returnType.type).toBe('Collection(ODataDemo.Product)')
   })
 
   it('should generate V2 function parameters and return types', () => {

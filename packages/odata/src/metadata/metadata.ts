@@ -41,13 +41,13 @@ const parser = new XMLParser({
       'EnumType',
       'Member',
       'Association',
-      'EntitySet',
       'AssociationSet',
+      'EntitySet',
       'FunctionImport',
       'Function',
       'Action',
+      'ActionImport',
       'End',
-      'FunctionImport',
       'PropertyValue',
       'Annotations',
       'Annotation',
@@ -63,24 +63,35 @@ const parser = new XMLParser({
  *
  * @template M - A type extending TOdataDummyInterface, defaulting to TOdataDummyInterface.
  */
+export type TypeKind = 'entity' | 'complex' | 'enum'
+
+export interface TypeDefinition {
+  kind: TypeKind
+  definition: TSchema['EntityType'][number] | TSchema['ComplexType'][number] | TSchema['EnumType'][number]
+}
+
+interface TFunctionOrAction {
+  name: string
+  defName?: string
+  kind: 'Action' | 'Function'
+  params: RawMetadataFunctionParameter[]
+  boundTo?: string
+  returnType: { type: string, nullable?: boolean }
+}
+
 export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   protected _parsed: RawMetadata
 
-  protected _types = new Map<
+  // Unified type storage
+  protected _allTypes = new Map<string, TypeDefinition>()
+
+  protected _functions = new Map<
     string,
-    TSchema['EntityType'][number]
+    Required<TSchema>['Function'][number]
   >()
-  protected _complexTypes = new Map<
+  protected _actions = new Map<
     string,
-    TSchema['ComplexType'][number]
-  >()
-  protected _enumTypes = new Map<
-    string,
-    TSchema['EnumType'][number]
-  >()
-  protected _functionDefinitions = new Map<
-    string,
-    any // We'll define proper type later
+    Required<TSchema>['Function'][number]
   >()
   protected _assoc = new Map<
     string,
@@ -98,9 +109,9 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     string,
     Required<TSchema>['EntityContainer']['AssociationSet'][number]
   >()
-  protected _functions = new Map<
+  protected _functionsAndActions = new Map<
     string,
-    Required<TSchema>['EntityContainer']['FunctionImport'][number]
+    TFunctionOrAction
   >()
   protected _annot = new Map<
     string,
@@ -117,17 +128,23 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     for (const schema of schemas) {
       const ns = schema.$Namespace
       for (const node of schema.EntityType || []) {
-        this._types.set(`${ns}.${node.$Name}`, node)
+        const fullName = `${ns}.${node.$Name}`
+        // this._types.set(fullName, node)
+        this._allTypes.set(fullName, { kind: 'entity', definition: node })
       }
       for (const node of schema.ComplexType || []) {
-        this._complexTypes.set(`${ns}.${node.$Name}`, node)
+        const fullName = `${ns}.${node.$Name}`
+        // this._complexTypes.set(fullName, node)
+        this._allTypes.set(fullName, { kind: 'complex', definition: node })
       }
-      for (const node of (schema as any).EnumType || []) {
-        this._enumTypes.set(`${ns}.${node.$Name}`, node)
+      for (const node of schema.EnumType || []) {
+        const fullName = `${ns}.${node.$Name}`
+        // this._enumTypes.set(fullName, node)
+        this._allTypes.set(fullName, { kind: 'enum', definition: node })
       }
       // Parse V4 Function definitions
-      for (const node of (schema as any).Function || []) {
-        this._functionDefinitions.set(`${ns}.${node.$Name}`, node)
+      for (const node of schema.Function || []) {
+        this._functions.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.Association || []) {
         this._assoc.set(`${ns}.${node.$Name}`, node)
@@ -140,8 +157,48 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
         this._assocSets.set(`${ns}.${node.$Name}`, node)
       }
       for (const node of schema.EntityContainer?.FunctionImport || []) {
-        // Use just the FunctionImport name, not namespaced
-        this._functions.set(node.$Name, node)
+        let def = this.isV4 ? this._functions.get(node.$Function!) : undefined
+        const fn: TFunctionOrAction = {
+          name: node.$Name,
+          defName: node.$Function,
+          kind: !this.isV4 && node.$HttpMethod === 'POST' ? 'Action' : 'Function',
+          params: [],
+          boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : node.$EntitySet,
+          returnType: {
+            type: def?.ReturnType.$Type ?? node.$ReturnType,
+            nullable: def?.ReturnType.$Nullable,
+          },
+        }
+        if (this.isV4 && def) {
+          fn.params.push(...((def.$IsBound ? def.Parameter?.slice(1) : def.Parameter) || []))
+        } else {
+          fn.params.push(...node.Parameter.filter(p => !p.$Mode || p.$Mode === 'In'))
+        }
+        this._functionsAndActions.set(fn.name, fn)
+        // if (fn.defName) {
+        //   this._functionsAndActions.set(fn.defName, fn)
+        // }
+      }
+      for (const node of schema.EntityContainer?.ActionImport || []) {
+        let def = this._actions.get(node.$Action)
+        const ac: TFunctionOrAction = {
+          name: node.$Name,
+          defName: node.$Action,
+          kind: 'Action',
+          params: [],
+          boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : undefined,
+          returnType: {
+            type: def?.ReturnType.$Type || '',
+            nullable: def?.ReturnType.$Nullable,
+          },
+        }
+        if (def) {
+          ac.params.push(...((def.$IsBound ? def.Parameter?.slice(1) : def.Parameter) || []))
+        }
+        this._functionsAndActions.set(ac.name, ac)
+        // if (ac.defName) {
+        //   this._functionsAndActions.set(ac.defName, ac)
+        // }
       }
       for (const node of schema.Annotations || []) {
         const target =
@@ -161,69 +218,43 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
     return `${namespace}.${namespace}_Entities`
   }
 
-  getRawEntityType(name: string) {
-    return this._types.get(name)
+  /**
+   * Get any type (entity, complex, or enum) by its fully qualified name
+   */
+  getType(name: string): TypeDefinition | undefined {
+    return this._allTypes.get(name)
   }
-  getRawComplexType(name: string) {
-    return this._complexTypes.get(name)
-  }
-  getRawEnumType(name: string) {
-    return this._enumTypes.get(name)
-  }
+
+  // getRawEntityType(name: string) {
+  //   return this._types.get(name)
+  // }
+  // getRawComplexType(name: string) {
+  //   return this._complexTypes.get(name)
+  // }
+  // getRawEnumType(name: string) {
+  //   return this._enumTypes.get(name)
+  // }
   getRawEntitySet(name: keyof M['entitySets']) {
     return this._sets.get(name) || this._namespacedSets.get(name)
   }
   getRawAnnotations(target: string) {
     return this._annot.get(target)
   }
-  getComplexTypesList() {
-    return Array.from(this._complexTypes.keys())
-  }
-  getEnumTypesList() {
-    return Array.from(this._enumTypes.keys())
-  }
+  // getComplexTypesList() {
+  //   return Array.from(this._complexTypes.keys())
+  // }
+  // getEnumTypesList() {
+  //   return Array.from(this._enumTypes.keys())
+  // }
   getEntitySetsList(suppressNamespace = false) {
     return suppressNamespace ? Array.from(this._sets.keys()) : Array.from(this._namespacedSets.keys())
   }
   getFunctionsList() {
-    return Array.from(this._functions.keys())
+    return Array.from(this._functionsAndActions.keys())
   }
-  getRawFunction(name: string) {
-    // First try to find by FunctionImport name (new approach)
-    let functionImport = this._functions.get(name)
-
-    // For backward compatibility, if not found and it looks like a fully qualified name,
-    // try to find the FunctionImport that references this Function
-    if (!functionImport && name.includes('.')) {
-      // Search for a FunctionImport that references this Function name
-      for (const [, importDef] of this._functions) {
-        if ((importDef as any).$Function === name) {
-          functionImport = importDef
-          break
-        }
-      }
-    }
-
-    if (!functionImport) return undefined
-
-    // For V4, get the actual Function definition which has the parameters
-    if (this.isV4 && (functionImport as any).$Function) {
-      const functionName = (functionImport as any).$Function
-      const functionDef = this._functionDefinitions.get(functionName)
-      if (functionDef) {
-        // Return a combined object with both FunctionImport and Function info
-        return {
-          ...functionImport,
-          Parameter: functionDef.Parameter || [],
-          ReturnType: functionDef.ReturnType
-        }
-      }
-    }
-
-    // For V2/V3 or if no Function definition found, return the FunctionImport
-    return functionImport
+  getFunction(name: string) {
+    return this._functionsAndActions.get(name)
   }
-
   getRawAssociation(name: string) {
     return this._assoc.get(name)
   }
@@ -256,7 +287,7 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   }
 
   getEntityType<T extends keyof M['entityTypes']>(name: T) {
-    if (!this._types.has(name as string)) {
+    if (this.getType(name as string)?.kind !== 'entity') {
       throw new Error(`EntityType "${name as string}" does not exist in metadata`)
     }
     let cached = this._entityTypesMap.get(name)
@@ -314,7 +345,8 @@ export interface RawMetadataSetEnd {
 export interface RawMetadataFunctionParameter {
   $Name: string
   $Type: string
-  $Mode: string
+  $Nullable?: boolean
+  $Mode?: 'In' | 'Out'
   $MaxLength?: number
   $label?: string
 }
@@ -398,6 +430,27 @@ export interface TSchema {
           $Name: string
           $IsFlags?: boolean
         }[]
+        'Function': {
+          $Name: string
+          $IsBound?: boolean
+          Parameter?: RawMetadataFunctionParameter[]
+          ReturnType: {
+            $Type: string
+            $Nullable?: boolean
+          }
+        }[]
+        'Action': {
+          $Name: string
+          $IsBound?: boolean
+          Parameter?: {
+            $Name: string
+            $Type: string
+          }[]
+          ReturnType: {
+            $Type: string
+            $Nullable?: boolean
+          }
+        }[]
         'Association': {
           'End': [RawMetadataEnd, RawMetadataEnd]
           'ReferentialConstraint': {
@@ -431,9 +484,14 @@ export interface TSchema {
           'FunctionImport': {
             'Parameter': RawMetadataFunctionParameter[]
             '$Name': string
+            '$Function'?: string
             '$ReturnType': string
-            '$HttpMethod': string
-            '$action-for'?: string
+            '$EntitySet'?: string
+            '$HttpMethod'?: 'GET' | 'POST' // used in v2. When 'POST' - is equivalent to v4 action
+          }[]
+          'ActionImport': {
+            '$Name': string
+            '$Action': string
           }[]
           '$Name': string
           '$IsDefaultEntityContainer'?: string
