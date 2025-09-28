@@ -42,7 +42,7 @@ describe('TripPin Collection Types Generation', () => {
   it('should generate Array types for collection fields', () => {
     // Check for collection fields in Person entity
     expect(generatedCode).toContain('Emails?: Array<string>')
-    expect(generatedCode).toContain('Features: Array<any>') // Enum types fallback to any
+    expect(generatedCode).toContain("Features: Array<TTripPinOData['enumTypes']['Trippin.Feature']>") // Enum types are now properly typed
     expect(generatedCode).toContain('Tags?: Array<string>')
   })
 
@@ -92,10 +92,14 @@ describe('TripPin Collection Types Generation', () => {
     // Note: Airline navigation is in Flight type which is not directly exposed as an EntitySet
   })
 
-  it('should handle enum types as "any"', () => {
-    // Enum types should fallback to "any" since they're not standard Edm types
-    expect(generatedCode).toContain('Gender: any')
-    expect(generatedCode).toContain('FavoriteFeature: any')
+  it('should handle enum types with proper type references', () => {
+    // Enum types should now be properly referenced
+    expect(generatedCode).toContain("Gender: TTripPinOData['enumTypes']['Trippin.PersonGender']")
+    expect(generatedCode).toContain("FavoriteFeature: TTripPinOData['enumTypes']['Trippin.Feature']")
+
+    // Check that enum types are defined
+    expect(generatedCode).toContain("'Trippin.PersonGender': 'Male' | 'Female' | 'Unknown'")
+    expect(generatedCode).toContain("'Trippin.Feature': 'Feature1' | 'Feature2' | 'Feature3' | 'Feature4'")
   })
 
   it('should handle special Edm types correctly', () => {

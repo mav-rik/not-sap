@@ -64,6 +64,7 @@ function mapODataTypeToTypeScript(
     capitalizedAlias?: string
     complexTypesToGen?: Set<string>
     entityTypesToGen?: Set<string>
+    enumTypesToGen?: Set<string>
     metadata?: Metadata<any>
   }
 ): string {
@@ -116,6 +117,14 @@ function mapODataTypeToTypeScript(
           return `${modelType}['complexTypes']['${odataType}']`
         }
 
+        const enumType = opts.metadata.getRawEnumType(odataType)
+        if (enumType) {
+          // It's an EnumType - add it to generation set
+          opts.enumTypesToGen?.add(odataType)
+          const modelType = `T${capitalizedAlias}OData`
+          return `${modelType}['enumTypes']['${odataType}']`
+        }
+
         try {
           const entityType = opts.metadata.getEntityType(odataType as any)
           if (entityType) {
@@ -152,6 +161,8 @@ export function generateEntityTypeTypes(
     capitalizedAlias?: string
     complexTypesToGen?: Set<string>
     entityTypesToGen?: Set<string>
+    enumTypesToGen?: Set<string>
+    metadata?: Metadata<any>
   },
   isV4: boolean
 ): {
@@ -291,6 +302,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const entitiesToGen = (opts.entitySets ?? m.getEntitySetsList()) as string[]
   const entityTypesToGen = new Set<string>()
   const complexTypesToGen = new Set<string>()
+  const enumTypesToGen = new Set<string>()
 
   for (const entitySetName of entitiesToGen) {
     const entitySet = m.getEntitySet(entitySetName)
@@ -320,16 +332,21 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       for (const p of relevantParams) {
         const paramType = (p as any).$Type
         if (paramType && !paramType.startsWith('Edm.') && paramType.includes('.')) {
-          // Check if it's a ComplexType or EntityType
+          // Check if it's a ComplexType, EnumType or EntityType
           const complexType = m.getRawComplexType(paramType)
           if (complexType) {
             complexTypesToGen.add(paramType)
           } else {
-            try {
-              m.getEntityType(paramType as any)
-              entityTypesToGen.add(paramType)
-            } catch {
-              // Not an entity type
+            const enumType = m.getRawEnumType(paramType)
+            if (enumType) {
+              enumTypesToGen.add(paramType)
+            } else {
+              try {
+                m.getEntityType(paramType as any)
+                entityTypesToGen.add(paramType)
+              } catch {
+                // Not an entity type
+              }
             }
           }
         }
@@ -349,11 +366,16 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             if (complexType) {
               complexTypesToGen.add(actualType)
             } else {
-              try {
-                m.getEntityType(actualType as any)
-                entityTypesToGen.add(actualType)
-              } catch {
-                // Not an entity type
+              const enumType = m.getRawEnumType(actualType)
+              if (enumType) {
+                enumTypesToGen.add(actualType)
+              } else {
+                try {
+                  m.getEntityType(actualType as any)
+                  entityTypesToGen.add(actualType)
+                } catch {
+                  // Not an entity type
+                }
               }
             }
           }
@@ -371,11 +393,16 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           if (complexType) {
             complexTypesToGen.add(paramType)
           } else {
-            try {
-              m.getEntityType(paramType as any)
-              entityTypesToGen.add(paramType)
-            } catch {
-              // Not an entity type
+            const enumType = m.getRawEnumType(paramType)
+            if (enumType) {
+              enumTypesToGen.add(paramType)
+            } else {
+              try {
+                m.getEntityType(paramType as any)
+                entityTypesToGen.add(paramType)
+              } catch {
+                // Not an entity type
+              }
             }
           }
         }
@@ -393,11 +420,16 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
           if (complexType) {
             complexTypesToGen.add(actualType)
           } else {
-            try {
-              m.getEntityType(actualType as any)
-              entityTypesToGen.add(actualType)
-            } catch {
-              // Not an entity type
+            const enumType = m.getRawEnumType(actualType)
+            if (enumType) {
+              enumTypesToGen.add(actualType)
+            } else {
+              try {
+                m.getEntityType(actualType as any)
+                entityTypesToGen.add(actualType)
+              } catch {
+                // Not an entity type
+              }
             }
           }
         }
@@ -441,6 +473,12 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         const complexType = m.getRawComplexType(field.$Type)
         if (complexType) {
           complexTypesToGen.add(field.$Type)
+        } else {
+          // Check if it's an EnumType
+          const enumType = m.getRawEnumType(field.$Type)
+          if (enumType) {
+            enumTypesToGen.add(field.$Type)
+          }
         }
       }
     }
@@ -449,7 +487,9 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       modelAlias,
       capitalizedAlias: cModelAlias,
       complexTypesToGen,
-      entityTypesToGen
+      entityTypesToGen,
+      enumTypesToGen,
+      metadata: m
     }, m.isV4)
     mergeDeep(modelConsts, consts)
     mergeDeep(modelTypes, types)
@@ -511,9 +551,26 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         if (nestedCT && !processedComplexTypes.has(actualType)) {
           complexTypesToGen.add(actualType)
           complexTypesToProcess.push(actualType)
+        } else {
+          // Check if it's an EnumType
+          const enumType = m.getRawEnumType(actualType)
+          if (enumType) {
+            enumTypesToGen.add(actualType)
+          }
         }
       }
     }
+  }
+
+  // Process EnumTypes to generate their types
+  const enumTypes: Record<string, string> = {}
+  for (const etName of Array.from(enumTypesToGen)) {
+    const enumType = m.getRawEnumType(etName)
+    if (!enumType) continue
+
+    // Generate a union type of string literals for the enum
+    const members = (enumType.Member || []).map(member => `'${member.$Name}'`)
+    enumTypes[`'${etName}'`] = members.join(' | ') || 'never'
   }
 
   // Process ComplexTypes to generate their interfaces
@@ -536,6 +593,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         capitalizedAlias: cModelAlias,
         complexTypesToGen,
         entityTypesToGen,
+        enumTypesToGen,
         metadata: m
       })
 
@@ -561,6 +619,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       entitySets: {},
       entityTypes: {},
       complexTypes: complexTypes,
+      enumTypes: enumTypes,
       functions: {},
     },
     jsDocs: ['Main OData Interface', '', `Model: ${modelAlias}`]
@@ -602,6 +661,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
             entityTypesToGen,
+            enumTypesToGen,
             metadata: m
           })
           const nullable = (p as any).$Nullable !== 'false'
@@ -627,6 +687,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
             entityTypesToGen,
+            enumTypesToGen,
             metadata: m
           })
 
@@ -653,6 +714,7 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
             capitalizedAlias: cModelAlias,
             complexTypesToGen,
             entityTypesToGen,
+            enumTypesToGen,
             metadata: m
           })
           const nullable = (p as any).$Nullable !== 'false'

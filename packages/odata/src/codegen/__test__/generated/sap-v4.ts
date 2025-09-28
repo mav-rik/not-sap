@@ -104,6 +104,7 @@ export interface TSapV4OData extends TOdataDummyInterface {
     };
   };
   complexTypes: {};
+  enumTypes: {};
   functions: {};
 }
 

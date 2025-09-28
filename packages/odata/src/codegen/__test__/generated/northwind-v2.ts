@@ -803,6 +803,7 @@ export interface TNorthwindV2OData extends TOdataDummyInterface {
     };
   };
   complexTypes: {};
+  enumTypes: {};
   functions: {};
 }
 

@@ -38,6 +38,8 @@ const parser = new XMLParser({
       'Property',
       'NavigationProperty',
       'ComplexType',
+      'EnumType',
+      'Member',
       'Association',
       'EntitySet',
       'AssociationSet',
@@ -71,6 +73,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   protected _complexTypes = new Map<
     string,
     TSchema['ComplexType'][number]
+  >()
+  protected _enumTypes = new Map<
+    string,
+    TSchema['EnumType'][number]
   >()
   protected _functionDefinitions = new Map<
     string,
@@ -116,6 +122,9 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
       for (const node of schema.ComplexType || []) {
         this._complexTypes.set(`${ns}.${node.$Name}`, node)
       }
+      for (const node of (schema as any).EnumType || []) {
+        this._enumTypes.set(`${ns}.${node.$Name}`, node)
+      }
       // Parse V4 Function definitions
       for (const node of (schema as any).Function || []) {
         this._functionDefinitions.set(`${ns}.${node.$Name}`, node)
@@ -158,6 +167,9 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   getRawComplexType(name: string) {
     return this._complexTypes.get(name)
   }
+  getRawEnumType(name: string) {
+    return this._enumTypes.get(name)
+  }
   getRawEntitySet(name: keyof M['entitySets']) {
     return this._sets.get(name) || this._namespacedSets.get(name)
   }
@@ -166,6 +178,9 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   }
   getComplexTypesList() {
     return Array.from(this._complexTypes.keys())
+  }
+  getEnumTypesList() {
+    return Array.from(this._enumTypes.keys())
   }
   getEntitySetsList(suppressNamespace = false) {
     return suppressNamespace ? Array.from(this._sets.keys()) : Array.from(this._namespacedSets.keys())
@@ -374,6 +389,14 @@ export interface TSchema {
           Property: RawMetadataProperty[]
           $Name: string
           $label?: string
+        }[]
+        'EnumType': {
+          Member: {
+            $Name: string
+            $Value: string
+          }[]
+          $Name: string
+          $IsFlags?: boolean
         }[]
         'Association': {
           'End': [RawMetadataEnd, RawMetadataEnd]

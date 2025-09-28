@@ -396,6 +396,7 @@ export interface TNorthwindV4SelectedOData extends TOdataDummyInterface {
     };
   };
   complexTypes: {};
+  enumTypes: {};
   functions: {};
 }
 

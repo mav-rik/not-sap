@@ -64,6 +64,12 @@ describe('Generated Artifacts Tests', () => {
         interfaceName: 'THanaService',
         fileName: 'combined-services.ts',
         isPartOfCombined: true
+      },
+      {
+        className: 'TripPinRESTierService',
+        constName: 'tripPinRESTierServiceConsts',
+        interfaceName: 'TTripPinRESTierService',
+        fileName: 'TripPinRESTierService.ts'
       }
     ]
 
@@ -125,7 +131,8 @@ describe('Generated Artifacts Tests', () => {
         'northwind-v4.ts',
         'northwind-v4-selected.ts',
         'sap-v4.ts',
-        'combined-services.ts'
+        'combined-services.ts',
+        'TripPinRESTierService.ts'
       ]
 
       const actualFiles = readdirSync(generatedDir).filter(f => f.endsWith('.ts'))
@@ -133,6 +140,72 @@ describe('Generated Artifacts Tests', () => {
       expectedFiles.forEach(file => {
         expect(actualFiles).toContain(file)
       })
+    })
+  })
+
+  describe('Enum Types Generation', () => {
+    it('should generate enum types in TripPin service', () => {
+      const filePath = join(generatedDir, 'TripPinRESTierService.ts')
+      const fileContent = readFileSync(filePath, 'utf-8')
+
+      // Check that enumTypes section exists in the interface
+      expect(fileContent).toContain('enumTypes: {')
+
+      // Check specific enum type definitions
+      expect(fileContent).toMatch(/'Trippin\.PersonGender':\s*'Male'\s*\|\s*'Female'\s*\|\s*'Unknown'/)
+      expect(fileContent).toMatch(/'Trippin\.Feature':\s*'Feature1'\s*\|\s*'Feature2'\s*\|\s*'Feature3'\s*\|\s*'Feature4'/)
+    })
+
+    it('should use enum type references in entity fields', () => {
+      const filePath = join(generatedDir, 'TripPinRESTierService.ts')
+      const fileContent = readFileSync(filePath, 'utf-8')
+
+      // Check that Gender field references the enum type
+      expect(fileContent).toContain("Gender: TTripPinRESTierServiceOData['enumTypes']['Trippin.PersonGender']")
+
+      // Check that FavoriteFeature field references the enum type
+      expect(fileContent).toContain("FavoriteFeature: TTripPinRESTierServiceOData['enumTypes']['Trippin.Feature']")
+
+      // Check that Features array field references the enum type
+      expect(fileContent).toContain("Features: Array<TTripPinRESTierServiceOData['enumTypes']['Trippin.Feature']>")
+    })
+
+    it('should not use "any" type for enum fields', () => {
+      const filePath = join(generatedDir, 'TripPinRESTierService.ts')
+      const fileContent = readFileSync(filePath, 'utf-8')
+
+      // Extract the Person entity record definition
+      const personRecordMatch = fileContent.match(/'Trippin\.Person':\s*\{[\s\S]*?record:\s*\{([\s\S]*?)\};/m)
+
+      if (personRecordMatch) {
+        const recordContent = personRecordMatch[1]
+
+        // Check that enum fields don't use "any" type
+        const genderLine = recordContent.match(/Gender:\s*([^;]+);/)
+        expect(genderLine?.[1]).not.toContain('any')
+
+        const featureLine = recordContent.match(/FavoriteFeature:\s*([^;]+);/)
+        expect(featureLine?.[1]).not.toContain('any')
+
+        const featuresLine = recordContent.match(/Features:\s*([^;]+);/)
+        expect(featuresLine?.[1]).not.toContain('any')
+      } else {
+        // If we can't find the record, fail the test
+        expect(personRecordMatch).not.toBeNull()
+      }
+    })
+
+    it('should handle both single and collection enum types', () => {
+      const filePath = join(generatedDir, 'TripPinRESTierService.ts')
+      const fileContent = readFileSync(filePath, 'utf-8')
+
+      // Single enum type (not an array)
+      const genderPattern = /Gender:\s*TTripPinRESTierServiceOData\['enumTypes'\]\['Trippin\.PersonGender'\]/
+      expect(fileContent).toMatch(genderPattern)
+
+      // Collection enum type (array)
+      const featuresPattern = /Features:\s*Array<TTripPinRESTierServiceOData\['enumTypes'\]\['Trippin\.Feature'\]>/
+      expect(fileContent).toMatch(featuresPattern)
     })
   })
 })

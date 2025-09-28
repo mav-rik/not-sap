@@ -134,6 +134,7 @@ export interface TOdataV2OData extends TOdataDummyInterface {
       Country?: string;
     };
   };
+  enumTypes: {};
   functions: {
     'GetProductsByRating': {
       params: {

@@ -109,13 +109,13 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         FirstName: string;
         LastName?: string;
         MiddleName?: string;
-        Gender: any;
+        Gender: TTripPinRESTierServiceOData['enumTypes']['Trippin.PersonGender'];
         Age?: number;
         Emails?: Array<string>;
         AddressInfo?: Array<TTripPinRESTierServiceOData['complexTypes']['Trippin.Location']>;
         HomeAddress?: TTripPinRESTierServiceOData['complexTypes']['Trippin.Location'];
-        FavoriteFeature: any;
-        Features: Array<any>;
+        FavoriteFeature: TTripPinRESTierServiceOData['enumTypes']['Trippin.Feature'];
+        Features: Array<TTripPinRESTierServiceOData['enumTypes']['Trippin.Feature']>;
         Friends?: Array<TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record']>;
         BestFriend?: TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record'] | null;
         Trips?: Array<TTripPinRESTierServiceOData['entityTypes']['Trippin.Trip']['record']>;
@@ -193,6 +193,10 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
       CountryRegion?: string;
       Region?: string;
     };
+  };
+  enumTypes: {
+    'Trippin.PersonGender': 'Male' | 'Female' | 'Unknown';
+    'Trippin.Feature': 'Feature1' | 'Feature2' | 'Feature3' | 'Feature4';
   };
   functions: {
     'GetPersonWithMostFriends': {
