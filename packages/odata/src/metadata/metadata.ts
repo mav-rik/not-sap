@@ -91,7 +91,7 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
   >()
   protected _actions = new Map<
     string,
-    Required<TSchema>['Function'][number]
+    Required<TSchema>['Action'][number]
   >()
   protected _assoc = new Map<
     string,
@@ -146,6 +146,10 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
       for (const node of schema.Function || []) {
         this._functions.set(`${ns}.${node.$Name}`, node)
       }
+      // Parse V4 Action definitions
+      for (const node of schema.Action || []) {
+        this._actions.set(`${ns}.${node.$Name}`, node)
+      }
       for (const node of schema.Association || []) {
         this._assoc.set(`${ns}.${node.$Name}`, node)
       }
@@ -163,11 +167,15 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
           defName: node.$Function,
           kind: !this.isV4 && node.$HttpMethod === 'POST' ? 'Action' : 'Function',
           params: [],
-          boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : node.$EntitySet,
+          boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : '',
           returnType: {
             type: def?.ReturnType?.$Type ?? node.$ReturnType ?? '',
             nullable: def?.ReturnType?.$Nullable,
           },
+        }
+        if (node.$EntitySet) {
+          // v2 bind to entity type
+          fn.boundTo = this._sets.get(node.$EntitySet)?.$EntityType
         }
         if (this.isV4 && def) {
           fn.params.push(...((def.$IsBound ? def.Parameter?.slice(1) : def.Parameter) || []))
@@ -188,8 +196,8 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
           params: [],
           boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : undefined,
           returnType: {
-            type: def?.ReturnType.$Type || '',
-            nullable: def?.ReturnType.$Nullable,
+            type: def?.ReturnType?.$Type || '',
+            nullable: def?.ReturnType?.$Nullable,
           },
         }
         if (def) {
@@ -442,11 +450,8 @@ export interface TSchema {
         'Action': {
           $Name: string
           $IsBound?: boolean
-          Parameter?: {
-            $Name: string
-            $Type: string
-          }[]
-          ReturnType: {
+          Parameter?: RawMetadataFunctionParameter[]
+          ReturnType?: {
             $Type: string
             $Nullable?: boolean
           }

@@ -1,0 +1,21 @@
+{
+  "description": "V2 function import invoked via POST returning a created invoice",
+  "requests": [
+    {
+      "method": "POST",
+      "url": "https://example.test/odata/path/post-functions-v2/CreateInvoice",
+      "body": {
+        "Customer": "ALFKI",
+        "Amount": 250.75
+      },
+      "response": {
+        "d": {
+          "InvoiceID": 9001,
+          "Customer": "ALFKI",
+          "Amount": 250.75,
+          "Status": "Created"
+        }
+      }
+    }
+  ]
+}

@@ -73,6 +73,8 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
         YEAR: string;
         Set?: Array<THanaV4ParamOData['entityTypes']['UKDataService.MyPartnersType']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'UKDataService.MyPartnersType': {
       keys: THanaV4Param["UKDataService"]["MyPartnersType"]["keys"];
@@ -167,6 +169,8 @@ export interface THanaV4ParamOData extends TOdataDummyInterface {
         PersonalService_TaxQ4?: number;
         Parameters?: THanaV4ParamOData['entityTypes']['UKDataService.MyPartnersParameters']['record'] | null;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {};

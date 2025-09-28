@@ -51,6 +51,8 @@ export interface TOdataDummyInterface {
       navToMany: Record<string, string>
       navToOne: Record<string, string>
       record: Record<string, unknown>
+      actions: string
+      functions: string
     }
   >
   functions: Record<
@@ -530,17 +532,19 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
   async callFunction<T extends keyof M['functions']>(
     name: T,
     _params?: M['functions'][T]['params'],
-    disableBatch?: boolean
+    disableBatch?: boolean,
+    prefix?: string,
   ): Promise<M['functions'][T]['returnType']> {
-    return this._callFunction(name as string, _params, disableBatch, 'GET')
+    return this._callFunction(name as string, _params, disableBatch, 'GET', prefix)
   }
 
   async callAction<T extends keyof M['actions']>(
     name: T,
-    _params?: M['functions'][T]['params'],
-    disableBatch?: boolean
+    _params?: M['actions'][T]['params'],
+    disableBatch?: boolean,
+    prefix?: string,
   ): Promise<M['actions'][T]['returnType']> {
-    return this._callFunction(name as string, _params, disableBatch, 'POST')
+    return this._callFunction(name as string, _params, disableBatch, 'POST', prefix)
   }
 
   protected async _callFunction(
@@ -548,30 +552,35 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     _params?: unknown,
     disableBatch?: boolean,
     method: 'GET' | 'POST' = 'GET',
+    prefix?: string,
   ): Promise<unknown> {
     const metadata = await this.getMetadata()
     const fnMeta = metadata.getFunction(name as string)
     if (!fnMeta) {
       throw new Error(`Function "${name as string}" not found in metadata of "${this.service}"`)
     }
-    const params = {} as Record<string, string>
+    const params = {} as Record<string, unknown>
+    const target = method === 'POST' ? 'json' : 'filter'
     if (_params) {
       for (const param of fnMeta.params ?? []) {
         const paramName = param.$Name
         if (paramName in (_params as Record<string, any>)) {
           const value = (_params as Record<string, any>)[paramName]
-          params[param.$Name] = odataValueFormat.toFilter[param.$Type as 'Edm.String'](
-            value as string
-          )
+          params[param.$Name] = target === 'filter' ? odataValueFormat.toFilter[param.$Type as 'Edm.String'](value as string)
+            : odataValueFormat.toJson[param.$Type as 'Edm.String'](value as string)
         }
       }
       if (!Object.keys(params).length) {
         for (const [key, value] of Object.entries(_params as Record<string, unknown>)) {
           if (value === undefined || value === null) continue
-          if (typeof value === 'number' || typeof value === 'boolean') {
-            params[key] = String(value)
+          if (target === 'filter') {
+            if (typeof value === 'number' || typeof value === 'boolean') {
+              params[key] = String(value)
+            } else {
+              params[key] = `'${String(value)}'`
+            }
           } else {
-            params[key] = `'${String(value)}'`
+            params[key] = value
           }
         }
       }
@@ -580,7 +589,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     const isV4 = metadata.isV4
     const fnName = fnMeta.name
     const requestPath = (() => {
-      if (!isV4) {
+      if (!isV4 || method === 'POST') {
         return name as string
       }
       const entries = Object.entries(params)
@@ -590,22 +599,41 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       const args = entries.map(([key, value]) => `${key}=${value}`).join(',')
       return `${fnName}(${args})`
     })()
+    const prefixedPath = prefix ? `${prefix}/${requestPath}` : requestPath
 
-    const requestParams = isV4 ? undefined : (params as Record<string, string>)
-
-    const data = await this._fetch(
-      this.genRequestUrl(requestPath, requestParams),
-      {
-        method,
-        headers: {
-          ...this.options.headers,
-          accept: 'application/json',
+    const requestParams = !isV4 || method === 'POST' ? params as Record<string, string> : undefined
+    if (method === 'GET') {
+      const data = await this._fetch(
+        this.genRequestUrl(prefixedPath, requestParams),
+        {
+          method,
+          headers: {
+            ...this.options.headers,
+            accept: 'application/json',
+          },
         },
-      },
-      'json',
-      disableBatch
-    )
-    return data
+        'json',
+        disableBatch
+      )
+      return isV4 ? data : (data as {d: unknown}).d
+    } else {
+      const data = await this._fetch(
+        this.genRequestUrl(prefixedPath),
+        {
+          method,
+          headers: {
+            ...this.options.headers,
+            accept: 'application/json',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(requestParams),
+        },
+        'json',
+        disableBatch
+      )
+      const isCollection = fnMeta.returnType?.type?.startsWith('Collection(')
+      return isV4 ? (data as any).value : isCollection ? ((data as any).d?.results || (data as any).d) : (data as any).d
+    }
   }
 
   /* =========================================

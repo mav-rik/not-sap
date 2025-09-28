@@ -101,6 +101,8 @@ export interface TSapServiceOData extends TOdataDummyInterface {
         CollectionStep: string;
         BillableItemText: string;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {};
@@ -198,6 +200,8 @@ export interface THanaServiceOData extends TOdataDummyInterface {
         YEAR: string;
         Set?: Array<THanaServiceOData['entityTypes']['UKDataService.MyPartnersType']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'UKDataService.MyPartnersType': {
       keys: THanaService["UKDataService"]["MyPartnersType"]["keys"];
@@ -292,6 +296,8 @@ export interface THanaServiceOData extends TOdataDummyInterface {
         PersonalService_TaxQ4?: number;
         Parameters?: THanaServiceOData['entityTypes']['UKDataService.MyPartnersParameters']['record'] | null;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {};

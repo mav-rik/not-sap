@@ -124,6 +124,6 @@ describe('V2 Actions Generation', () => {
     expect(generatedCode).toMatch(/'ResetDatabase'.*?returnType:\s*void/s)
 
     // UpdateProductAddress returns boolean (possibly nullable)
-    expect(generatedCode).toMatch(/'UpdateProductAddress'.*?returnType:\s*boolean/s)
+    expect(generatedCode).toMatch(/'UpdateProductAddress'.*?returnType:\s*{ 'UpdateProductAddress': boolean }/s)
   })
 })

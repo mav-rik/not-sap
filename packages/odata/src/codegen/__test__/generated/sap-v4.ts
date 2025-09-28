@@ -101,6 +101,8 @@ export interface TSapV4OData extends TOdataDummyInterface {
         CollectionStep: string;
         BillableItemText: string;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {};

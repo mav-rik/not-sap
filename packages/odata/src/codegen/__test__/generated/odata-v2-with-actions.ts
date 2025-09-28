@@ -66,6 +66,8 @@ export interface TOdataV2WithActionsOData extends TOdataDummyInterface {
         Rating: number;
         Price: number;
       };
+      actions: "CreateProduct";
+      functions: "GetProductsByRating";
     };
   };
   complexTypes: {
@@ -93,7 +95,7 @@ export interface TOdataV2WithActionsOData extends TOdataDummyInterface {
         Rating: number | null;
         Price: number | null;
       };
-      returnType: TOdataV2WithActionsOData['entityTypes']['ODataDemo.Product']['record'] | null;
+      returnType: TOdataV2WithActionsOData['entityTypes']['ODataDemo.Product']['record'];
     };
     'ResetDatabase': {
       params: never;
@@ -104,7 +106,7 @@ export interface TOdataV2WithActionsOData extends TOdataDummyInterface {
         ProductID: number | null;
         Address: TOdataV2WithActionsOData['complexTypes']['ODataDemo.Address'] | null;
       };
-      returnType: boolean | null;
+      returnType: { 'UpdateProductAddress': boolean };
     };
   };
 }

@@ -1,0 +1,18 @@
+{
+  "description": "Bound V2 function import that closes an invoice",
+  "requests": [
+    {
+      "method": "POST",
+      "url": "https://example.test/odata/path/post-functions-v2/Invoices(InvoiceID=9001)/CloseInvoice",
+      "body": {
+        "InvoiceID": 9001,
+        "Reason": "Paid in full"
+      },
+      "response": {
+        "d": {
+          "CloseInvoice": true
+        }
+      }
+    }
+  ]
+}

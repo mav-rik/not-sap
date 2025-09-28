@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx">
+  <edmx:DataServices
+    xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+    m:DataServiceVersion="2.0"
+    m:MaxDataServiceVersion="2.0">
+    <Schema Namespace="InvoiceService" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+      <EntityType Name="Invoice">
+        <Key>
+          <PropertyRef Name="InvoiceID" />
+        </Key>
+        <Property Name="InvoiceID" Type="Edm.Int32" Nullable="false" />
+        <Property Name="Customer" Type="Edm.String" />
+        <Property Name="Amount" Type="Edm.Decimal" Nullable="false" />
+        <Property Name="Status" Type="Edm.String" />
+      </EntityType>
+      <EntityContainer Name="InvoiceContainer" m:IsDefaultEntityContainer="true">
+        <EntitySet Name="Invoices" EntityType="InvoiceService.Invoice" />
+        <FunctionImport
+          Name="CreateInvoice"
+          ReturnType="InvoiceService.Invoice"
+          m:HttpMethod="POST">
+          <Parameter Name="Customer" Type="Edm.String" />
+          <Parameter Name="Amount" Type="Edm.Decimal" Nullable="false" />
+        </FunctionImport>
+        <FunctionImport
+          Name="CloseInvoice"
+          ReturnType="Edm.Boolean"
+          EntitySet="Invoices"
+          m:HttpMethod="POST">
+          <Parameter Name="InvoiceID" Type="Edm.Int32" Nullable="false" />
+          <Parameter Name="Reason" Type="Edm.String" Nullable="true" />
+        </FunctionImport>
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

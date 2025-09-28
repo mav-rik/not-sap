@@ -43,4 +43,20 @@ export class EntityRecord<
         }
         return new EntityRecord<M, M['entityTypes'][T]['navToOne'][NT]>(this._m, navTo.$Type as M['entityTypes'][T]['navToOne'][NT], `${this.prefix}/${navProp as string}`)
     }
+
+    callAction<FN extends M['entityTypes'][T]['actions']>(
+        name: FN,
+        params?: M['actions'][FN]['params'],
+        disableBatch?: boolean
+    ): Promise<M['actions'][FN]['returnType']>  {
+        return this._m.model.callAction(name, params, disableBatch, this.prefix)
+    }
+
+    callFunction<FN extends M['entityTypes'][T]['functions']>(
+        name: FN,
+        params?: M['functions'][FN]['params'],
+        disableBatch?: boolean
+    ): Promise<M['functions'][FN]['returnType']>  {
+        return this._m.model.callFunction(name, params, disableBatch, this.prefix)
+    }
 }

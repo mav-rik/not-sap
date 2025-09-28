@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="TaskService" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="Task">
+        <Key>
+          <PropertyRef Name="Id" />
+        </Key>
+        <Property Name="Id" Type="Edm.Guid" Nullable="false" />
+        <Property Name="Title" Type="Edm.String" />
+        <Property Name="Status" Type="Edm.String" />
+        <Property Name="Owner" Type="Edm.String" />
+      </EntityType>
+      <Action Name="CompleteTask">
+        <Parameter Name="TaskId" Type="Edm.Guid" Nullable="false" />
+        <Parameter Name="Comment" Type="Edm.String" Nullable="true" />
+        <Parameter Name="Rating" Type="Edm.Int32" Nullable="false" />
+        <ReturnType Type="TaskService.Task" />
+      </Action>
+      <Action Name="ReassignTask" IsBound="true">
+        <Parameter Name="task" Type="TaskService.Task" Nullable="false" />
+        <Parameter Name="NewOwner" Type="Edm.String" Nullable="false" />
+        <ReturnType Type="TaskService.Task" />
+      </Action>
+      <EntityContainer Name="Default">
+        <EntitySet Name="Tasks" EntityType="TaskService.Task" />
+        <ActionImport Name="CompleteTask" Action="TaskService.CompleteTask" />
+        <ActionImport Name="ReassignTask" Action="TaskService.ReassignTask" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

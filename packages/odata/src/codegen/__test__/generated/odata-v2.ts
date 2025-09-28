@@ -93,6 +93,8 @@ export interface TOdataV2OData extends TOdataDummyInterface {
         Category?: TOdataV2OData['entityTypes']['ODataDemo.Category']['record'] | null;
         Supplier?: TOdataV2OData['entityTypes']['ODataDemo.Supplier']['record'] | null;
       };
+      actions: never;
+      functions: "GetProductsByRating";
     };
     'ODataDemo.Category': {
       keys: TOdataV2["ODataDemo"]["Category"]["keys"];
@@ -107,6 +109,8 @@ export interface TOdataV2OData extends TOdataDummyInterface {
         Name?: string;
         Products?: { results: Array<TOdataV2OData['entityTypes']['ODataDemo.Product']['record']> };
       };
+      actions: never;
+      functions: never;
     };
     'ODataDemo.Supplier': {
       keys: TOdataV2["ODataDemo"]["Supplier"]["keys"];
@@ -123,6 +127,8 @@ export interface TOdataV2OData extends TOdataDummyInterface {
         Concurrency: number;
         Products?: { results: Array<TOdataV2OData['entityTypes']['ODataDemo.Product']['record']> };
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {

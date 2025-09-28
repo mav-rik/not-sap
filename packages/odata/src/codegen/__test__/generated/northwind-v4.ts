@@ -341,6 +341,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Picture?: string;
         Products?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Product']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.CustomerDemographic': {
       keys: TNorthwindV4["NorthwindModel"]["CustomerDemographic"]["keys"];
@@ -355,6 +357,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         CustomerDesc?: string;
         Customers?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Customer']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Customer': {
       keys: TNorthwindV4["NorthwindModel"]["Customer"]["keys"];
@@ -380,6 +384,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Orders?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Order']['record']>;
         CustomerDemographics?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.CustomerDemographic']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Employee': {
       keys: TNorthwindV4["NorthwindModel"]["Employee"]["keys"];
@@ -417,6 +423,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Orders?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Order']['record']>;
         Territories?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Territory']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Order_Detail': {
       keys: TNorthwindV4["NorthwindModel"]["Order_Detail"]["keys"];
@@ -436,6 +444,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Order?: TNorthwindV4OData['entityTypes']['NorthwindModel.Order']['record'] | null;
         Product?: TNorthwindV4OData['entityTypes']['NorthwindModel.Product']['record'] | null;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Order': {
       keys: TNorthwindV4["NorthwindModel"]["Order"]["keys"];
@@ -469,6 +479,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Order_Details?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Order_Detail']['record']>;
         Shipper?: TNorthwindV4OData['entityTypes']['NorthwindModel.Shipper']['record'] | null;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Product': {
       keys: TNorthwindV4["NorthwindModel"]["Product"]["keys"];
@@ -496,6 +508,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Order_Details?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Order_Detail']['record']>;
         Supplier?: TNorthwindV4OData['entityTypes']['NorthwindModel.Supplier']['record'] | null;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Region': {
       keys: TNorthwindV4["NorthwindModel"]["Region"]["keys"];
@@ -510,6 +524,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         RegionDescription?: string;
         Territories?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Territory']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Shipper': {
       keys: TNorthwindV4["NorthwindModel"]["Shipper"]["keys"];
@@ -525,6 +541,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Phone?: string;
         Orders?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Order']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Supplier': {
       keys: TNorthwindV4["NorthwindModel"]["Supplier"]["keys"];
@@ -549,6 +567,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         HomePage?: string;
         Products?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Product']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Territory': {
       keys: TNorthwindV4["NorthwindModel"]["Territory"]["keys"];
@@ -567,6 +587,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Region?: TNorthwindV4OData['entityTypes']['NorthwindModel.Region']['record'] | null;
         Employees?: Array<TNorthwindV4OData['entityTypes']['NorthwindModel.Employee']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Alphabetical_list_of_product': {
       keys: TNorthwindV4["NorthwindModel"]["Alphabetical_list_of_product"]["keys"];
@@ -587,6 +609,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Discontinued: boolean;
         CategoryName: string;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Category_Sales_for_1997': {
       keys: TNorthwindV4["NorthwindModel"]["Category_Sales_for_1997"]["keys"];
@@ -598,6 +622,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         CategoryName: string;
         CategorySales?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Current_Product_List': {
       keys: TNorthwindV4["NorthwindModel"]["Current_Product_List"]["keys"];
@@ -609,6 +635,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ProductID: number;
         ProductName: string;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Customer_and_Suppliers_by_City': {
       keys: TNorthwindV4["NorthwindModel"]["Customer_and_Suppliers_by_City"]["keys"];
@@ -622,6 +650,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ContactName?: string;
         Relationship: string;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Invoice': {
       keys: TNorthwindV4["NorthwindModel"]["Invoice"]["keys"];
@@ -657,6 +687,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ExtendedPrice?: number;
         Freight?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Order_Details_Extended': {
       keys: TNorthwindV4["NorthwindModel"]["Order_Details_Extended"]["keys"];
@@ -673,6 +705,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         Discount: number;
         ExtendedPrice?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Order_Subtotal': {
       keys: TNorthwindV4["NorthwindModel"]["Order_Subtotal"]["keys"];
@@ -684,6 +718,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         OrderID: number;
         Subtotal?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Orders_Qry': {
       keys: TNorthwindV4["NorthwindModel"]["Orders_Qry"]["keys"];
@@ -713,6 +749,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         PostalCode?: string;
         Country?: string;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Product_Sales_for_1997': {
       keys: TNorthwindV4["NorthwindModel"]["Product_Sales_for_1997"]["keys"];
@@ -725,6 +763,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ProductName: string;
         ProductSales?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Products_Above_Average_Price': {
       keys: TNorthwindV4["NorthwindModel"]["Products_Above_Average_Price"]["keys"];
@@ -736,6 +776,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ProductName: string;
         UnitPrice?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Products_by_Category': {
       keys: TNorthwindV4["NorthwindModel"]["Products_by_Category"]["keys"];
@@ -750,6 +792,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         UnitsInStock?: number;
         Discontinued: boolean;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Sales_by_Category': {
       keys: TNorthwindV4["NorthwindModel"]["Sales_by_Category"]["keys"];
@@ -763,6 +807,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         ProductName: string;
         ProductSales?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Sales_Totals_by_Amount': {
       keys: TNorthwindV4["NorthwindModel"]["Sales_Totals_by_Amount"]["keys"];
@@ -776,6 +822,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         CompanyName: string;
         ShippedDate?: string;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Summary_of_Sales_by_Quarter': {
       keys: TNorthwindV4["NorthwindModel"]["Summary_of_Sales_by_Quarter"]["keys"];
@@ -788,6 +836,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         OrderID: number;
         Subtotal?: number;
       };
+      actions: never;
+      functions: never;
     };
     'NorthwindModel.Summary_of_Sales_by_Year': {
       keys: TNorthwindV4["NorthwindModel"]["Summary_of_Sales_by_Year"]["keys"];
@@ -800,6 +850,8 @@ export interface TNorthwindV4OData extends TOdataDummyInterface {
         OrderID: number;
         Subtotal?: number;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {};

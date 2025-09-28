@@ -1,0 +1,23 @@
+{
+  "description": "Action call that completes a task with a comment and rating",
+  "requests": [
+    {
+      "method": "POST",
+      "url": "https://example.test/odata/path/task-service-v4/CompleteTask",
+      "body": {
+        "TaskId": "0f8fad5b-d9cb-469f-a165-70867728950e",
+        "Comment": "Done",
+        "Rating": 5
+      },
+      "response": {
+        "@odata.context": "https://example.test/odata/task-service-v4/$metadata#Tasks/$entity",
+        "value": {
+          "Id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+          "Title": "Prepare Quarterly Budget",
+          "Status": "Completed",
+          "Owner": "ROOT"
+        }
+      }
+    }
+  ]
+}

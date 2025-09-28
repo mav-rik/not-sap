@@ -21,6 +21,8 @@ export interface TGenerateEntityTypeDefinition {
   navToMany: Record<string, string>
   navToOne: Record<string, string>
   record: Record<string, unknown>
+  functions: string
+  actions: string
 }
 
 interface TEntityTypeConsts {
@@ -134,6 +136,8 @@ export function generateEntityTypeTypes(
     capitalizedAlias?: string
     typesToGen: Set<string>
     metadata: Metadata<any>
+    boundActions?: string[]
+    boundFunctions?: string[]
   }
 ): {
   consts: TModelConsts
@@ -220,6 +224,8 @@ export function generateEntityTypeTypes(
       navToMany,
       navToOne,
       record,
+      actions: opts.boundActions?.map(a => JSON.stringify(a)).join(' | ') || 'never',
+      functions: opts.boundFunctions?.map(a => JSON.stringify(a)).join(' | ') || 'never',
     },
   }
 }
@@ -277,6 +283,23 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
   const modelConsts: TModelConsts = {}
   const modelTypes: TModelTypes = {}
 
+  const boundActions = new Map<string, string[]>()
+  const boundFunctions = new Map<string, string[]>()
+  const bindAction = (et: string, fn: string) => {
+    if (boundActions.has(et)) {
+      boundActions.get(et)!.push(fn)
+    } else {
+      boundActions.set(et, [fn])
+    }
+  }
+  const bindFunction = (et: string, fn: string) => {
+    if (boundFunctions.has(et)) {
+      boundFunctions.get(et)!.push(fn)
+    } else {
+      boundFunctions.set(et, [fn])
+    }
+  }
+
   // add types mentioned in functions
   for (const fName of m.getFunctionsList()) {
     const fn = m.getFunction(fName)!
@@ -294,6 +317,14 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
 
     fn.params.forEach(p => discoverType(p.$Type))
     discoverType(fn.returnType.type)
+
+    if (fn.boundTo) {
+      if (fn.kind === 'Function') {
+        bindFunction(fn.boundTo, fn.name)
+      } else {
+        bindAction(fn.boundTo, fn.name)
+      }
+    }
   }
 
   const toProcess = Array.from(typesToGen)
@@ -382,7 +413,9 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         modelAlias,
         capitalizedAlias: cModelAlias,
         typesToGen,
-        metadata: m
+        metadata: m,
+        boundActions: boundActions.get(currentType),
+        boundFunctions: boundFunctions.get(currentType),
       })
       mergeDeep(modelConsts, consts)
       mergeDeep(modelTypes, types)
@@ -397,7 +430,9 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
         navToMany: entity.navToMany,
         navToOne: entity.navToOne,
         record: entity.record,
-      })
+        actions: entity.actions,
+        functions: entity.functions,
+      })  
     }
 
     // generate complex type
@@ -462,6 +497,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       navToMany: entityType.navToMany,
       navToOne: entityType.navToOne,
       record: entityType.record,
+      actions: entityType.actions,
+      functions: entityType.functions,
     }
   }
 
@@ -488,7 +525,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       }
     }
     if (fn.returnType.type) {
-      const { actualType, isCollection } = parseType(fn.returnType.type)
+      const { actualType, isCollection, isEdm } = parseType(fn.returnType.type)
+
       const mappedType = mapODataTypeToTypeScript(actualType, {
         modelAlias,
         capitalizedAlias: cModelAlias,
@@ -496,11 +534,8 @@ export function generateModelTypes(m: Metadata<any>, opts: TGenerateModelOpts): 
       })
 
       returnType = isCollection ? `Array<${mappedType}>` : mappedType
-
-      // Check for nullable
-      const nullable = fn.returnType.nullable !== false
-      if (nullable && returnType !== 'string' && !isCollection) {
-        returnType = `${returnType} | null`
+      if (!m.isV4 && isEdm) {
+        returnType = `{ '${fName}': ${returnType} }`
       }
     }
 

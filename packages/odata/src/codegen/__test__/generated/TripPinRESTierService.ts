@@ -120,6 +120,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         BestFriend?: TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record'] | null;
         Trips?: Array<TTripPinRESTierServiceOData['entityTypes']['Trippin.Trip']['record']>;
       };
+      actions: never;
+      functions: "GetPersonWithMostFriends";
     };
     'Trippin.Airline': {
       keys: TTripPinRESTierService["Trippin"]["Airline"]["keys"];
@@ -131,6 +133,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         AirlineCode: string;
         Name?: string;
       };
+      actions: never;
+      functions: never;
     };
     'Trippin.Airport': {
       keys: TTripPinRESTierService["Trippin"]["Airport"]["keys"];
@@ -144,6 +148,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         IataCode?: string;
         Location?: TTripPinRESTierServiceOData['complexTypes']['Trippin.AirportLocation'];
       };
+      actions: never;
+      functions: "GetNearestAirport";
     };
     'Trippin.Trip': {
       keys: TTripPinRESTierService["Trippin"]["Trip"]["keys"];
@@ -164,6 +170,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         EndsAt: string;
         PlanItems?: Array<TTripPinRESTierServiceOData['entityTypes']['Trippin.PlanItem']['record']>;
       };
+      actions: never;
+      functions: never;
     };
     'Trippin.PlanItem': {
       keys: TTripPinRESTierService["Trippin"]["PlanItem"]["keys"];
@@ -178,6 +186,8 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
         EndsAt: string;
         Duration: string;
       };
+      actions: never;
+      functions: never;
     };
   };
   complexTypes: {
@@ -201,14 +211,14 @@ export interface TTripPinRESTierServiceOData extends TOdataDummyInterface {
   functions: {
     'GetPersonWithMostFriends': {
       params: never;
-      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record'] | null;
+      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Person']['record'];
     };
     'GetNearestAirport': {
       params: {
         lat: number;
         lon: number;
       };
-      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Airport']['record'] | null;
+      returnType: TTripPinRESTierServiceOData['entityTypes']['Trippin.Airport']['record'];
     };
   };
   actions: {
