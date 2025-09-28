@@ -1,0 +1,54 @@
+<edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" Version="1.0">
+    <edmx:DataServices xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+        m:DataServiceVersion="2.0" m:MaxDataServiceVersion="2.0">
+        <Schema xmlns="http://schemas.microsoft.com/ado/2007/05/edm" Namespace="ODataDemo">
+            <EntityType Name="Product">
+                <Key>
+                    <PropertyRef Name="ID" />
+                </Key>
+                <Property Name="ID" Type="Edm.Int32" Nullable="false" />
+                <Property Name="Name" Type="Edm.String" />
+                <Property Name="Description" Type="Edm.String" />
+                <Property Name="ReleaseDate" Type="Edm.DateTime" Nullable="false" />
+                <Property Name="DiscontinuedDate" Type="Edm.DateTime" />
+                <Property Name="Rating" Type="Edm.Int32" Nullable="false" />
+                <Property Name="Price" Type="Edm.Decimal" Nullable="false" />
+            </EntityType>
+            <ComplexType Name="Address">
+                <Property Name="Street" Type="Edm.String" />
+                <Property Name="City" Type="Edm.String" />
+                <Property Name="State" Type="Edm.String" />
+                <Property Name="ZipCode" Type="Edm.String" />
+                <Property Name="Country" Type="Edm.String" />
+            </ComplexType>
+            <EntityContainer Name="DemoService" m:IsDefaultEntityContainer="true">
+                <EntitySet Name="Products" EntityType="ODataDemo.Product" />
+                <!-- V2 Function (GET) -->
+                <FunctionImport Name="GetProductsByRating"
+                    ReturnType="Collection(ODataDemo.Product)" EntitySet="Products"
+                    m:HttpMethod="GET">
+                    <Parameter Name="rating" Type="Edm.Int32" />
+                </FunctionImport>
+                <!-- V2 Action (POST) -->
+                <FunctionImport Name="CreateProduct"
+                    ReturnType="ODataDemo.Product" EntitySet="Products"
+                    m:HttpMethod="POST">
+                    <Parameter Name="Name" Type="Edm.String" />
+                    <Parameter Name="Rating" Type="Edm.Int32" />
+                    <Parameter Name="Price" Type="Edm.Decimal" />
+                </FunctionImport>
+                <!-- V2 Action with no return type -->
+                <FunctionImport Name="ResetDatabase"
+                    m:HttpMethod="POST">
+                </FunctionImport>
+                <!-- V2 Action with complex type parameter -->
+                <FunctionImport Name="UpdateProductAddress"
+                    ReturnType="Edm.Boolean"
+                    m:HttpMethod="POST">
+                    <Parameter Name="ProductID" Type="Edm.Int32" />
+                    <Parameter Name="Address" Type="ODataDemo.Address" />
+                </FunctionImport>
+            </EntityContainer>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

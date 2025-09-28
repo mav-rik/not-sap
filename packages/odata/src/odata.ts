@@ -22,6 +22,7 @@ export interface TODataOptions {
   host?: string
   csrfTtl?: number
   useBatch?: boolean
+  handleCsrf?: boolean
 }
 
 export interface TOdataBatchRequestItem {
@@ -153,7 +154,9 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       try {
         if (options.method && options.method !== 'GET') {
           options.headers = {
-            'x-csrf-token': await this.getCSRF(),
+            ...(this.options.handleCsrf ? {
+              'x-csrf-token': await this.getCSRF(),
+            } : {}),
             ...options.headers,
           }
         }
@@ -676,7 +679,9 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         headers: {
           'Content-Type': `multipart/mixed; boundary=${batchBoundary}`,
           'accept': 'multipart/mixed',
-          'x-csrf-token': await this.getCSRF(),
+          ...(this.options.handleCsrf ? {
+            'x-csrf-token': await this.getCSRF(),
+          } : {}),
           ...this.options.headers,
         },
         body: batchBody,

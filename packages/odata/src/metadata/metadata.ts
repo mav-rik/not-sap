@@ -165,13 +165,13 @@ export class Metadata<M extends TOdataDummyInterface = TOdataDummyInterface> {
           params: [],
           boundTo: def?.$IsBound ? def.Parameter?.[0]?.$Type : node.$EntitySet,
           returnType: {
-            type: def?.ReturnType.$Type ?? node.$ReturnType,
-            nullable: def?.ReturnType.$Nullable,
+            type: def?.ReturnType?.$Type ?? node.$ReturnType ?? '',
+            nullable: def?.ReturnType?.$Nullable,
           },
         }
         if (this.isV4 && def) {
           fn.params.push(...((def.$IsBound ? def.Parameter?.slice(1) : def.Parameter) || []))
-        } else {
+        } else if (node.Parameter) {
           fn.params.push(...node.Parameter.filter(p => !p.$Mode || p.$Mode === 'In'))
         }
         this._functionsAndActions.set(fn.name, fn)
