@@ -12,6 +12,8 @@
 
 `notsapodata` is a **type-safe**, **developer-friendly** TypeScript toolkit for working with OData v2/v4 services—SAP, HANA, Microsoft, custom providers, or anything else that speaks OData.
 
+[Demo Application](https://github.com/mav-rik/not-sap-demo)
+
 ### Why notsapodata?
 
 - **🔒 Fully Type-Safe**: Every entity set, field, navigation property, and function parameter is validated at compile time

@@ -6,6 +6,8 @@
 
 `notsap` is a TypeScript-first toolchain for building SAP Fiori-ready experiences without the weight of SAPUI5. It pairs a modern OData client with a Vue 3 UI kit so teams can ship fast, maintainable enterprise apps that still deploy to launchpad or run standalone.
 
+**[Demo Application →](https://github.com/mav-rik/not-sap-demo)**
+
 ## Why We Built This
 
 - Traditional SAPUI5 stacks impose heavy runtimes, sluggish boot times, and visual rigidity that slow product delivery.
@@ -47,5 +49,6 @@
 - Deep dive into the OData tooling: [packages/odata/README.md](./packages/odata/README.md)
 - Component architecture and examples: [packages/ui/README.md](./packages/ui/README.md)
 - Additional guides and patterns live inside each package README.
+- Demo application: [not-sap-demo](https://github.com/mav-rik/not-sap-demo)
 
-Contributions and feedback are welcome—let’s make SAP development feel modern again.
+Contributions and feedback are welcome—let's make SAP development feel modern again.

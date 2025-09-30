@@ -8,6 +8,8 @@
 
 notsapui is a type-safe Vue 3 component library that provides SAP-like UI components for building data-driven applications with OData services. It offers smart components that automatically handle data fetching, filtering, sorting, and display based on OData metadata.
 
+[Demo Application](https://github.com/mav-rik/not-sap-demo)
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsapui-table.webp" alt="Not SAP" />
 </p>
