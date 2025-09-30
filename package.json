@@ -1,6 +1,6 @@
 {
   "name": "notsap",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Monorepo for @notsap packages",
   "type": "module",
   "private": true,
