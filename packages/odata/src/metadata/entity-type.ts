@@ -600,12 +600,6 @@ export class EntityType<
               : (val as TODataFilterValWithType)
           if (!typed) continue
           let type = Object.keys(typed)[0] as TODataFilterConditionType
-          if (type === 'contains' && !this._m.isV4) {
-            type = 'substringof'
-          }
-          if (type === 'notContains' && !this._m.isV4) {
-            type = 'notSubstringof'
-          }
           if (!odataFilterFormat.toFilter[type]) continue
           const v = typed[type as keyof typeof typed] as
             | string
@@ -617,6 +611,13 @@ export class EntityType<
           const v1 = Array.isArray(v) ? v[0] : v
           const v2 = Array.isArray(v) ? v[1] : v
           const meta = this.getField(field as M['entityTypes'][T]['fields'])
+
+          if (type === 'contains' && !this._m.isV4) {
+            type = 'substringof'
+          }
+          if (type === 'notContains' && !this._m.isV4) {
+            type = 'notSubstringof'
+          }
 
           // Add expandPrefix to field name if provided
           const fieldPath = expandPrefix ? `${expandPrefix}/${field}` : field
