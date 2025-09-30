@@ -19,6 +19,7 @@ const props = withDefaults(
     selectOnClick?: boolean
     selectAllEnabled?: boolean
     onItemClick?: (item: Record<string, string>) => any
+    onItemDblClick?: (item: Record<string, string>) => any
     columnMenu?: { sort?: boolean; filters?: boolean; hide?: boolean; config?: boolean }
     virtualRowHeight?: number
     virtualOverscan?: number
@@ -70,6 +71,7 @@ const _loading = computed(() => props.loading || querying.value)
         :select-on-click
         :select-all-enabled
         :on-item-click
+        :on-item-dbl-click
         :column-menu
         :virtual-row-height
         :virtual-overscan

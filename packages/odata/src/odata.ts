@@ -387,16 +387,7 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
   ): Promise<M['entityTypes'][M['entitySets'][T]]['record']> {
     const m = await this.getMetadata()
     const es = m.getEntitySet(entitySet)
-    let path = ''
-    if (m.isV4) {
-      path = es.prepareRecordKey(record as any)
-    } else {
-      const { uri } = this.getRecordV2Metadata(record as any)
-      path = uri.split(this.service)[1]?.slice(1) || ''
-      if (!path) {
-        throw new Error(`Failed parsing __metadata.uri: ${uri}`)
-      }
-    }
+    const path = es.prepareRecordKey(record as any)
     const data = await this._fetch<TWrapODataRecord<M['entityTypes'][M['entitySets'][T]]['record']>>(
       this.genRequestUrl(path),
       {

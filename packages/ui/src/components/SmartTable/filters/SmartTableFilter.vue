@@ -472,6 +472,7 @@ function applyFavFilters(filters: TODataTypedFilterValue[]) {
                           v-bind="inputAttrs"
                           ref="searchInput"
                           :readonly="isDateType"
+                          autocomplete="off"
                           @input="refreshDropdownValues(queryImmediate)"
                           @keydown.backspace="onBackspace()"
                           @keydown.left="onLeft"

@@ -40,6 +40,7 @@ const props = withDefaults(
     selectOnClick?: boolean
     selectAllEnabled?: boolean
     onItemClick?: (item: T) => any
+    onItemDblClick?: (item: T) => any
     columnMenu?: { sort?: boolean; filters?: boolean; hide?: boolean; config?: boolean }
     virtualRowHeight?: number
     virtualOverscan?: number
@@ -120,6 +121,13 @@ function _onItemClick(event: MouseEvent, item: T) {
     event.stopPropagation()
   }
   props.onItemClick?.(item)
+}
+
+function _onItemDblClick(event: MouseEvent, item: T) {
+  if (!props.selectOnClick) {
+    event.stopPropagation()
+  }
+  props.onItemDblClick?.(item)
 }
 
 function _onSelectAll() {
@@ -340,6 +348,7 @@ function over(event: DragEvent, index: number) {
             v-for="field of _cols"
             :key="field.$Name + String(item?.[field.$Name] || '')"
             @click="_onItemClick($event, item as unknown as T)"
+            @dblclick="_onItemDblClick($event, item as unknown as T)"
             :class="{
               'not-sap-col-hl': highlightedColumnName === field.$Name && _cols.length > 1,
             }"

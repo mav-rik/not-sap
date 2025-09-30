@@ -185,6 +185,7 @@ function onDateShortcut(sc: (typeof dateRangeShortcuts)[number]) {
             design="filled"
             v-model="(c.value[0] as string)"
             :placeholder="doesConditionHave2ndValue(c) ? 'From' : 'Value'"
+            autocomplete="off"
           />
           <!-- prettier-ignore-attribute v-model -->
           <VuInputBase
@@ -193,6 +194,7 @@ function onDateShortcut(sc: (typeof dateRangeShortcuts)[number]) {
             design="filled"
             v-model="(c.value[1] as string)"
             placeholder="To"
+            autocomplete="off"
           />
         </template>
       </VuInput>
@@ -248,6 +250,7 @@ function onDateShortcut(sc: (typeof dateRangeShortcuts)[number]) {
             :placeholder="doesConditionHave2ndValue(dummy) ? 'From' : 'Value'"
             @keydown.enter="onDummyEnter"
             @blur="onDummyEnter"
+            autocomplete="off"
           />
           <!-- prettier-ignore-attribute v-model -->
           <VuInputBase
@@ -258,6 +261,7 @@ function onDateShortcut(sc: (typeof dateRangeShortcuts)[number]) {
             placeholder="To"
             @keydown.enter="onDummyEnter"
             @blur="onDummyEnter"
+            autocomplete="off"
           />
         </template>
 

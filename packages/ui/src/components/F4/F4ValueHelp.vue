@@ -61,6 +61,7 @@ function onSearch(query: () => void) {
               @blur="onSearch(query)"
               icon-append="i--search"
               @append-click="onSearch(query)"
+              autocomplete="off"
             />
 
             <VuButton

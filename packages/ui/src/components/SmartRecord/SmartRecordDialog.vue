@@ -33,6 +33,7 @@ const props = defineProps<{
   closeButton?: boolean
   hideDescriptionFields?: boolean
   hideUnitFields?: boolean
+  search?: boolean
 }>()
 
 const { metadataLoading, model, fields, fieldsMap, entity } = useODataEntitySetPI().inject()
@@ -232,9 +233,9 @@ const onSearch = debounce(() => {
     >
       <template v-slot:header>
         <div class="p-$card-spacing pb-0">
-          <VuCardHeader class="flex items-center gap-$m">
+          <VuCardHeader class="flex items-center gap-$m pb-$xs">
             <slot name="header-icon">
-              <VuIcon v-if="icon" :name="icon" :style="`--icon-size: ${iconSize || '2.34em'};`" />
+              <VuIcon v-if="icon" :name="icon" :style="`--icon-size: ${iconSize || '1.64em'};`" />
             </slot>
             <div class="flex flex-col">
               <slot name="title" v-if="titleField || $slots['title']">
@@ -248,7 +249,7 @@ const onSearch = debounce(() => {
                   {{ value }}
                 </SmartFieldValue>
               </slot>
-              <div class="text-body-s pb-$s" v-if="subTitleField || $slots['subTitle']">
+              <div class="text-body-s" v-if="subTitleField || $slots['subTitle']">
                 <slot name="subTitle">
                   <!-- prettier-ignore-attribute :name -->
                   <SmartFieldValue
@@ -277,13 +278,16 @@ const onSearch = debounce(() => {
           <SmartRecordFields :fields="_headerFields" :record="_row" />
 
           <VuInput
+            v-if="search"
             design="filled"
             placeholder="Search"
             class="my-$m max-w-14em"
             icon-append="i--search"
             v-model="searchTerm"
             @update:modelValue="onSearch"
+            autocomplete="off"
           />
+          <div v-else class="mt-$m"></div>
           <VuTabs
             v-if="_groups && !filteredFields"
             v-model="tab"

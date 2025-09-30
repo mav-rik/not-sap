@@ -28,6 +28,10 @@
   <img src="./notsapui-table.webp" alt="Not SAP"/>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap-demo/main/docs/table-record.gif" alt="Not SAP"/>
+</p>
+
 
 - Shared development patterns: provide/inject context layers, metadata refinement, batch-friendly data access, and optional Excel export.
 

@@ -12,6 +12,10 @@ notsapui is a type-safe Vue 3 component library that provides SAP-like UI compon
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsapui-table.webp" alt="Not SAP" />
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap-demo/main/docs/table-record.gif" alt="Not SAP" />
+</p>
+
 
 ### Type Safety with notsapodata
 
