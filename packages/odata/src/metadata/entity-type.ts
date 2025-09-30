@@ -599,7 +599,13 @@ export class EntityType<
               ? odataFilterFormat.fromString(val)
               : (val as TODataFilterValWithType)
           if (!typed) continue
-          const type = Object.keys(typed)[0] as TODataFilterConditionType
+          let type = Object.keys(typed)[0] as TODataFilterConditionType
+          if (type === 'contains' && !this._m.isV4) {
+            type = 'substringof'
+          }
+          if (type === 'notContains' && !this._m.isV4) {
+            type = 'notSubstringof'
+          }
           if (!odataFilterFormat.toFilter[type]) continue
           const v = typed[type as keyof typeof typed] as
             | string
