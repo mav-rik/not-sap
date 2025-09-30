@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./notsap.png" alt="Not SAP" width="180" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsap.png" alt="Not SAP" width="180" />
 </p>
 
 # notsap
@@ -19,7 +19,7 @@
 - `notsapodata` — type-safe OData v2/v4 client, metadata utilities, and a Vite plugin that generates strongly typed service models. See [packages/odata/README.md](./packages/odata/README.md).
 
 <p align="center">
-  <img src="./odata.png" alt="Not SAP"/>
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/odata-query.gif" alt="Not SAP"/>
 </p>
 
 
@@ -27,7 +27,7 @@
 
 
 <p align="center">
-  <img src="./notsapui-table.webp" alt="Not SAP"/>
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsapui-table.webp" alt="Not SAP"/>
 </p>
 
 <p align="center">

@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsap.png" alt="Not SAP" width="180" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsap.png" alt="Not SAP" width="180" />
 </p>
 
 # notsapodata
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/odata.png" alt="Not SAP" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/odata-query.gif" alt="Not SAP" />
 </p>
 
 ## Overview
@@ -397,6 +397,10 @@ const rows = await query.promise
 
 Navigation allows you to traverse relationships between entities:
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/odata-nested-query.gif" alt="Not SAP" />
+</p>
+
 ```typescript
 const orders = await NorthwindV4.entitySet('Orders')
 
@@ -501,6 +505,10 @@ await model.updateRecordByKey(key, {
 ```
 
 ### Calling Function Imports
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/odata-call-bound-fn.gif" alt="Not SAP" />
+</p>
 
 ```typescript
 const model = NorthwindV4.getInstance()

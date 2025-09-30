@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsap.png" alt="Not SAP" width="180" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsap.png" alt="Not SAP" width="180" />
 </p>
 
 # notsapui Library Documentation
@@ -11,7 +11,7 @@ notsapui is a type-safe Vue 3 component library that provides SAP-like UI compon
 [Demo Application](https://github.com/mav-rik/not-sap-demo)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/notsapui-table.webp" alt="Not SAP" />
+  <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsapui-table.webp" alt="Not SAP" />
 </p>
 
 <p align="center">
