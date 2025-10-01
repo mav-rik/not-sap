@@ -4,7 +4,7 @@
 
 # notsap
 
-A TypeScript toolchain for building SAP Fiori apps with modern web development. Combines a type-safe OData client with Vue 3 components.
+A TypeScript toolchain for building OData-driven SPAs with modern web development. Combines a type-safe OData client with Vue 3 components. Deploy to SAP Fiori Launchpad, HANA XSA, or any static hosting.
 
 **[Demo Application →](https://github.com/mav-rik/not-sap-demo)**
 
