@@ -10,27 +10,21 @@
 
 ## Overview
 
-`notsapodata` is a **type-safe**, **developer-friendly** TypeScript toolkit for working with OData v2/v4 services—SAP, HANA, Microsoft, custom providers, or anything else that speaks OData.
+A truly type-safe TypeScript OData v2/v4 client with comprehensive IDE support. Probably the first OData client where IntelliSense guides you through entity sets, fields, and navigation properties — while TypeScript catches service misuse at compile time.
 
 [Demo Application](https://github.com/mav-rik/not-sap-demo)
 
-### Why notsapodata?
+### Features
 
-- **🔒 Fully Type-Safe**: Every entity set, field, navigation property, and function parameter is validated at compile time
-- **🚀 Developer-Friendly**: Intuitive API with auto-completion for all OData operations
-- **📦 Zero Boilerplate**: Generated models handle all the type definitions—just import and use
-- **🎯 Smart Defaults**: Automatic CSRF handling, intelligent batching, and optimized queries
-- **🛠️ Production Ready**: Battle-tested with SAP/HANA OData services
+- **Full type safety**: Entity sets, fields, navigation properties, and function parameters validated at compile time
+- **Wide IDE support**: IntelliSense and autocomplete throughout the entire query building process
+- **Static analysis**: Catches wrong service usage before runtime
+- Vite plugin generates TypeScript types from OData metadata
+- CSRF handling, batching, and deep navigation
+- Filter builder with all OData operators
+- Excel export and value help utilities
 
-### What's Included
-
-- **Runtime Client**: Lightweight OData client with CSRF handling, batching, and metadata-aware helpers
-- **Code Generator**: Vite plugin or programmatic API that turns OData metadata into strongly typed models
-- **Metadata Utilities**: Value help discovery, filter rendering, Excel export, and more
-- **Deep Navigation**: Support for complex navigation paths with multiple levels
-- **Advanced Filtering**: Type-safe filter builder with support for all OData operators
-
-When the runtime is paired with generated models, every request becomes fully type-safe: entity set names, fields, navigation properties and function parameters are all validated at compile time.
+Works with SAP, HANA, Microsoft, and other OData services.
 
 ## Installation
 
@@ -45,7 +39,7 @@ yarn add notsapodata
 
 ### Using the Vite Plugin
 
-The package ships with `notSapODataVitePlugin` (`import notSapODataVitePlugin from 'notsapodata/vite'`). The plugin fetches metadata (or uses a provided XML string), generates strongly-typed models and writes them to `src/.odata.types.ts` by default.
+Import `notSapODataVitePlugin` from `notsapodata/vite`. The plugin fetches metadata and generates typed models to `src/.odata.types.ts`.
 
 #### Minimal Example - Fetching Metadata from Service
 
@@ -122,10 +116,9 @@ export default defineConfig({
 })
 ```
 
-Environment variables (automatically read when using the plugin):
-
-- `ODATA_HOST` – default host when `service.host` is not provided.
-- `ODATA_COOKIE_NAME` and `ODATA_COOKIE_VALUE` – combined into a `cookie` header when present.
+Environment variables:
+- `ODATA_HOST` – default host when `service.host` is omitted
+- `ODATA_COOKIE_NAME` and `ODATA_COOKIE_VALUE` – authentication credentials
 
 ### Service Configuration Options
 
@@ -158,12 +151,12 @@ writeFileSync('src/.odata.types.ts', content)
 
 ### Generated Output Structure
 
-For a service named `MyModel`, the generator creates four exports:
+For a service named `MyModel`:
 
-1. **Constants**: `myModelConsts` - Contains arrays of fields, keys, and measures for each entity type
-2. **Types Interface**: `TMyModel` - TypeScript types derived from the constants
-3. **OData Interface**: `TMyModelOData` - Main interface with entity sets, types, and functions mapping
-4. **Service Class**: `MyModel` - Main interaction point extending `OData<TMyModelOData>`
+1. **Constants**: `myModelConsts` - Field, key, and measure arrays per entity type
+2. **Types Interface**: `TMyModel` - TypeScript types from constants
+3. **OData Interface**: `TMyModelOData` - Entity sets, types, and functions
+4. **Service Class**: `MyModel` - Extends `OData<TMyModelOData>`
 
 ```typescript
 // Constants with field/key/measure lists
@@ -440,70 +433,6 @@ const category = await deepNav.read()
 - Chain methods to build deep navigation paths
 - End with `.query()` or `.read()` to execute the request
 
-## Useful Utilities
-
-### Filter Rendering
-
-```typescript
-import { renderFilter } from 'notsapodata'
-
-// Render filter string for manual use
-const filterString = renderFilter({
-  ProductName: { contains: 'Tea' },
-  UnitPrice: { gt: 10 }
-})
-// Result: "(contains(ProductName,'Tea') and UnitPrice gt 10)"
-```
-
-### Key Preparation
-
-```typescript
-const products = await NorthwindV4.entitySet('Products')
-
-// Single key
-const key = products.prepareRecordKey({ ProductID: 42 })
-// Result: 'Products(ProductID=42)'
-
-// Composite key
-const orderDetails = await NorthwindV4.entitySet('Order_Details')
-const compositeKey = orderDetails.prepareRecordKey({
-  OrderID: 10248,
-  ProductID: 11
-})
-// Result: 'Order_Details(OrderID=10248,ProductID=11)'
-```
-
-### Expand String Rendering
-
-```typescript
-const products = await NorthwindV4.entitySet('Products')
-
-// Build and render expand string
-const expandBuilder = products
-  .expand('Category')
-  .expand('Order_Details', { top: 5 })
-
-const expandString = expandBuilder.toString()
-// Result: 'Category,Order_Details($top=5)'
-```
-
-## Additional Features
-
-### Updating Data
-
-```typescript
-const model = NorthwindV4.getInstance()
-const products = await NorthwindV4.entitySet('Products')
-
-// Prepare the key
-const key = products.prepareRecordKey({ ProductID: 1 })
-
-// Update the record
-await model.updateRecordByKey(key, {
-  ProductName: 'Updated product name',
-})
-```
-
 ### Calling Function Imports
 
 <p align="center">
@@ -608,10 +537,9 @@ try {
 
 ## Best Practices
 
-- **Use the static `entitySet` method** (`Service.entitySet()`) for quick access—no need to fetch metadata first
-- **Leverage type safety**: The generated types ensure all entity sets, fields, and navigation properties are validated at compile time
-- **Use structured filters**: Let the query builder generate OData expressions for you (`{ Field: { gt: '10' } }`, `{ $or: [...] }`, etc.)
-- **Cache entity sets**: The `entitySet` instances cache field maps, annotations, and value help lookups
-- **Deep navigation**: Chain `toOne()` and `toMany()` methods for complex navigation paths
-- **Batch wisely**: When using `model.options.useBatch`, group calls logically to avoid exceeding the default 100 request batch size
-- **Handle errors properly**: Catch `SapODataError` separately from generic network errors to surface SAP-provided diagnostics in the UI
+- Use `Service.entitySet()` for quick access without fetching metadata first
+- Use structured filters over manual OData strings: `{ Field: { gt: '10' } }`
+- Cache entity sets—they store field maps and annotations
+- Chain `toOne()` and `toMany()` for deep navigation
+- Group batch calls logically to stay under 100 requests per batch
+- Catch `SapODataError` separately to show SAP diagnostics

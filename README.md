@@ -4,27 +4,27 @@
 
 # notsap
 
-`notsap` is a TypeScript-first toolchain for building SAP Fiori-ready experiences without the weight of SAPUI5. It pairs a modern OData client with a Vue 3 UI kit so teams can ship fast, maintainable enterprise apps that still deploy to launchpad or run standalone.
+A TypeScript toolchain for building SAP Fiori apps with modern web development. Combines a type-safe OData client with Vue 3 components.
 
 **[Demo Application →](https://github.com/mav-rik/not-sap-demo)**
 
-## Why We Built This
+## Motivation
 
-- Traditional SAPUI5 stacks impose heavy runtimes, sluggish boot times, and visual rigidity that slow product delivery.
-- Lack of pervasive type safety makes large apps fragile and raises the cost of change.
-- We want developer experience on par with modern web tooling while staying compatible with SAP backends and launchpad distribution.
+SAP's Fiori concept, smart controls, and OData architecture are solid ideas. But customizing SAPUI5 apps often means reverse-engineering the framework to add simple features like a toolbar button or custom filter behavior. What should be straightforward becomes hours of debugging.
 
-## What’s Inside
+After 10+ years working with SAPUI5, I experimented with Vue in SAP environments. The difference was immediate — smoother UX, easier customization, and users who didn't want to go back. When they asked "Is this SAP?", the answer became: "No, it's not SAP."
 
-- `notsapodata` — type-safe OData v2/v4 client, metadata utilities, and a Vite plugin that generates strongly typed service models. See [packages/odata/README.md](./packages/odata/README.md).
+That phrase — "not SAP" — became shorthand for better UX and DX. This project focuses on **developer experience first** — so developers can focus on **user experience** without fighting the framework.
+
+## What's Inside
+
+**`notsapodata`** — OData v2/v4 client with type generation from metadata. See [packages/odata/README.md](./packages/odata/README.md).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/odata-query.gif" alt="Not SAP"/>
 </p>
 
-
-- `notsapui` — Vue 3 smart components powered by generated metadata, including smart tables, record dialogs, and F4 helpers. See [packages/ui/README.md](./packages/ui/README.md).
-
+**`notsapui`** — Vue 3 smart components including tables, dialogs, and filters. See [packages/ui/README.md](./packages/ui/README.md).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap/main/docs/notsapui-table.webp" alt="Not SAP"/>
@@ -34,21 +34,11 @@
   <img src="https://raw.githubusercontent.com/mav-rik/not-sap-demo/main/docs/table-record.gif" alt="Not SAP"/>
 </p>
 
-
-- Shared development patterns: provide/inject context layers, metadata refinement, batch-friendly data access, and optional Excel export.
-
 ## Quick Start
 
-1. Install dependencies: `pnpm install notsapui notsapodata`.
-2. Configure `odataCodegenPlugin` in your app’s `vite.config.ts` to generate `.odata.types.ts` (examples in [packages/odata/README.md](./packages/odata/README.md#vite-plugin-setup-for-type-generation)).
-3. Wrap your Vue app with `<NotSapApp>` and `<ODataEntitySet>` from `notsapui`, then consume smart components such as `<SmartTable>`.
-4. Refine metadata and compose filters with helpers from `notsapodata` and `notsapui/utils` to deliver tailored UX.
+1. Install: `pnpm install notsapui notsapodata`
+2. Configure `notSapODataVitePlugin` in `vite.config.ts` to generate types from OData metadata
+3. Use `<NotSapApp>` and `<ODataEntitySet>` wrappers with `<SmartTable>` and other components
+4. Customize with metadata refinement and filter utilities
 
-## Learn More
-
-- Deep dive into the OData tooling: [packages/odata/README.md](./packages/odata/README.md)
-- Component architecture and examples: [packages/ui/README.md](./packages/ui/README.md)
-- Additional guides and patterns live inside each package README.
-- Demo application: [not-sap-demo](https://github.com/mav-rik/not-sap-demo)
-
-Contributions and feedback are welcome—let's make SAP development feel modern again.
+See package READMEs for detailed setup and examples. Demo: [not-sap-demo](https://github.com/mav-rik/not-sap-demo)
