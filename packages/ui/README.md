@@ -828,15 +828,26 @@ const fieldsFilters = ref<TODataFieldsFilters<TProductModelProductsFields>>({})
 
 For complete TypeScript type definitions, see the [notsapodata type reference](../odata/README.md#typescript-types).
 
-## Shortcuts Integration
+## UnoCSS Shortcuts Configuration
 
-notsapui integrates with Vunor shortcuts:
+notsapui components use UnoCSS shortcuts that combine multiple utility classes under single names.
+
+**If using raw .vue components** (not pre-compiled), configure the shortcuts in your UnoCSS config:
 
 ```typescript
-import { notsapuiVunorShortcuts } from 'notsapui/vunor';
+// uno.config.ts
+import { defineConfig } from 'unocss';
+import { presetVunor, vunorShortcuts } from 'vunor/theme';
+import { notSapUiVunorShortcuts } from 'notsapui/vunor';
 
-// Register shortcuts
-const shortcuts = notsapuiVunorShortcuts();
+export default defineConfig({
+  presets: [presetVunor()],
+  shortcuts: [vunorShortcuts(notSapUiVunorShortcuts)],
+});
 ```
 
-This enables keyboard shortcuts for table navigation, selection, and actions.
+**If using pre-compiled components**, simply import the styles:
+
+```typescript
+import 'notsapui/styles.css';
+```
