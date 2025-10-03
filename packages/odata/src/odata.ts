@@ -602,7 +602,8 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
     const fnName = fnMeta.name;
     const requestPath = (() => {
-      if (target === 'json') {
+      if (target === 'json' || !isV4) {
+        // for post request (actions) or v2 we use just name of the function as path
         return name as string;
       }
       const entries = Object.entries(params);
@@ -610,14 +611,13 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
         return `${fnName}()`;
       }
       const args = entries.map(([key, value]) => `${key}=${value}`).join(',');
+      // for V4 functions we send params inside of (...)
       return `${fnName}(${args})`;
     })();
     const prefixedPath = prefix ? `${prefix}/${requestPath}` : requestPath;
 
     const requestParams =
-      method === 'POST' && isV4
-        ? /* undefined */ (params as Record<string, string>)
-        : (params as Record<string, string>);
+      target === 'json' || isV4 ? undefined : (params as Record<string, string>);
     if (target === 'filter') {
       const data = await this._fetch(
         this.genRequestUrl(prefixedPath, requestParams),
