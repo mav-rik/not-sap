@@ -562,7 +562,17 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       throw new Error(`Function "${name as string}" not found in metadata of "${this.service}"`);
     }
     const params = {} as Record<string, unknown>;
-    const target = method === 'POST' ? 'json' : 'filter';
+    const isV4 = metadata.isV4;
+
+    /**
+     * target is for setting the format of the params: it can be JSON or filter format
+     * SAP seem to implement only filter format for POST requests
+     * Keeping filter format for all the types of functions for now
+     */
+    const target = (method === 'POST' && isV4 ? 'filter' : /* 'json' */ 'filter') as
+      | 'json'
+      | 'filter';
+
     if (_params) {
       for (const param of fnMeta.params ?? []) {
         const paramName = param.$Name;
@@ -590,10 +600,9 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
       }
     }
 
-    const isV4 = metadata.isV4;
     const fnName = fnMeta.name;
     const requestPath = (() => {
-      if (!isV4 || method === 'POST') {
+      if (target === 'json') {
         return name as string;
       }
       const entries = Object.entries(params);
@@ -607,10 +616,9 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
 
     const requestParams =
       method === 'POST' && isV4
-        ? /* undefined */ (params as Record<string, string>) // for POST in v4 we're supposed to send body, but SAP seems to always send params as query
+        ? /* undefined */ (params as Record<string, string>)
         : (params as Record<string, string>);
-    if (method === 'GET' || method === 'POST') {
-      // for POST in v4 we're supposed to send body, but SAP seems to always send params as query
+    if (target === 'filter') {
       const data = await this._fetch(
         this.genRequestUrl(prefixedPath, requestParams),
         {
