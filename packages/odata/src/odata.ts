@@ -428,10 +428,16 @@ export class OData<M extends TOdataDummyInterface = TOdataDummyInterface> {
     );
   }
 
+  /**
+   * @deprecated
+   */
   async updateRecord<T extends keyof M['entitySets']>(
     record: Partial<M['entityTypes'][M['entitySets'][T]]['record']>,
     change: Partial<M['entityTypes'][M['entitySets'][T]]['record']>
   ) {
+    // this method works only for V2 and only if this.service matches the last segment of odata path.
+    // need to remove this method
+    // and add update methods to EntitySet class
     const { uri } = this.getRecordV2Metadata(record as any);
     const path = uri.split(this.service)[1]?.slice(1);
     if (path) {
