@@ -2,7 +2,7 @@
   "description": "Function import returning the person with most friends",
   "requests": [
     {
-      "url": "https://services.odata.org/TripPinRESTierService/GetPersonWithMostFriends()",
+      "url": "https://services.odata.org/TripPinRESTierService/GetPersonWithMostFriends()?",
       "response": {
         "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(muprbxf0wssw3xr2tlf442u1))/$metadata#People/$entity",
         "UserName": "russellwhyte",

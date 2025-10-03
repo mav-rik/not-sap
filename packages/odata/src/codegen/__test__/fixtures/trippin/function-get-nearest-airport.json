@@ -2,7 +2,7 @@
   "description": "Function import returning nearest airport by coordinates",
   "requests": [
     {
-      "url": "https://services.odata.org/TripPinRESTierService/GetNearestAirport(lat=33.63,lon=-84.42)",
+      "url": "https://services.odata.org/TripPinRESTierService/GetNearestAirport(lat=33.63,lon=-84.42)?lat=33.63&lon=-84.42",
       "response": {
         "@odata.context": "https://services.odata.org/TripPinRESTierService/(S(c5u1see5vckpglvtmdd0i5p0))/$metadata#Airports/$entity",
         "Name": "John F. Kennedy International Airport",
