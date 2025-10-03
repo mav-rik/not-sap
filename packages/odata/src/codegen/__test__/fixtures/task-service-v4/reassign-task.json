@@ -3,7 +3,7 @@
   "requests": [
     {
       "method": "POST",
-      "url": "https://example.test/odata/path/task-service-v4/Tasks(Id=guid'0f8fad5b-d9cb-469f-a165-70867728950e')/ReassignTask(NewOwner='Sally')?NewOwner='Sally'",
+      "url": "https://example.test/odata/path/task-service-v4/Tasks(Id=guid'0f8fad5b-d9cb-469f-a165-70867728950e')/ReassignTask(NewOwner='Sally')",
       "response": {
         "@odata.context": "https://example.test/odata/task-service-v4/$metadata#Tasks/$entity",
         "Id": "0f8fad5b-d9cb-469f-a165-70867728950e",

@@ -3,7 +3,7 @@
   "requests": [
     {
       "method": "POST",
-      "url": "https://example.test/odata/path/post-functions-v2/Invoices(InvoiceID=9001)/CloseInvoice(InvoiceID=9001,Reason='Paid in full')?InvoiceID=9001&Reason='Paid%20in%20full'",
+      "url": "https://example.test/odata/path/post-functions-v2/Invoices(InvoiceID=9001)/CloseInvoice?InvoiceID=9001&Reason='Paid%20in%20full'",
       "response": {
         "d": {
           "CloseInvoice": true
